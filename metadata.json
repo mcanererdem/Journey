@@ -1,0 +1,6 @@
+{
+  "name": "Light & Darkness",
+  "description": "A Dark Fantasy text-based RPG where your choices shape your faction alignment and dynamically shift the theme between celestial light and the abyss.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

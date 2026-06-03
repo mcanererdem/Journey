@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">Light &amp; Darkness</string>
+    <string name="tab_tower">KULE</string>
+    <string name="tab_outer">DIŞ DÜNYA</string>
+    <string name="tab_character">KARAKTER</string>
+    <string name="tab_journal">GÜNCE</string>
+    <string name="label_floor">KAT %d</string>
+    <string name="label_hp">YAŞAM</string>
+    <string name="label_gold">Altın</string>
+    <string name="label_gleam">Semavi Işıltı</string>
+    <string name="label_pyre">Kara Ateş</string>
+    <string name="label_rank">Rütbe</string>
+    <string name="label_alignment">Hizalanma</string>
+    <string name="label_class">Yansıma Sınıfı</string>
+    <string name="label_side">Hizalanmış Cephe</string>
+    <string name="label_fractures">Ruh Kırılmaları</string>
+    <string name="faction_neutral">Tarafsız</string>
+    <string name="faction_sanctum">Celestial Sanctum (Işık)</string>
+    <string name="faction_covenant">Void Covenant (Karanlık)</string>
+</resources>

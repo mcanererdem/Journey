@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">Light &amp; Darkness</string>
+    <string name="tab_tower">THE TOWER</string>
+    <string name="tab_outer">OUTER REALM</string>
+    <string name="tab_character">CHARACTER</string>
+    <string name="tab_journal">CHRONOLOGY</string>
+    <string name="label_floor">FLOOR %d</string>
+    <string name="label_hp">VITALITY</string>
+    <string name="label_gold">Gold</string>
+    <string name="label_gleam">Celestial Gleam</string>
+    <string name="label_pyre">Abyssal Pyre</string>
+    <string name="label_rank">Rank</string>
+    <string name="label_alignment">Alignment</string>
+    <string name="label_class">Reflection Class</string>
+    <string name="label_side">Aligned Order</string>
+    <string name="label_fractures">Spirit Fractures</string>
+    <string name="faction_neutral">Neutral Outcast</string>
+    <string name="faction_sanctum">Celestial Sanctum (Order)</string>
+    <string name="faction_covenant">Void Covenant (Eclipse)</string>
+</resources>
