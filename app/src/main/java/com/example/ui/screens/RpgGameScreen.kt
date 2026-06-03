@@ -2216,8 +2216,8 @@ fun QuestsTab(
         item {
             val categories = listOf(
                 "ALL" to (if (activeLang == "TR") "HEPSİ" else "ALL"),
-                "NORMAL" to (if (activeLang == "TR") "NORMAL" else "NORMAL"),
-                "SPECIAL" to (if (activeLang == "TR") "ÖZEL" else "SPECIAL"),
+                "MAIN" to (if (activeLang == "TR") "ANA" else "MAIN"),
+                "SIDE" to (if (activeLang == "TR") "YAN" else "SIDE"),
                 "CHAIN" to (if (activeLang == "TR") "ZİNCİR" else "CHAIN"),
                 "HIDDEN" to (if (activeLang == "TR") "GİZLİ" else "HIDDEN")
             )
@@ -2315,8 +2315,8 @@ fun QuestsTab(
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 val badgeColor = when (q.type) {
-                                    QuestType.NORMAL -> MaterialTheme.colorScheme.primary
-                                    QuestType.SPECIAL -> SanctumGold
+                                    QuestType.MAIN -> MaterialTheme.colorScheme.primary
+                                    QuestType.SIDE -> SanctumGold
                                     QuestType.CHAIN -> VoidNeonPurple
                                     QuestType.HIDDEN -> BlightDamageColor
                                 }

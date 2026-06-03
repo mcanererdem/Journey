@@ -20,17 +20,27 @@ data class TitleDef(
 )
 
 /**
- * Quest Category types.
+ * Quest Category types mapped to requested categories.
  */
 enum class QuestType {
-    NORMAL,
+    MAIN,
+    SIDE,
     HIDDEN,
-    SPECIAL,
     CHAIN
 }
 
 /**
- * Definition of a Quest with prerequisites, state verification, and rewards.
+ * Status tracking values for Quests as defined in requested specifications.
+ */
+enum class QuestStatusType {
+    LOCKED,     // Prerequisites or preconditions are not met
+    ACTIVE,     // Preconditions met, task is currently active/in-progress
+    COMPLETED,  // Completed and rewards have been claimed
+    HIDDEN      // Completely mystified from the quest log boards until unlocked
+}
+
+/**
+ * Definition of a Quest with prerequisite check, preconditions met check, state verification, and rewards.
  */
 data class QuestDef(
     val id: String,
@@ -42,9 +52,7 @@ data class QuestDef(
     val requirementEn: String,
     val requirementTr: String,
     val prerequisiteQuestId: String? = null,
-    val isEligible: (PlayerProfile, Set<String>) -> Boolean = { player, completed ->
-        prerequisiteQuestId == null || completed.contains(prerequisiteQuestId)
-    },
+    val meetsPreconditions: (PlayerProfile) -> Boolean = { true },
     val checkProgress: (PlayerProfile) -> Boolean,
     val rewardGold: Int = 0,
     val rewardExp: Int = 0,
@@ -159,9 +167,10 @@ object QuestTitleSystem {
     )
 
     val quests = listOf(
+        // --- MAIN QUESTS ---
         QuestDef(
-            id = "normal_survival",
-            type = QuestType.NORMAL,
+            id = "main_foothold",
+            type = QuestType.MAIN,
             titleEn = "Tower Foothold",
             titleTr = "Kulede Tutunmak",
             descEn = "Prove you have the stamina to climb the lower segments of the tower floors.",
@@ -173,8 +182,24 @@ object QuestTitleSystem {
             rewardExp = 120
         ),
         QuestDef(
-            id = "normal_wealth",
-            type = QuestType.NORMAL,
+            id = "main_midpoint",
+            type = QuestType.MAIN,
+            titleEn = "Aegis Midpoint",
+            titleTr = "Aegis Orta Noktası",
+            descEn = "Survive the grueling trial and rise beyond the midpoint of lower floors.",
+            descTr = "Zorlu kule tırmanışında alt katların orta noktasına kadar yükselip hayatta kalın.",
+            requirementEn = "Climb to Floor 15 or higher",
+            requirementTr = "15. Kat veya üzerine tırmanın",
+            checkProgress = { it.currentFloor >= 15 },
+            rewardGold = 180,
+            rewardExp = 250,
+            rewardItem = "Aegis Shard of Eternity"
+        ),
+
+        // --- SIDE QUESTS ---
+        QuestDef(
+            id = "side_wealth",
+            type = QuestType.SIDE,
             titleEn = "Merchant Barter Guild",
             titleTr = "Tüccar Takas Birliği",
             descEn = "Earning enough treasure allows you to trade secrets with the high nomads.",
@@ -185,6 +210,36 @@ object QuestTitleSystem {
             rewardExp = 200,
             rewardItem = "Aetherweave Cloak of Sanctum"
         ),
+        QuestDef(
+            id = "side_sanctum_purity",
+            type = QuestType.SIDE,
+            titleEn = "Vow of Celestial Purity",
+            titleTr = "Semavi Saflık Andı",
+            descEn = "Embrace the solar radiance. Prove your alignment with the divine Sanctum faction.",
+            descTr = "Güneşin hararetini kucaklayın. Semavi birliğine olan bağlılığınızı kanıtlayın.",
+            requirementEn = "Become Sanctum Aligned (Alignment +15 or higher)",
+            requirementTr = "Semavi Birliğine Katılın (En az +15 Hizalanma)",
+            checkProgress = { it.side == "SANCTUM" && it.alignment >= 15 },
+            rewardExp = 250,
+            rewardGold = 80,
+            rewardGleam = 60
+        ),
+        QuestDef(
+            id = "side_void_alliance",
+            type = QuestType.SIDE,
+            titleEn = "Deep Abyss Alliance",
+            titleTr = "Derin Boşluk Anlaşması",
+            descEn = "Whisper to the void, let the dark echo of the Covenant shape your shadows.",
+            descTr = "Boşluğun sesini dinleyin, Kara Ahit'in karanlık tınısının gölgenizi şekillendirmesine izin verin.",
+            requirementEn = "Become Covenant Aligned (Alignment -15 or lower)",
+            requirementTr = "Kara Ahit Birliğine Katılın (En az -15 Hizalanma)",
+            checkProgress = { it.side == "COVENANT" && it.alignment <= -15 },
+            rewardExp = 250,
+            rewardGold = 80,
+            rewardPyre = 60
+        ),
+
+        // --- CHAIN QUESTS ---
         QuestDef(
             id = "chain_ascension_1",
             type = QuestType.CHAIN,
@@ -229,21 +284,8 @@ object QuestTitleSystem {
             rewardGold = 400,
             rewardTitle = "Apex Ascendant Sovereign"
         ),
-        QuestDef(
-            id = "special_allegiance",
-            type = QuestType.SPECIAL,
-            titleEn = "Fated Allegiance Oath",
-            titleTr = "Kader Bağı Yemini",
-            descEn = "True power cannot reside in muddy gray. Commit your will to the light, or decay in the abyss.",
-            descTr = "Gerçek güç gri belirsizlikte barınamaz. İradenizi ışığa adayın veya boşlukta çürüyün.",
-            requirementEn = "Join a Faction (Sanctum or Void Covenant)",
-            requirementTr = "Bir Cepheye Bağlılık Yemini Edin (Semavi ya da Kara Ahit)",
-            checkProgress = { it.side != "NEUTRAL" },
-            rewardExp = 250,
-            rewardGold = 50,
-            rewardGleam = 50,
-            rewardPyre = 50
-        ),
+
+        // --- HIDDEN QUESTS ---
         QuestDef(
             id = "hidden_fractured_soul",
             type = QuestType.HIDDEN,
@@ -298,14 +340,23 @@ object QuestTitleSystem {
 
         return quests.map { q ->
             val isCompleted = completedSet.contains(q.id)
-            val eligible = q.isEligible(player, completedSet)
+            val prerequisiteMet = q.prerequisiteQuestId == null || completedSet.contains(q.prerequisiteQuestId)
+            val meetsPrecon = q.meetsPreconditions(player)
+            val isUnlocked = prerequisiteMet && meetsPrecon
             val requirementMet = q.checkProgress(player)
+
+            val statusType = when {
+                isCompleted -> QuestStatusType.COMPLETED
+                !isUnlocked -> if (q.type == QuestType.HIDDEN) QuestStatusType.HIDDEN else QuestStatusType.LOCKED
+                else -> QuestStatusType.ACTIVE
+            }
 
             QuestStatus(
                 quest = q,
+                status = statusType,
                 isCompleted = isCompleted,
-                isUnlocked = eligible,
-                requirementMet = requirementMet && eligible && !isCompleted
+                isUnlocked = isUnlocked,
+                requirementMet = requirementMet && isUnlocked && !isCompleted
             )
         }
     }
@@ -316,6 +367,7 @@ object QuestTitleSystem {
  */
 data class QuestStatus(
     val quest: QuestDef,
+    val status: QuestStatusType,
     val isCompleted: Boolean,
     val isUnlocked: Boolean,
     val requirementMet: Boolean

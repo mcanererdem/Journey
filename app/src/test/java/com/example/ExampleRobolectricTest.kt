@@ -46,10 +46,31 @@ class ExampleRobolectricTest {
     val freshPlayer = com.example.data.model.PlayerProfile()
     val progressList = com.example.data.engine.QuestTitleSystem.getQuestProgress(freshPlayer)
 
-    // survival quest requirements: climb to floor 5. Fresh player is on floor 1.
-    val survivalQuestProgress = progressList.find { it.quest.id == "normal_survival" }
+    // climb to floor 5. Fresh player is on floor 1.
+    val survivalQuestProgress = progressList.find { it.quest.id == "main_foothold" }
     org.junit.Assert.assertNotNull(survivalQuestProgress)
     org.junit.Assert.assertFalse(survivalQuestProgress!!.isCompleted)
     org.junit.Assert.assertFalse(survivalQuestProgress.requirementMet)
+  }
+
+  @Test
+  fun `verify custom quest categories like main side chain and hidden and rewards`() {
+    val player = com.example.data.model.PlayerProfile(level = 4, gold = 100)
+    val progress = com.example.data.engine.QuestTitleSystem.getQuestProgress(player)
+
+    val mainQuest = progress.find { it.quest.type == com.example.data.engine.QuestType.MAIN }
+    val sideQuest = progress.find { it.quest.type == com.example.data.engine.QuestType.SIDE }
+    val chainQuest = progress.find { it.quest.type == com.example.data.engine.QuestType.CHAIN }
+    val hiddenQuest = progress.find { it.quest.type == com.example.data.engine.QuestType.HIDDEN }
+
+    org.junit.Assert.assertNotNull(mainQuest)
+    org.junit.Assert.assertNotNull(sideQuest)
+    org.junit.Assert.assertNotNull(chainQuest)
+    org.junit.Assert.assertNotNull(hiddenQuest)
+
+    // Check progress on completed or active state tracking (level 4 meets chain_ascension_1)
+    val chain1 = progress.find { it.quest.id == "chain_ascension_1" }
+    org.junit.Assert.assertNotNull(chain1)
+    org.junit.Assert.assertTrue(chain1!!.requirementMet)
   }
 }
