@@ -41,6 +41,8 @@ import com.example.data.model.JournalEntry
 import com.example.data.model.PlayerProfile
 import com.example.ui.theme.*
 import com.example.ui.viewmodel.GameViewModel
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -57,6 +59,10 @@ fun RpgGameScreen(
     val currentFloorNodes by viewModel.currentFloorNodes.collectAsStateWithLifecycle()
     val activeEnemyHp by viewModel.activeEnemyHp.collectAsStateWithLifecycle()
     val combatLog by viewModel.combatLog.collectAsStateWithLifecycle()
+
+    val isAdWatching by viewModel.isAdWatching.collectAsStateWithLifecycle()
+    val adCooldownSeconds by viewModel.adCooldownSeconds.collectAsStateWithLifecycle()
+    val isPurchaseDialogShown by viewModel.isPurchaseDialogShown.collectAsStateWithLifecycle()
 
     val actionMessageEn by viewModel.lastActionMessageEn.collectAsStateWithLifecycle()
     val actionMessageTr by viewModel.lastActionMessageTr.collectAsStateWithLifecycle()
@@ -169,7 +175,7 @@ fun RpgGameScreen(
         ) {
             // Header stats block
             player?.let { p ->
-                HeaderStatsBlock(player = p, activeLang = activeLang)
+                HeaderStatsBlock(player = p, activeLang = activeLang, onStoreClick = { viewModel.setPurchaseDialogShown(true) })
             }
 
             // Flash action logger alert banner
@@ -249,12 +255,304 @@ fun RpgGameScreen(
             }
         }
     }
+
+    var simulatedBillingSku by remember { mutableStateOf<String?>(null) }
+
+    if (isPurchaseDialogShown) {
+        AlertDialog(
+            onDismissRequest = { viewModel.setPurchaseDialogShown(false) },
+            confirmButton = {
+                TextButton(onClick = { viewModel.setPurchaseDialogShown(false) }) {
+                    Text(if (activeLang == "TR") "Kapat" else "Close")
+                }
+            },
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("⚡ ", fontSize = 24.sp)
+                    Text(
+                        text = if (activeLang == "TR") "İRADEYİ YENİLE" else "RECHARGE WILLPOWER",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            },
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = if (activeLang == "TR") {
+                            "Kule katlarını tırmanmak (-1/sektör, -2/kat transit) ve kararlar seçmek için irade gerekir. Sponsor videoları izleyerek bedava irade kazanın veya sınırsız irade için Sezonluk Geçiş satın alın!"
+                        } else {
+                            "Willpower is required to climb sectors (-1/sector, -2/floor transit) and unlock critical decisions. Watch sponsor videos to earn free willpower, or acquire seasonal passes for infinite willpower!"
+                        },
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    HorizontalDivider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f))
+
+                    // Simulated Rewarded Ad section
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)),
+                        shape = RoundedCornerShape(12.dp),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            Text(
+                                text = if (activeLang == "TR") "🎬 MİNİ REKLAM BÖLÜMÜ" else "🎬 SPONSOR REWARDED AD",
+                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = if (activeLang == "TR") {
+                                    "Kısa sponsor klibini izleyin ve hediye +5 İrade kazanın! (60sn bekleme süresi vardır)"
+                                } else {
+                                    "Watch a quick sponsor clip to claim +5 Willpower! (60s cooldown)"
+                                },
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            if (isAdWatching) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.Center,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(20.dp),
+                                        strokeWidth = 2.dp,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = if (activeLang == "TR") "Sponsor reklam izleniyor (5sn)..." else "Watching sponsor clip (5s)...",
+                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            } else {
+                                Button(
+                                    onClick = { viewModel.watchRewardedAd() },
+                                    enabled = adCooldownSeconds <= 0,
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = MaterialTheme.colorScheme.primary,
+                                        contentColor = MaterialTheme.colorScheme.onPrimary
+                                    ),
+                                    modifier = Modifier.fillMaxWidth().testTag("watch_ad_button")
+                                ) {
+                                    Text(
+                                        text = if (adCooldownSeconds > 0) {
+                                            if (activeLang == "TR") "Bekleme Süresi (${adCooldownSeconds}sn)" else "Ad on Cooldown (${adCooldownSeconds}s)"
+                                        } else {
+                                            if (activeLang == "TR") "İZLE VE +5 İRADE KAZAN" else "WATCH AD TO GET +5 WILL"
+                                        },
+                                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    HorizontalDivider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f))
+
+                    Text(
+                        text = if (activeLang == "TR") "💎 PREMIUM MARKET TEKLİFLERİ" else "💎 PREMIUM STORE OFFERS",
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                        color = SanctumGold
+                    )
+
+                    // Offer 1: Pack Small
+                    Card(
+                        modifier = Modifier.fillMaxWidth().clickable { simulatedBillingSku = "pack_elixir" },
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                        shape = RoundedCornerShape(10.dp),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = if (activeLang == "TR") "⚡ İrade Özütü İksiri" else "⚡ Elixir of Willpower",
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+                                )
+                                Text(
+                                    text = if (activeLang == "TR") "+10 İrade Gücü + 50 Altın bonus" else "+10 Willpower + 50 Gold bonus",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            Text(
+                                text = "$1.99",
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = SanctumGold),
+                                modifier = Modifier.padding(start = 8.dp)
+                            )
+                        }
+                    }
+
+                    // Offer 2: Pack Medium
+                    Card(
+                        modifier = Modifier.fillMaxWidth().clickable { simulatedBillingSku = "pack_chest" },
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                        shape = RoundedCornerShape(10.dp),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = if (activeLang == "TR") "⚡ Hükümdar İrade Sandığı" else "⚡ Sovereign Will Chest",
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+                                )
+                                Text(
+                                    text = if (activeLang == "TR") "+40 İrade Gücü + 200 Altın bonus" else "+40 Willpower + 200 Gold bonus",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            Text(
+                                text = "$3.99",
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = SanctumGold),
+                                modifier = Modifier.padding(start = 8.dp)
+                            )
+                        }
+                    }
+
+                    // Offer 3: Lifetime / Season Pass!
+                    Card(
+                        modifier = Modifier.fillMaxWidth().clickable { simulatedBillingSku = "season_pass" },
+                        colors = CardDefaults.cardColors(containerColor = VoidNeonPurple.copy(alpha = 0.15f)),
+                        shape = RoundedCornerShape(12.dp),
+                        border = BorderStroke(2.dp, VoidNeonPurple)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(14.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text("👑 ", fontSize = 16.sp)
+                                    Text(
+                                        text = if (activeLang == "TR") "SEZONLUK HÜKÜMDAR KARTI" else "SEASONAL SOVEREIGN PASS",
+                                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.ExtraBold),
+                                        color = VoidNeonPurple
+                                    )
+                                }
+                                Text(
+                                    text = if (activeLang == "TR") {
+                                        "SINIRSIZ İRADE! Tüm sektör tırmanışları ve transitler bedava olur!"
+                                    } else {
+                                        "INFINITE WILLPOWER! All climbings, transits and event choices won't cost any Willpower!"
+                                    },
+                                    style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            Text(
+                                text = "$4.99",
+                                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black, color = VoidNeonPurple),
+                                modifier = Modifier.padding(start = 8.dp)
+                            )
+                        }
+                    }
+                }
+            }
+        )
+    }
+
+    // Google Play Simulated Checkout Dialogue
+    if (simulatedBillingSku != null) {
+        val activeSku = simulatedBillingSku!!
+        val productName = when (activeSku) {
+            "pack_elixir" -> if (activeLang == "TR") "İrade Özütü İksiri" else "Elixir of Willpower"
+            "pack_chest" -> if (activeLang == "TR") "Hükümdar İrade Sandığı" else "Sovereign Will Chest"
+            else -> if (activeLang == "TR") "Sezonluk Hükümdar Kartı" else "Seasonal Sovereign Pass"
+        }
+        val productPrice = when (activeSku) {
+            "pack_elixir" -> "$1.99"
+            "pack_chest" -> "$3.99"
+            else -> "$4.99"
+        }
+
+        AlertDialog(
+            onDismissRequest = { simulatedBillingSku = null },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.purchaseProduct(activeSku)
+                        simulatedBillingSku = null
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = SpiritHealColor)
+                ) {
+                    Text(if (activeLang == "TR") "Simüle Satın Alımı Tamamla" else "Simulate Approved Purchase")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { simulatedBillingSku = null }) {
+                    Text(if (activeLang == "TR") "Vazgeç" else "Cancel")
+                }
+            },
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("🤖 Google Play Billing", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+                }
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text(
+                        text = if (activeLang == "TR") {
+                            "Güvenli Google Play ödemesi simüle ediliyor. Kart onay veya Google Pay arayüzü başlatıldı."
+                        } else {
+                            "Secured Google Play payment service is simulated. Card approval flow initialized."
+                        },
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            Text(
+                                text = productName,
+                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "${if (activeLang == "TR") "Fiyat: " else "Price: "} $productPrice",
+                                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold)
+                            )
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(
+                                text = if (activeLang == "TR") "Satıcı: AI Studio Game Studio s.r.o." else "Merchant: AI Studio Game Studio s.r.o.",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                            )
+                        }
+                    }
+                }
+            }
+        )
+    }
 }
 
 @Composable
 fun HeaderStatsBlock(
     player: PlayerProfile,
-    activeLang: String
+    activeLang: String,
+    onStoreClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -368,20 +666,38 @@ fun HeaderStatsBlock(
                     color = SanctumGold
                 )
                 Spacer(modifier = Modifier.width(6.dp))
+                val isSovereignPassActive = player.itemsEncoded.split(",").any { it.trim() == "Seasonal Sovereign Pass" }
                 LinearProgressIndicator(
-                    progress = { player.currentWill.toFloat() / player.maxWill.toFloat() },
+                    progress = { if (isSovereignPassActive) 1.0f else player.currentWill.toFloat() / player.maxWill.toFloat() },
                     modifier = Modifier
                         .weight(1f)
                         .height(8.dp)
-                        .clip(RoundedCornerShape(4.dp)),
-                    color = SanctumGold,
+                        .clip(RoundedCornerShape(4.dp))
+                        .clickable { onStoreClick() },
+                    color = if (isSovereignPassActive) VoidNeonPurple else SanctumGold,
                     trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                 )
                 Spacer(modifier = Modifier.width(10.dp))
                 Text(
-                    text = "${player.currentWill}/${player.maxWill}",
-                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
+                    text = if (isSovereignPassActive) "∞" else "${player.currentWill}/${player.maxWill}",
+                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                    modifier = Modifier.clickable { onStoreClick() }
                 )
+                Spacer(modifier = Modifier.width(10.dp))
+                Button(
+                    onClick = { onStoreClick() },
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+                    modifier = Modifier.height(26.dp).testTag("recharge_will_btn"),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (isSovereignPassActive) VoidNeonPurple else SanctumGold,
+                        contentColor = if (isSovereignPassActive) Color.White else Color.Black
+                    )
+                ) {
+                    Text(
+                        text = if (isSovereignPassActive) (if (activeLang == "TR") "PASS: AKTİF" else "PASS: ACTIVE") else (if (activeLang == "TR") "MAĞAZA ⚡" else "STORE ⚡"),
+                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(10.dp))

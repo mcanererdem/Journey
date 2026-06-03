@@ -50,6 +50,15 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val _combatLog = MutableStateFlow<List<String>>(emptyList())
     val combatLog: StateFlow<List<String>> = _combatLog.asStateFlow()
 
+    private val _isAdWatching = MutableStateFlow(false)
+    val isAdWatching: StateFlow<Boolean> = _isAdWatching.asStateFlow()
+
+    private val _adCooldownSeconds = MutableStateFlow(0)
+    val adCooldownSeconds: StateFlow<Int> = _adCooldownSeconds.asStateFlow()
+
+    private val _isPurchaseDialogShown = MutableStateFlow(false)
+    val isPurchaseDialogShown: StateFlow<Boolean> = _isPurchaseDialogShown.asStateFlow()
+
     init {
         LocalizationManager.init(application)
         val database = GameDatabase.getDatabase(application)
@@ -389,8 +398,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             val profile = repository.getPlayerProfileDirect() ?: return@launch
             
+            val hasPass = profile.itemsEncoded.split(",").any { it.trim() == "Seasonal Sovereign Pass" }
+            val resolvedWillChange = if (hasPass && choice.willChange < 0) 0 else choice.willChange
+
             // Validate Will Cost
-            if (choice.willChange < 0 && profile.currentWill < -choice.willChange) {
+            if (!hasPass && choice.willChange < 0 && profile.currentWill < -choice.willChange) {
                 _lastActionMessageEn.value = "❌ Insufficient Willpower to make this choice!"
                 _lastActionMessageTr.value = "❌ Bu kararı seçmek için yeterli İradeniz yok!"
                 return@launch
@@ -400,7 +412,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val newGold = (profile.gold + choice.goldChange).coerceAtLeast(0)
             val newGleam = (profile.gleam + choice.gleamChange).coerceAtLeast(0)
             val newPyre = (profile.pyre + choice.pyreChange).coerceAtLeast(0)
-            val newWill = (profile.currentWill + choice.willChange).coerceIn(0, profile.maxWill)
+            val newWill = (profile.currentWill + resolvedWillChange).coerceIn(0, profile.maxWill)
             var newHp = profile.currentHp + choice.hpChange
             
             // Build item catalog list
@@ -454,7 +466,58 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             if (newHp <= 0) {
                 triggerSpiritFracture(profile, newAlignment, newGold, newGleam, newPyre, activeFactionSide)
             } else {
+                var targetFloor = profile.currentFloor
+                var targetNodeIndex = profile.currentNodeIndex
+                var completedState = true
+                var targetCheckpoint = profile.savedFloorCheckpoint
+                var targetRank = profile.rank
+
+                if (choice.skipToNextFloor) {
+                    targetFloor = (profile.currentFloor + 1).coerceAtMost(100)
+                    targetNodeIndex = 0
+                    completedState = false
+                    targetCheckpoint = if (targetFloor % 10 == 1) targetFloor else profile.savedFloorCheckpoint
+                    targetRank = calculateRank(targetFloor)
+                    
+                    // Regenerate the floor nodes
+                    val nodes = AdventureEngine.generateNodesForFloor(targetFloor, profile)
+                    _currentFloorNodes.value = nodes
+                    _currentScenario.value = LocalizationManager.getScenarioForFloor(_activeLanguage.value, targetFloor)
+
+                    if (nodes.isNotEmpty()) {
+                        val firstNode = nodes[0]
+                        if (firstNode.type == NodeType.COMBAT || firstNode.type == NodeType.BOSS) {
+                            _activeEnemyHp.value = firstNode.enemyHp
+                            _combatLog.value = listOf(
+                                "TR" to "⚔️ ${firstNode.enemyNameTr} ile kule yolunda savaşa girdiniz! Can: ${firstNode.enemyHp}",
+                                "EN" to "⚔️ Engaged in battle with ${firstNode.enemyNameEn}! HP: ${firstNode.enemyHp}"
+                            ).map { if (_activeLanguage.value == "TR") it.first else it.second }
+                        } else {
+                            _activeEnemyHp.value = null
+                            _combatLog.value = emptyList()
+                        }
+                    }
+                } else if (choice.skipToBoss) {
+                    val nodes = _currentFloorNodes.value
+                    if (nodes.isNotEmpty()) {
+                        targetNodeIndex = nodes.size - 1
+                        completedState = false
+                        
+                        val bossNode = nodes[targetNodeIndex]
+                        _activeEnemyHp.value = bossNode.enemyHp
+                        _combatLog.value = listOf(
+                            "TR" to "⚔️ MEKAN KISAYOLU! Doğrudan kat patronu ${bossNode.enemyNameTr} ile savaşa girdiniz! Can: ${bossNode.enemyHp}",
+                            "EN" to "⚔️ SPATIAL SHORTCUT! Teleported straight to battle with floor boss ${bossNode.enemyNameEn}! HP: ${bossNode.enemyHp}"
+                        ).map { if (_activeLanguage.value == "TR") it.first else it.second }
+                    }
+                }
+
                 val updated = profile.copy(
+                    currentFloor = targetFloor,
+                    currentNodeIndex = targetNodeIndex,
+                    currentNodeCompleted = completedState,
+                    savedFloorCheckpoint = targetCheckpoint,
+                    rank = targetRank,
                     alignment = newAlignment,
                     gold = newGold,
                     gleam = newGleam,
@@ -467,7 +530,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     maxExp = newMaxExp,
                     itemsEncoded = newItemsEncoded,
                     titlesEncoded = newTitlesEncoded,
-                    currentNodeCompleted = true, // complete active node
                     chosenClass = calculatePlayerClass(activeFactionSide, newAlignment),
                     lastUpdated = System.currentTimeMillis()
                 )
@@ -481,8 +543,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val profile = repository.getPlayerProfileDirect() ?: return@launch
             val nodes = _currentFloorNodes.value
             
+            val hasPass = profile.itemsEncoded.split(",").any { it.trim() == "Seasonal Sovereign Pass" }
+
             // Sinking into a new node in sequence costs 1 Will
-            if (profile.currentWill < 1) {
+            if (!hasPass && profile.currentWill < 1) {
                 _lastActionMessageEn.value = "❌ No Willpower! Spend 50 Gold at Outer Haven sığınağı to restore life and Will."
                 _lastActionMessageTr.value = "❌ İrade Tükendi! İradenizi yenilemek için Dış Sığınak Kaplıcasında 50 Altına dinlenin."
                 return@launch
@@ -505,7 +569,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 val updated = profile.copy(
                     currentNodeIndex = nextIndex,
                     currentNodeCompleted = false,
-                    currentWill = profile.currentWill - 1, // Deduct Will
+                    currentWill = if (hasPass) profile.currentWill else profile.currentWill - 1, // Deduct Will
                     lastUpdated = System.currentTimeMillis()
                 )
                 repository.savePlayerProfile(updated)
@@ -519,8 +583,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             val profile = repository.getPlayerProfileDirect() ?: return@launch
             
+            val hasPass = profile.itemsEncoded.split(",").any { it.trim() == "Seasonal Sovereign Pass" }
+
             // Leaving floor costs 2 Will
-            if (profile.currentWill < 2) {
+            if (!hasPass && profile.currentWill < 2) {
                 _lastActionMessageEn.value = "❌ Climbing to another floor costs 2 Will. Please rest first."
                 _lastActionMessageTr.value = "❌ Başka bir kata geçmek için 2 İrade gücü gerekir. Kaplıcalarda dinlenin."
                 return@launch
@@ -548,7 +614,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 currentFloor = nextFloor,
                 currentNodeIndex = 0,
                 currentNodeCompleted = false,
-                currentWill = profile.currentWill - 2, // Deduct transit fee
+                currentWill = if (hasPass) profile.currentWill else profile.currentWill - 2, // Deduct transit fee
                 savedFloorCheckpoint = newCheckpoint,
                 rank = nextRank,
                 lastUpdated = System.currentTimeMillis()
@@ -638,52 +704,34 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             var playerHp = (profile.currentHp - selfHpDmg).coerceAtLeast(0)
 
             if (newEnemyHp <= 0) {
-                // Victory! Compute drops and EXP scaling
-                val expReward = if (activeNode.type == NodeType.BOSS) (90 + profile.currentFloor * 5) else (20 + profile.currentFloor * 2)
-                val goldReward = if (activeNode.type == NodeType.BOSS) (70 + (10..30).random()) else (12 + (4..12).random())
-                
-                var dropItem = ""
-                var dropTitle = ""
-                
-                val roll = (1..100).random()
-                if (roll <= 45 || activeNode.type == NodeType.BOSS) {
-                    dropItem = AdventureEngine.getRandomLootItem(profile.currentFloor, Random)
-                }
-                if (activeNode.type == NodeType.BOSS && roll <= 50) {
-                    dropTitle = AdventureEngine.getRandomCombatTitle(profile.currentFloor, Random)
-                }
+                // Victory! Compute drops and EXP scaling via our brand new RewardGenerator
+                val rewards = RewardGenerator.generateRewards(
+                    player = profile.copy(currentHp = playerHp),
+                    isBoss = activeNode.type == NodeType.BOSS
+                )
 
                 _activeEnemyHp.value = null
                 
-                var newExp = profile.exp + expReward
-                var newLevel = profile.level
-                var newMaxExp = profile.maxExp
-                var newMaxHp = profile.maxHp
-
-                while (newExp >= newMaxExp && newLevel < 100) {
-                    newExp -= newMaxExp
-                    newLevel++
-                    newMaxExp = newLevel * 100
-                    newMaxHp += 20
-                    playerHp += 20 // full heal on level up bounds
-                }
-
                 // Append drops to profile serialization
                 var currentItems = if (profile.itemsEncoded.isEmpty()) emptyList() else profile.itemsEncoded.split(",")
-                if (dropItem.isNotEmpty()) currentItems = currentItems + dropItem
+                rewards.itemAwarded?.let { drop ->
+                    currentItems = currentItems + drop
+                }
                 val newItemsEncoded = currentItems.joinToString(",")
 
                 var currentTitles = if (profile.titlesEncoded.isEmpty()) emptyList() else profile.titlesEncoded.split(",")
-                if (dropTitle.isNotEmpty()) currentTitles = currentTitles + dropTitle
+                rewards.titleAwarded?.let { drop ->
+                    currentTitles = currentTitles + drop
+                }
                 val newTitlesEncoded = currentTitles.joinToString(",")
 
                 val updatedProfile = profile.copy(
-                    currentHp = playerHp.coerceAtMost(newMaxHp),
-                    maxHp = newMaxHp,
-                    level = newLevel,
-                    exp = newExp,
-                    maxExp = newMaxExp,
-                    gold = profile.gold + goldReward,
+                    currentHp = rewards.finalHp,
+                    maxHp = rewards.newMaxHp,
+                    level = rewards.newLevel,
+                    exp = rewards.newExp,
+                    maxExp = rewards.newMaxExp,
+                    gold = profile.gold + rewards.goldGained,
                     itemsEncoded = newItemsEncoded,
                     titlesEncoded = newTitlesEncoded,
                     currentNodeCompleted = true,
@@ -692,13 +740,15 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 repository.savePlayerProfile(updatedProfile)
 
                 if (_activeLanguage.value == "TR") {
-                    logs.add("🎉 ZAFER! Düşman katledildi. +$expReward Deneyim, +$goldReward Altın kazanıldı.")
-                    if (dropItem.isNotEmpty()) logs.add("🎁 Hazine: [$dropItem] toplandı teçhizat torbana konuldu!")
-                    if (dropTitle.isNotEmpty()) logs.add("👑 Yeni Unvan Kazandınız: [$dropTitle]!")
+                    logs.add("🎉 ZAFER! Düşman katledildi. +${rewards.expGained} Deneyim, +${rewards.goldGained} Altın kazanıldı.")
+                    if (rewards.itemAwarded != null) logs.add("🎁 Hazine: [${rewards.itemAwarded}] toplandı teçhizat torbana konuldu!")
+                    if (rewards.titleAwarded != null) logs.add("👑 Yeni Unvan Kazandınız: [${rewards.titleAwarded}]!")
+                    if (rewards.didLevelUp) logs.add("⚡ SEVİYE ATLADINIZ! Seviye ${rewards.newLevel} oldunuz! Maksimum Canınız arttı.")
                 } else {
-                    logs.add("🎉 VICTORY! Enemy defeated. Won +$expReward EXP, +$goldReward Gold.")
-                    if (dropItem.isNotEmpty()) logs.add("🎁 Loot Pick: [$dropItem] added to inventory!")
-                    if (dropTitle.isNotEmpty()) logs.add("👑 Achieved Epic Title: [$dropTitle]!")
+                    logs.add("🎉 VICTORY! Enemy defeated. Won +${rewards.expGained} EXP, +${rewards.goldGained} Gold.")
+                    if (rewards.itemAwarded != null) logs.add("🎁 Loot Pick: [${rewards.itemAwarded}] added to inventory!")
+                    if (rewards.titleAwarded != null) logs.add("👑 Achieved Epic Title: [${rewards.titleAwarded}]!")
+                    if (rewards.didLevelUp) logs.add("⚡ LEVEL UP! Reached Level ${rewards.newLevel}! Max HP increased.")
                 }
 
                 // Insert into chronology db
@@ -771,6 +821,97 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         _currentTab.value = "OUTER_WORLD"
         _activeEnemyHp.value = null
         _combatLog.value = emptyList()
+    }
+
+    fun setPurchaseDialogShown(shown: Boolean) {
+        _isPurchaseDialogShown.value = shown
+    }
+
+    private var cooldownJob: kotlinx.coroutines.Job? = null
+
+    fun watchRewardedAd() {
+        val currentCd = _adCooldownSeconds.value
+        if (currentCd > 0 || _isAdWatching.value) return
+        
+        viewModelScope.launch {
+            _isAdWatching.value = true
+            _lastActionMessageEn.value = "🎬 [Simulating Rewarded Video Ad] Enjoy the sponsor preview for 5 seconds..."
+            _lastActionMessageTr.value = "🎬 [Ödüllü Reklam Simüle Ediliyor] Kule sponsorlu geçişini 5 saniye izleyin..."
+            
+            kotlinx.coroutines.delay(5000)
+            
+            val profile = repository.getPlayerProfileDirect()
+            if (profile != null) {
+                val newWill = (profile.currentWill + 5).coerceAtMost(profile.maxWill)
+                val updated = profile.copy(
+                    currentWill = newWill,
+                    lastUpdated = System.currentTimeMillis()
+                )
+                repository.savePlayerProfile(updated)
+                _lastActionMessageEn.value = "🎬 Ad Completed! Restored +5 Willpower ⚡. Ready to climb the spire!"
+                _lastActionMessageTr.value = "🎬 Reklam Tamamlandı! +5 İrade Gücü Yenilendi ⚡. Kulvarda tırmanmaya hazırsın!"
+            }
+            _isAdWatching.value = false
+            
+            // Start cooldown
+            cooldownJob?.cancel()
+            _adCooldownSeconds.value = 60
+            cooldownJob = viewModelScope.launch {
+                while (_adCooldownSeconds.value > 0) {
+                    kotlinx.coroutines.delay(1000)
+                    _adCooldownSeconds.value -= 1
+                }
+            }
+        }
+    }
+
+    fun purchaseProduct(skuId: String) {
+        viewModelScope.launch {
+            val profile = repository.getPlayerProfileDirect() ?: return@launch
+            var updated = profile
+            when (skuId) {
+                "pack_elixir" -> {
+                    // Small Willpower elixir (+10 Will, can overflow max for premium)
+                    val newWill = (profile.currentWill + 10).coerceAtMost(99)
+                    updated = profile.copy(
+                        currentWill = newWill,
+                        gold = profile.gold + 50, // bonus gold
+                        lastUpdated = System.currentTimeMillis()
+                    )
+                    _lastActionMessageEn.value = "💳 Purchased Willpower Elixir Pack ($1.99)! Added +10 Willpower ⚡ & +50 Gold 🪙"
+                    _lastActionMessageTr.value = "💳 İrade İksiri Paketi ($1.99) Alındı! +10 İrade ⚡ ve +50 Altın 🪙 eklendi."
+                }
+                "pack_chest" -> {
+                    // Large Willpower chest (+40 Will, can overflow up to 99)
+                    val newWill = (profile.currentWill + 40).coerceAtMost(99)
+                    updated = profile.copy(
+                        currentWill = newWill,
+                        gold = profile.gold + 200, // bonus gold
+                        lastUpdated = System.currentTimeMillis()
+                    )
+                    _lastActionMessageEn.value = "💳 Purchased Chest of Sovereign Will ($3.99)! Added +40 Willpower ⚡ & +200 Gold 🪙"
+                    _lastActionMessageTr.value = "💳 Büyük Hükümdar İrade Sandığı ($3.99) Alındı! +40 İrade ⚡ ve +200 Altın 🪙 eklendi."
+                }
+                "season_pass" -> {
+                    // UNLIMITED WILLPOWER! Unlocks persistent Item "Seasonal Sovereign Pass"
+                    val items = profile.itemsEncoded.split(",").filter { it.isNotBlank() }.toMutableList()
+                    if (!items.contains("Seasonal Sovereign Pass")) {
+                        items.add("Seasonal Sovereign Pass")
+                    }
+                    val newItems = items.joinToString(",")
+                    updated = profile.copy(
+                        itemsEncoded = newItems,
+                        currentWill = 99,
+                        maxWill = 99,
+                        lastUpdated = System.currentTimeMillis()
+                    )
+                    _lastActionMessageEn.value = "👑 UNLOCKED: Seasonal Sovereign Pass ($4.99)! Infinite Willpower Active! Spire costs are completely 0!"
+                    _lastActionMessageTr.value = "👑 AKTİF: Sezonluk Hükümdar Kartı ($4.99)! Sınırsız İrade Aktif! Kule tırmanış ücreti artık Sıfır (0)!"
+                }
+            }
+            repository.savePlayerProfile(updated)
+            _isPurchaseDialogShown.value = false
+        }
     }
 
     private fun getSkillNameForClass(chosenClass: String): Pair<String, String> {

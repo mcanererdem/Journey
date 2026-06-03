@@ -45,7 +45,9 @@ data class NodeChoice(
     val alignmentShift: Int = 0,
     val willChange: Int = 0,
     val rewardItem: String = "",
-    val rewardTitle: String = ""
+    val rewardTitle: String = "",
+    val skipToBoss: Boolean = false,
+    val skipToNextFloor: Boolean = false
 )
 
 data class EnemyStats(
@@ -65,23 +67,68 @@ object AdventureEngine {
         // Count of nodes: 15-20 nodes per floor
         val totalNodes = 15 + random.nextInt(6) // 15..20
 
-        // Combat events: 1-7 combat events
-        val combatCount = 1 + random.nextInt(7) // 1..7 combat nodes
-
         val nodes = ArrayList<AdventureNode>()
 
-        // Shatter floor into specialized lists
-        val availableIndices = (1 until totalNodes - 1).toList().shuffled(random)
-        val selectedCombatIndices = availableIndices.take(combatCount).toSet()
+        // Specific procedural ratios for inner nodes (indices 1 to totalNodes - 2)
+        val innerCount = totalNodes - 2
+        var combatCount = (innerCount * 0.40).toInt().coerceAtLeast(3) // ~40% combat
+        var merchantCount = (innerCount * 0.10).toInt().coerceAtLeast(1) // ~10% merchant
+        var chestCount = (innerCount * 0.10).toInt().coerceAtLeast(1) // ~10% chests
+        var shrineCount = (innerCount * 0.10).toInt().coerceAtLeast(1) // ~10% shrines
+        var narrativeCount = innerCount - combatCount - merchantCount - chestCount - shrineCount
 
-        // Distribute others
-        val remainingIndices = availableIndices.drop(combatCount)
-        val selectedMerchantIndices = remainingIndices.take(2).toSet()
-        val selectedChestIndices = remainingIndices.drop(2).take(3).toSet()
-        val selectedShrineIndices = remainingIndices.drop(5).take(3).toSet()
+        if (narrativeCount < 2) {
+            narrativeCount = 2
+            combatCount = (innerCount - merchantCount - chestCount - shrineCount - narrativeCount).coerceAtLeast(1)
+        }
+
+        // Construct pool of node types according to exact ratios
+        val typesPool = ArrayList<NodeType>()
+        repeat(combatCount) { typesPool.add(NodeType.COMBAT) }
+        repeat(merchantCount) { typesPool.add(NodeType.MERCHANT) }
+        repeat(chestCount) { typesPool.add(NodeType.CHEST) }
+        repeat(shrineCount) { typesPool.add(NodeType.SHRINE) }
+        repeat(narrativeCount) { typesPool.add(NodeType.NARRATIVE) }
+
+        val shuffledTypes = typesPool.shuffled(random)
 
         for (i in 0 until totalNodes) {
             when {
+                i == 0 -> {
+                    // Entry portal node: high immersion, safe greeting
+                    nodes.add(
+                        AdventureNode(
+                            index = i,
+                            type = NodeType.NARRATIVE,
+                            title = "Floor $floor Nexus Vestibule",
+                            description = "Your heavy boots echo inside the cold gateway of Floor $floor. The atmospheric decay whispers of ancient hidden secrets and shortcut portals.",
+                            titleTr = "${floor}. Kat Karşılama Geçidi",
+                            descriptionTr = "${floor}. Katın soğuk ana geçidinde adımlarınız yankılanıyor. Atmosferdeki kozmik dalgalanma antik sırlar, gizli tüneller ve boyut yırtığı kısayollarını fısıldıyor.",
+                            optionA = NodeChoice(
+                                textEn = "Focus mind to scan layout (+1 Will, +10 EXP)",
+                                textTr = "Kule planını taramak için odaklan (+1 İrade, +10 EXP)",
+                                journalEn = "Entered Floor $floor entryway, preparing spatial path plans.",
+                                journalTr = "$floor. Kat kapısına giriş yaptınız, güzergahı zihninizde planladınız.",
+                                willChange = 1,
+                                expChange = 10
+                            ),
+                            optionB = NodeChoice(
+                                textEn = "Sanctify physical energy (+15 HP)",
+                                textTr = "Bedensel enerjiyi canlandır (+15 HP)",
+                                journalEn = "Rested for a brief moment in the entryway, channeling safe light.",
+                                journalTr = "Kat girişinde kısa bir an soluklanarak saf ışığı canınıza yüklediniz.",
+                                hpChange = 15
+                            ),
+                            optionC = NodeChoice(
+                                textEn = "Forge ahead confidently",
+                                textTr = "Kendinden emin şekilde ileri atıl",
+                                journalEn = "Stepped into the wild chambers of Floor $floor.",
+                                journalTr = "$floor. Katın tehlikeli odalarına doğru kararlıca ilerlediniz."
+                            ),
+                            willCost = 0
+                        )
+                    )
+                }
                 i == totalNodes - 1 -> {
                     // Ends with a Boss fight!
                     val bossInfo = getBossForFloor(floor, random)
@@ -102,37 +149,46 @@ object AdventureEngine {
                         )
                     )
                 }
-                selectedCombatIndices.contains(i) -> {
-                    // Normal Combat node
-                    val enemyInfo = getEnemyForFloor(floor, random)
-                    nodes.add(
-                        AdventureNode(
-                            index = i,
-                            type = NodeType.COMBAT,
-                            title = "Anomalous Encounter: ${enemyInfo.nameEn}",
-                            description = "A raw manifestation of the Eternal Blight has materialised in front of you. Defeat it to proceed safely.",
-                            titleTr = "Lanetli Saldırı: ${enemyInfo.nameTr}",
-                            descriptionTr = "Ebedi Çürümekten fırlayan vahşi bir yaratık yolunuza tıkadı. Güvenle ilerlemek için dövüşe durmalısınız.",
-                            enemyNameEn = enemyInfo.nameEn,
-                            enemyNameTr = enemyInfo.nameTr,
-                            enemyHp = enemyInfo.hp,
-                            enemyMaxHp = enemyInfo.hp,
-                            enemyAtk = enemyInfo.atk,
-                            willCost = 1 // Normal combat costs 1 Will
-                        )
-                    )
-                }
-                selectedMerchantIndices.contains(i) -> {
-                    nodes.add(generateMerchantNode(i, floor, random))
-                }
-                selectedChestIndices.contains(i) -> {
-                    nodes.add(generateChestNode(i, floor, random))
-                }
-                selectedShrineIndices.contains(i) -> {
-                    nodes.add(generateShrineNode(i, floor, random))
-                }
                 else -> {
-                    nodes.add(generateNarrativeNode(i, floor, random))
+                    val nodeType = shuffledTypes[i - 1]
+                    when (nodeType) {
+                        NodeType.COMBAT -> {
+                            val enemyInfo = getEnemyForFloor(floor, random)
+                            nodes.add(
+                                AdventureNode(
+                                    index = i,
+                                    type = NodeType.COMBAT,
+                                    title = "Anomalous Encounter: ${enemyInfo.nameEn}",
+                                    description = "A raw manifestation of the Eternal Blight has materialised in front of you. Defeat it to proceed safely.",
+                                    titleTr = "Lanetli Saldırı: ${enemyInfo.nameTr}",
+                                    descriptionTr = "Ebedi Çürümekten fırlayan vahşi bir yaratık yolunuza tıkadı. Güvenle ilerlemek için dövüşe durmalısınız.",
+                                    enemyNameEn = enemyInfo.nameEn,
+                                    enemyNameTr = enemyInfo.nameTr,
+                                    enemyHp = enemyInfo.hp,
+                                    enemyMaxHp = enemyInfo.hp,
+                                    enemyAtk = enemyInfo.atk,
+                                    willCost = 1
+                                )
+                            )
+                        }
+                        NodeType.MERCHANT -> {
+                            nodes.add(generateMerchantNode(i, floor, random))
+                        }
+                        NodeType.CHEST -> {
+                            nodes.add(generateChestNode(i, floor, random))
+                        }
+                        NodeType.SHRINE -> {
+                            nodes.add(generateShrineNode(i, floor, random))
+                        }
+                        else -> {
+                            // Narrative. 25% chance of rolling a secret time rift shortcut node!
+                            if (random.nextInt(100) < 25) {
+                                nodes.add(generateShortcutNode(i, floor, random))
+                            } else {
+                                nodes.add(generateNarrativeNode(i, floor, random))
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -407,32 +463,69 @@ object AdventureEngine {
             index = index,
             type = NodeType.MERCHANT,
             title = "Nomadic Faction Outpost",
-            description = "A neutral merchant caravan is bartering in this sector. They offer artifacts, rare gear, and titles.",
+            description = "A neutral merchant caravan is bartering in this sector. They offer healing potions, rare artifacts, and dimension-bending seals.",
             titleTr = "Göçebe Cephe Karakolu",
-            descriptionTr = "Tarafsız bir tüccar kervanı bu güvenli sektörde takas yapıyor. Antik eserler, nadir ekipmanlar ve rütbe nişanları teklif ediyorlar.",
+            descriptionTr = "Tarafsız bir tüccar kervanı bu güvenli sektörde takas yapıyor. Şifa iksirleri, nadir ekipmanlar ve boyut bükücü mühürler teklif ediyorlar.",
             optionA = NodeChoice(
-                textEn = "Buy Healing Elixir Potion (-30 Gold, +50 HP)",
-                textTr = "Şifa İksiri İlacı Satın Al (-30 Altın, +50 HP)",
+                textEn = "Buy Healing Elixir Potion (-30 Gold, +55 HP)",
+                textTr = "Şifa İksiri İlacı Satın Al (-30 Altın, +55 HP)",
                 journalEn = "Purchased a healing elixir from Nomadic Merchants.",
                 journalTr = "Göçebe Tüccarlardan şifa iksiri satın aldın.",
                 goldChange = -30,
-                hpChange = 50
+                hpChange = 55
             ),
             optionB = NodeChoice(
-                textEn = "Purchase unique gear artifact (-80 Gold, +Item)",
+                textEn = "Buy Overlord Chamber Key (-90 Gold, Teleport to Boss! 🌀)",
+                textTr = "Derebeyi Oda Anahtarı Al (-90 Altın, Derebeye Işınlan! 🌀)",
+                journalEn = "Bribed nomadic guild to obtain the Floor Overlord Chamber Key shortcut.",
+                journalTr = "Göçebe birliğine rüşvet vererek Kat Derebeyi Odası Anahtarı kısayolunu aldınız.",
+                goldChange = -90,
+                skipToBoss = true
+            ),
+            optionC = NodeChoice(
+                textEn = "Purchase rare gear artifact (-80 Gold, +Item)",
                 textTr = "Nadir ekipman eserini edin (-80 Altın, +Eşya)",
                 journalEn = "On Floor $floor, purchased a rare [$uniqueLoot].",
                 journalTr = "$floor. Katta nadir bir [$uniqueLoot] satın aldın.",
                 goldChange = -80,
                 rewardItem = uniqueLoot
+            )
+        )
+    }
+
+    private fun generateShortcutNode(index: Int, floor: Int, random: Random): AdventureNode {
+        return AdventureNode(
+            index = index,
+            type = NodeType.NARRATIVE,
+            title = "🌀 SECRET: Quantum Temporal Crack",
+            description = "A shimmering chronological fissure hover in the air. Time flows weirdly here. You can try to bend reality to skip forward!",
+            titleTr = "🌀 GİZLİ: Zaman-Mekan Boyut Çatlağı",
+            descriptionTr = "Tavanda göz alıcı boyutsal bir zaman çatlağı titreşiyor. Zaman burada bükülmüş durumda. Kulenin zirvelerine kestirmeden gitmek için bu yarığı kullanabilirsiniz!",
+            optionA = NodeChoice(
+                textEn = "Squeeze into Rift (Skip this Floor entirely! -1 Will, -10 HP)",
+                textTr = "Boyut Yarığına Süzül (Bu Katı Komple Atla! -1 İrade, -10 HP)",
+                journalEn = "Used the secret quantum temporal rift to skip Floor $floor entirely!",
+                journalTr = "Gizli boyut çatlağını kullanarak $floor. Katı komple atladınız!",
+                hpChange = -10,
+                willChange = -1,
+                skipToNextFloor = true
+            ),
+            optionB = NodeChoice(
+                textEn = "Overload Rift Grid (Teleport straight to Floor Boss! -35 Gold)",
+                textTr = "Yarığı Aşırı Yükle (Doğrudan Bölüm Sonu Canavarına Işınlan! -35 Altın)",
+                journalEn = "Charged the spatial crack to teleport directly to Floor $floor Overlord's throne.",
+                journalTr = "Boyut yarığını yükleyip doğrudan $floor. Kat Derebeyinin taht odasına ışınlandınız.",
+                goldChange = -35,
+                skipToBoss = true
             ),
             optionC = NodeChoice(
-                textEn = "Buy prestigious title credential (-120 Gold, +Title)",
-                textTr = "Saygın unvan belgesi satın al (-120 Altın, +Unvan)",
-                journalEn = "Acquired the Title [$titleAward] from merchant guild papers.",
-                journalTr = "Tüccar birliğinden saygın [$titleAward] Unvan belgesi satın aldın.",
-                goldChange = -120,
-                rewardTitle = titleAward
+                textEn = "Absorb radiation heat (+20 Pyre, +20 Gleam, +15 EXP)",
+                textTr = "Yarığın enerjisini emip güçlen (+20 Pyre, +20 Gleam, +15 EXP)",
+                journalEn = "Absorbed raw spatial energy from the rift bounds.",
+                journalTr = "Yarıktan sızan ham kozmik ışınları emerek ruhunu güçlendirdin.",
+                pyreChange = 20,
+                gleamChange = 20,
+                expChange = 15
             )
         )
     }
