@@ -7,6 +7,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -36,6 +37,10 @@ import com.example.data.engine.LocalizationManager
 import com.example.data.engine.NodeType
 import com.example.data.engine.AdventureNode
 import com.example.data.engine.NodeChoice
+import com.example.data.engine.NarrativeEventProcessor
+import com.example.data.engine.NarrativeEvent
+import com.example.data.engine.NarrativeBranchOption
+import com.example.data.engine.SecretBossEncounter
 import androidx.compose.ui.text.font.FontStyle
 import com.example.data.model.JournalEntry
 import com.example.data.model.PlayerProfile
@@ -2002,6 +2007,290 @@ fun JournalTab(
 }
 
 @Composable
+fun NarrativeEventView(
+    event: NarrativeEvent,
+    onChoiceMade: (NarrativeBranchOption) -> Unit,
+    onCancel: () -> Unit,
+    activeLang: String
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.5.dp, SanctumGold)
+    ) {
+        Column(modifier = Modifier.padding(18.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Surface(
+                    color = SanctumGold.copy(alpha = 0.15f),
+                    shape = RoundedCornerShape(6.dp)
+                ) {
+                    Text(
+                        text = if (activeLang == "TR") "🔮 BOYUTSAL GİZEM" else "🔮 SPATIAL MYSTERY",
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                        color = SanctumGold
+                    )
+                }
+                IconButton(onClick = onCancel) {
+                    Icon(Icons.Default.Close, contentDescription = "Close", tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+                }
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = if (activeLang == "TR") event.titleTr else event.titleEn,
+                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold, fontFamily = FontFamily.Serif),
+                color = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = if (activeLang == "TR") event.descriptionTr else event.descriptionEn,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.85f)
+            )
+            Spacer(modifier = Modifier.height(20.dp))
+            Text(
+                text = if (activeLang == "TR") "KADERSEL SEÇİMİNİZ:" else "CHOOSE YOUR DESTINY:",
+                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, letterSpacing = 1.sp),
+                color = VoidNeonPurple
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            event.options.forEach { option ->
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 6.dp)
+                        .clickable { onChoiceMade(option) },
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Column(modifier = Modifier.padding(14.dp)) {
+                        Text(
+                            text = if (activeLang == "TR") option.textTr else option.textEn,
+                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = if (activeLang == "TR") "Olası Sonuç: ${option.outcomeTr}" else "Outcome: ${option.outcomeEn}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            if (option.alignmentImpact != 0) {
+                                val alignLabel = if (option.alignmentImpact > 0) "+${option.alignmentImpact} Sanctum" else "${option.alignmentImpact} Covenant"
+                                val alignCol = if (option.alignmentImpact > 0) SanctumGold else VoidNeonPurple
+                                Surface(color = alignCol.copy(alpha = 0.1f), shape = RoundedCornerShape(4.dp)) {
+                                    Text(
+                                        text = alignLabel,
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp, fontWeight = FontWeight.Bold),
+                                        color = alignCol
+                                    )
+                                }
+                            }
+                            if (option.goldChange != 0) {
+                                Surface(color = Color(0xFFFFD700).copy(alpha = 0.1f), shape = RoundedCornerShape(4.dp)) {
+                                    Text(
+                                        text = if (option.goldChange > 0) "+${option.goldChange} Gold" else "${option.goldChange} Gold",
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp, fontWeight = FontWeight.Bold),
+                                        color = Color(0xFFFFD700)
+                                    )
+                                }
+                            }
+                            if (option.itemReward.isNotEmpty()) {
+                                Surface(color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), shape = RoundedCornerShape(4.dp)) {
+                                    Text(
+                                        text = "🎒 ${option.itemReward}",
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp, fontWeight = FontWeight.Bold),
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun SecretBossCombatView(
+    boss: SecretBossEncounter,
+    player: PlayerProfile,
+    bossHp: Int,
+    combatLog: List<String>,
+    onAction: (String) -> Unit,
+    onEscape: () -> Unit,
+    activeLang: String
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(2.dp, BlightDamageColor)
+    ) {
+        Column(modifier = Modifier.padding(18.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Surface(
+                    color = BlightDamageColor.copy(alpha = 0.15f),
+                    shape = RoundedCornerShape(6.dp)
+                ) {
+                    Text(
+                        text = if (activeLang == "TR") "☠️ ELDRITCH SIRA DIŞI İMTİHAN" else "☠️ ELDRITCH EXTREME TRIAL",
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                        color = BlightDamageColor
+                    )
+                }
+                IconButton(onClick = onEscape) {
+                    Icon(Icons.Default.Close, contentDescription = "Escape", tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            Text(
+                text = if (activeLang == "TR") boss.nameTr else boss.nameEn,
+                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold, fontFamily = FontFamily.Serif),
+                color = BlightDamageColor
+            )
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            Text(
+                text = if (activeLang == "TR") boss.descriptionTr else boss.descriptionEn,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            Text(
+                text = (if (activeLang == "TR") "Düşman Canı: " else "Boss HP: ") + "$bossHp / ${boss.hp}",
+                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                color = BlightDamageColor
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            LinearProgressIndicator(
+                progress = { bossHp.toFloat() / boss.hp.toFloat() },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(8.dp)
+                    .clip(RoundedCornerShape(4.dp)),
+                color = BlightDamageColor,
+                trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+            )
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            Text(
+                text = (if (activeLang == "TR") "Kendi Canın: " else "Your HP: ") + "${player.currentHp} / ${player.maxHp}",
+                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                color = Color.Green
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            LinearProgressIndicator(
+                progress = { player.currentHp.toFloat() / player.maxHp.toFloat() },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(8.dp)
+                    .clip(RoundedCornerShape(4.dp)),
+                color = Color.Green,
+                trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(90.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(8.dp),
+                    reverseLayout = true
+                ) {
+                    items(combatLog.size) { index ->
+                        Text(
+                            text = combatLog[combatLog.size - 1 - index],
+                            style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, fontFamily = FontFamily.Monospace),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(20.dp))
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Button(
+                    onClick = { onAction("STRIKE") },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(containerColor = BlightDamageColor)
+                ) {
+                    Text(if (activeLang == "TR") "SALDIR 🗡️" else "STRIKE 🗡️", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
+                }
+                
+                Button(
+                    onClick = { onAction("SKILL") },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(containerColor = VoidNeonPurple)
+                ) {
+                    Text(if (activeLang == "TR") "SEMAVİ GÜÇ ✨" else "CELESTIAL ✨", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Button(
+                    onClick = { onAction("POTION") },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(containerColor = SanctumGold)
+                ) {
+                    Text(if (activeLang == "TR") "ŞİFA İKSİRİ 🧪" else "HEAL FLASK 🧪", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
+                }
+                
+                OutlinedButton(
+                    onClick = onEscape,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(if (activeLang == "TR") "KAÇIŞ 🏃" else "ESCAPE 🏃", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
+                }
+            }
+        }
+    }
+}
+
+@Composable
 fun QuestsTab(
     player: PlayerProfile?,
     viewModel: GameViewModel,
@@ -2009,18 +2298,43 @@ fun QuestsTab(
 ) {
     if (player == null) return
 
+    val completedEvents by viewModel.completedEvents.collectAsStateWithLifecycle()
+    val slainSecretBosses by viewModel.slainSecretBosses.collectAsStateWithLifecycle()
+    val activeNarrativeEvent by viewModel.activeNarrativeEvent.collectAsStateWithLifecycle()
+    val activeSecretBossCombat by viewModel.activeSecretBossCombat.collectAsStateWithLifecycle()
+    val activeSecretBossHp by viewModel.activeSecretBossHp.collectAsStateWithLifecycle()
+    val combatLog by viewModel.combatLog.collectAsStateWithLifecycle()
+
     val questsProgress = remember(player) {
         QuestTitleSystem.getQuestProgress(player)
     }
 
     var selectedCategory by rememberSaveable { mutableStateOf("ALL") }
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
+    if (activeNarrativeEvent != null) {
+        NarrativeEventView(
+            event = activeNarrativeEvent!!,
+            onChoiceMade = { choice -> viewModel.selectNarrativeEventOption(activeNarrativeEvent!!, choice) },
+            onCancel = { viewModel.cancelNarrativeEvent() },
+            activeLang = activeLang
+        )
+    } else if (activeSecretBossCombat != null && activeSecretBossHp != null) {
+        SecretBossCombatView(
+            boss = activeSecretBossCombat!!,
+            player = player,
+            bossHp = activeSecretBossHp!!,
+            combatLog = combatLog,
+            onAction = { action -> viewModel.executeSecretBossTurn(action) },
+            onEscape = { viewModel.escapeSecretBoss() },
+            activeLang = activeLang
+        )
+    } else {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
         // --- TITLES CARD BOARD ---
         item {
             Card(
@@ -2218,28 +2532,31 @@ fun QuestsTab(
                 "ALL" to (if (activeLang == "TR") "HEPSİ" else "ALL"),
                 "MAIN" to (if (activeLang == "TR") "ANA" else "MAIN"),
                 "SIDE" to (if (activeLang == "TR") "YAN" else "SIDE"),
+                "NORMAL" to (if (activeLang == "TR") "NORMAL" else "NORMAL"),
+                "SPECIAL" to (if (activeLang == "TR") "ÖZEL" else "SPECIAL"),
                 "CHAIN" to (if (activeLang == "TR") "ZİNCİR" else "CHAIN"),
-                "HIDDEN" to (if (activeLang == "TR") "GİZLİ" else "HIDDEN")
+                "HIDDEN" to (if (activeLang == "TR") "GİZLİ" else "HIDDEN"),
+                "EVENT" to (if (activeLang == "TR") "ETKİNLİK" else "EVENT")
             )
 
-            Row(
+            LazyRow(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                categories.forEach { (catId, catLabel) ->
+                items(categories.size) { index ->
+                    val (catId, catLabel) = categories[index]
                     val isSelected = selectedCategory == catId
                     Box(
                         modifier = Modifier
-                            .weight(1f)
                             .clip(RoundedCornerShape(8.dp))
                             .background(
                                 if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
                             )
                             .border(1.dp, if (isSelected) Color.Transparent else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f), RoundedCornerShape(8.dp))
                             .clickable { selectedCategory = catId }
-                            .padding(vertical = 10.dp),
+                            .padding(horizontal = 14.dp, vertical = 10.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
@@ -2317,8 +2634,11 @@ fun QuestsTab(
                                 val badgeColor = when (q.type) {
                                     QuestType.MAIN -> MaterialTheme.colorScheme.primary
                                     QuestType.SIDE -> SanctumGold
+                                    QuestType.NORMAL -> MaterialTheme.colorScheme.secondary
+                                    QuestType.SPECIAL -> MaterialTheme.colorScheme.tertiary
                                     QuestType.CHAIN -> VoidNeonPurple
                                     QuestType.HIDDEN -> BlightDamageColor
+                                    QuestType.EVENT -> Color(0xFFFF9800)
                                 }
                                 Box(
                                     modifier = Modifier
@@ -2382,6 +2702,37 @@ fun QuestsTab(
                                 text = displayGoal,
                                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
                                 color = if (qStatus.requirementMet) SanctumGold else MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+
+                        val (progressLabel, progressFraction) = qStatus.getProgressLabelAndFraction(player, activeLang == "TR")
+                        if (progressLabel.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = if (activeLang == "TR") "İlerleme" else "Progress",
+                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                )
+                                Text(
+                                    text = progressLabel,
+                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                    color = if (qStatus.requirementMet) SanctumGold else MaterialTheme.colorScheme.primary
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(4.dp))
+                            LinearProgressIndicator(
+                                progress = { progressFraction },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(5.dp)
+                                    .clip(RoundedCornerShape(3.dp)),
+                                color = if (qStatus.requirementMet) SanctumGold else MaterialTheme.colorScheme.primary,
+                                trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                             )
                         }
 
@@ -2457,6 +2808,291 @@ fun QuestsTab(
                                 style = MaterialTheme.typography.labelSmall.copy(fontStyle = FontStyle.Italic),
                                 color = BlightDamageColor
                             )
+                        }
+                    }
+                }
+            }
+        }
+
+        if (selectedCategory == "ALL" || selectedCategory == "EVENT" || selectedCategory == "HIDDEN") {
+                item {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = if (activeLang == "TR") "🔮 ZAMANSAL KRONİKLER: DİNAMİK SIRLAR" else "🔮 CHRONICLES OF TIME: DISSOLVED SECRETS",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.sp,
+                            fontFamily = FontFamily.Serif
+                        ),
+                        color = VoidNeonPurple
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = if (activeLang == "TR") {
+                            "Karakterinizin hizalanması ve seviyesine göre boyutsal yırtıklar açılır. Kaderini seçip gizli bosslarla savaşın."
+                        } else {
+                            "Based on align affinity and level, spatial tears are detected. Select your path and wage battle against secret trial overlords."
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                    )
+                }
+
+                // Show all Narrative Events from NarrativeEventProcessor
+                NarrativeEventProcessor.events.forEach { event ->
+                    item(key = "event_" + event.id) {
+                        val isCompleted = completedEvents.contains(event.id)
+                        val canUnlock = event.checkPreconditions(player)
+
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = if (isCompleted) {
+                                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                                } else if (canUnlock) {
+                                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.1f)
+                                } else {
+                                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f)
+                                }
+                            ),
+                            border = BorderStroke(
+                                width = 1.dp,
+                                color = if (canUnlock && !isCompleted) SanctumGold else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
+                            )
+                        ) {
+                            Column(modifier = Modifier.padding(14.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Surface(
+                                            color = if (isCompleted) Color.Green.copy(alpha = 0.15f) else if (canUnlock) SanctumGold.copy(alpha = 0.15f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
+                                            shape = RoundedCornerShape(4.dp)
+                                        ) {
+                                            Text(
+                                                text = if (isCompleted) "✓ " + (if (activeLang == "TR") "TAMAMLANDI" else "COMPLETED")
+                                                       else if (canUnlock) "🌟 " + (if (activeLang == "TR") "KEŞFEDİLDİ" else "DISCOVERED")
+                                                       else "🔒 " + (if (activeLang == "TR") "KİLİTLİ SEYİR" else "VEILED PATH"),
+                                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, fontWeight = FontWeight.Bold),
+                                                color = if (isCompleted) Color.Green else if (canUnlock) SanctumGold else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(
+                                            text = if (canUnlock || isCompleted) (if (activeLang == "TR") event.titleTr else event.titleEn) else "???",
+                                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Text(
+                                    text = if (canUnlock || isCompleted) (if (activeLang == "TR") event.descriptionTr else event.descriptionEn) 
+                                           else (if (activeLang == "TR") "Kozmos bu boyutsal halkayı mühürlemiş durumda. Şartları tamamlayıp boyutlararası gerilimi tetikleyin." else "The cosmos has sealed this rift. Unlock the spatial pressure threshold to evoke details."),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                                )
+
+                                Spacer(modifier = Modifier.height(10.dp))
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = if (activeLang == "TR") "Giriş Şartları: " else "Unfolding Conditions: ",
+                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                    )
+                                    val reqTr = when (event.id) {
+                                        "event_gatekeeper_pact" -> "Seviye >= 3, Kutsal Hizalanma >= 15"
+                                        "event_shadow_broker" -> "Seviye >= 5, Kaotik Hizalanma <= -15"
+                                        "event_whispering_well" -> "Seviye >= 2, Saf Tarafsızlık (Denge)"
+                                        else -> "Gizemli İvme"
+                                    }
+                                    val reqEn = when (event.id) {
+                                        "event_gatekeeper_pact" -> "Level >= 3, Sanctum Alignment >= 15"
+                                        "event_shadow_broker" -> "Level >= 5, Covenant Alignment <= -15"
+                                        "event_whispering_well" -> "Level >= 2, Pure Neutrality (Balance)"
+                                        else -> "Mystic Drift"
+                                    }
+                                    Text(
+                                        text = if (activeLang == "TR") reqTr else reqEn,
+                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold, fontStyle = FontStyle.Italic),
+                                        color = if (canUnlock) SanctumGold else BlightDamageColor
+                                    )
+                                }
+
+                                if (canUnlock && !isCompleted) {
+                                    Spacer(modifier = Modifier.height(12.dp))
+                                    Button(
+                                        onClick = { viewModel.startNarrativeEvent(event) },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                                        shape = RoundedCornerShape(8.dp)
+                                    ) {
+                                        Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(16.dp))
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text(
+                                            text = if (activeLang == "TR") "BOYUTSAL ETKİLEŞİMİ BAŞLAT 🔮" else "TRIGGER TEMPORAL RIFT 🔮",
+                                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Show all Secret Bosses from NarrativeEventProcessor
+                item {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = if (activeLang == "TR") "🐉 KADİM İMTİHAN DEREBEYLERİ" else "🐉 ANCIENT TRIAL OVERLORDS",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.sp,
+                            fontFamily = FontFamily.Serif
+                        ),
+                        color = BlightDamageColor
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = if (activeLang == "TR") {
+                            "Son derece tehlikeli imtihan arenalarında gizemli ejderhalara meydan okuyun. Büyük risk, muazzam rütbe ganimetleri."
+                        } else {
+                            "Challenge esoteric celestial dragons in extreme risk arenas. Mighty drop rates, sovereign currencies and items."
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                    )
+                }
+
+                NarrativeEventProcessor.secretBosses.forEach { boss ->
+                    item(key = "boss_" + boss.id) {
+                        val isSlain = slainSecretBosses.contains(boss.id)
+                        val canChallenge = boss.checkUnlock(player)
+
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = if (isSlain) {
+                                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                                } else if (canChallenge) {
+                                    MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.08f)
+                                } else {
+                                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f)
+                                }
+                            ),
+                            border = BorderStroke(
+                                width = 1.dp,
+                                color = if (canChallenge && !isSlain) BlightDamageColor else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
+                            )
+                        ) {
+                            Column(modifier = Modifier.padding(14.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Surface(
+                                            color = if (isSlain) Color.Green.copy(alpha = 0.15f) else if (canChallenge) BlightDamageColor.copy(alpha = 0.15f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
+                                            shape = RoundedCornerShape(4.dp)
+                                        ) {
+                                            Text(
+                                                text = if (isSlain) "✓ " + (if (activeLang == "TR") "YIKILDI" else "VANQUISHED")
+                                                       else if (canChallenge) "🔥 " + (if (activeLang == "TR") "MEYDAN OKUMA HAZIR" else "CHALLENGE ACTIVE")
+                                                       else "🔒 " + (if (activeLang == "TR") "KAPALI MİHRAK" else "SEALED TRIANGLE"),
+                                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, fontWeight = FontWeight.Bold),
+                                                color = if (isSlain) Color.Green else if (canChallenge) BlightDamageColor else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(
+                                            text = if (canChallenge || isSlain) (if (activeLang == "TR") boss.nameTr else boss.nameEn) else "???",
+                                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Text(
+                                    text = if (canChallenge || isSlain) (if (activeLang == "TR") boss.descriptionTr else boss.descriptionEn) 
+                                           else (if (activeLang == "TR") "Bu efsanevi varlığın aurası henüz gizli. Gerekli kılıç aşamalarını ve ruh düzeylerini tamamlayın." else "The dynamic presence of this overlord remains veiled. Perfect your stats and alignments to unravel limits."),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                                )
+
+                                Spacer(modifier = Modifier.height(10.dp))
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = if (activeLang == "TR") "Aura Şartları: " else "Vortex Requirements: ",
+                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                    )
+                                    val reqTr = when (boss.id) {
+                                        "boss_solstice_dragon" -> "Seviye >= 4, Kutsal Fütüvvet >= 30"
+                                        "boss_void_reaper" -> "Seviye >= 4, Kaotik Kaos <= -30"
+                                        "boss_equilibrium_arbiter" -> "Ruh Kırılmaları >= 1, Saf Tarafsızlık (Denge)"
+                                        else -> "Yükseliş Zinciri"
+                                    }
+                                    val reqEn = when (boss.id) {
+                                        "boss_solstice_dragon" -> "Level >= 4, Sanctum Alignment >= 30"
+                                        "boss_void_reaper" -> "Level >= 4, Covenant Alignment <= -30"
+                                        "boss_equilibrium_arbiter" -> "Spirit Fractures >= 1, Pure Neutrality (Balance)"
+                                        else -> "Ascended Thread"
+                                    }
+                                    Text(
+                                        text = if (activeLang == "TR") reqTr else reqEn,
+                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold, fontStyle = FontStyle.Italic),
+                                        color = if (canChallenge) SanctumGold else BlightDamageColor
+                                    )
+                                }
+
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Column(
+                                    modifier = Modifier
+                                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f), RoundedCornerShape(6.dp))
+                                        .padding(8.dp)
+                                        .fillMaxWidth()
+                                ) {
+                                    Text(
+                                        text = if (activeLang == "TR") "KİLİTLİ ZAFER GANİMETLERİ:" else "VEILED TRIUMPH REWARDS:",
+                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, fontSize = 8.sp),
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        text = "+${boss.rewardGold} GP  •  +${boss.rewardGleam} Gleam  •  +${boss.rewardPyre} Pyre  •  🎒 ${boss.rewardItem}",
+                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
+                                        color = SanctumGold
+                                    )
+                                }
+
+                                if (canChallenge && !isSlain) {
+                                    Spacer(modifier = Modifier.height(12.dp))
+                                    Button(
+                                        onClick = { viewModel.startSecretBossEncounter(boss) },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        colors = ButtonDefaults.buttonColors(containerColor = BlightDamageColor),
+                                        shape = RoundedCornerShape(8.dp)
+                                    ) {
+                                        Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(16.dp))
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text(
+                                            text = if (activeLang == "TR") "MEYDAN OKUMAYI BAŞLAT ⚔️" else "ENGAGE ELDRITCH BATTLE ⚔️",
+                                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold)
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
                 }

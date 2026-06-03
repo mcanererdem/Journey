@@ -59,6 +59,21 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val _isPurchaseDialogShown = MutableStateFlow(false)
     val isPurchaseDialogShown: StateFlow<Boolean> = _isPurchaseDialogShown.asStateFlow()
 
+    private val _completedEvents = MutableStateFlow<Set<String>>(emptySet())
+    val completedEvents: StateFlow<Set<String>> = _completedEvents.asStateFlow()
+
+    private val _slainSecretBosses = MutableStateFlow<Set<String>>(emptySet())
+    val slainSecretBosses: StateFlow<Set<String>> = _slainSecretBosses.asStateFlow()
+
+    private val _activeNarrativeEvent = MutableStateFlow<NarrativeEvent?>(null)
+    val activeNarrativeEvent: StateFlow<NarrativeEvent?> = _activeNarrativeEvent.asStateFlow()
+
+    private val _activeSecretBossCombat = MutableStateFlow<SecretBossEncounter?>(null)
+    val activeSecretBossCombat: StateFlow<SecretBossEncounter?> = _activeSecretBossCombat.asStateFlow()
+
+    private val _activeSecretBossHp = MutableStateFlow<Int?>(null)
+    val activeSecretBossHp: StateFlow<Int?> = _activeSecretBossHp.asStateFlow()
+
     init {
         LocalizationManager.init(application)
         val database = GameDatabase.getDatabase(application)
@@ -80,6 +95,13 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             repository.playerProfile.collect { profile ->
                 if (profile != null) {
+                    // Automatically run title checks if any status preconditions are met
+                    val checkedProfile = checkAndUnlockTitles(profile)
+                    if (checkedProfile.titlesEncoded != profile.titlesEncoded) {
+                        repository.savePlayerProfile(checkedProfile)
+                        return@collect
+                    }
+
                     val nodes = AdventureEngine.generateNodesForFloor(profile.currentFloor, profile)
                     _currentFloorNodes.value = nodes
                     
@@ -386,6 +408,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             repository.savePlayerProfile(newProfile)
             _activeEnemyHp.value = null
             _combatLog.value = emptyList()
+            _completedEvents.value = emptySet()
+            _slainSecretBosses.value = emptySet()
+            _activeNarrativeEvent.value = null
+            _activeSecretBossCombat.value = null
+            _activeSecretBossHp.value = null
             _currentScenario.value = LocalizationManager.getScenarioForFloor(_activeLanguage.value, 1)
             _lastActionMessageEn.value = "Game restarted. Chronology reset."
             _lastActionMessageTr.value = "Zaman döngüsü sıfırlandı. Macera yeniden başlıyor."
@@ -1056,6 +1083,224 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             
             _lastActionMessageEn.value = "Quest '${quest.titleEn}' claimed! Rewards received."
             _lastActionMessageTr.value = "'${quest.titleTr}' görevi tamamlandı! Ödülleri aldınız."
+        }
+    }
+
+    fun startNarrativeEvent(event: NarrativeEvent) {
+        _activeNarrativeEvent.value = event
+    }
+
+    fun cancelNarrativeEvent() {
+        _activeNarrativeEvent.value = null
+    }
+
+    fun selectNarrativeEventOption(event: NarrativeEvent, choice: NarrativeBranchOption) {
+        viewModelScope.launch {
+            val profile = repository.getPlayerProfileDirect() ?: return@launch
+            
+            // Process choice using custom NarrativeEventProcessor
+            val updated = NarrativeEventProcessor.processNarrativeChoice(profile, choice)
+            
+            // Unlocked titles auto-evaluation
+            val titleChecked = checkAndUnlockTitles(updated)
+            
+            repository.savePlayerProfile(titleChecked)
+            
+            // Insert journal entry
+            val entry = JournalEntry(
+                floor = profile.currentFloor,
+                actionTakenEs = "Decided '${choice.textEn}' inside scenario '${event.titleEn}'. Outcome: ${choice.outcomeEn}",
+                actionTakenTr = "'${event.titleTr}' içindeki kararın: '${choice.textTr}'. Sonuç: ${choice.outcomeTr}",
+                sideAlignmentShift = if (choice.alignmentImpact > 0) "SANCTUM" else if (choice.alignmentImpact < 0) "COVENANT" else "NEUTRAL",
+                alignmentImpact = choice.alignmentImpact
+            )
+            repository.insertJournalEntry(entry)
+
+            _completedEvents.value = _completedEvents.value + event.id
+            _lastActionMessageEn.value = choice.outcomeEn
+            _lastActionMessageTr.value = choice.outcomeTr
+            
+            _activeNarrativeEvent.value = null
+        }
+    }
+
+    fun startSecretBossEncounter(boss: SecretBossEncounter) {
+        _activeSecretBossCombat.value = boss
+        _activeSecretBossHp.value = boss.hp
+        _combatLog.value = listOf(
+            "TR" to "⚔️ GİZLİ TEHLİKE! Kadim ${boss.nameTr} ile kutsal savaşa tutuştunuz! Can: ${boss.hp}",
+            "EN" to "⚔️ SECRET THREAT! Engaged in legendary trial with ${boss.nameEn}! HP: ${boss.hp}"
+        ).map { if (_activeLanguage.value == "TR") it.first else it.second }
+    }
+
+    fun escapeSecretBoss() {
+        _activeSecretBossCombat.value = null
+        _activeSecretBossHp.value = null
+        _combatLog.value = emptyList()
+    }
+
+    fun executeSecretBossTurn(action: String) {
+        viewModelScope.launch {
+            val profile = repository.getPlayerProfileDirect() ?: return@launch
+            val boss = _activeSecretBossCombat.value ?: return@launch
+            val currentEnemyHp = _activeSecretBossHp.value ?: boss.hp
+
+            var baseDmg = 12 + profile.level * 2
+            var actionDescriptionEn = ""
+            var actionDescriptionTr = ""
+            var selfHpDmg = 0
+
+            when (action) {
+                "STRIKE" -> {
+                    val actualDmg = (baseDmg * 0.9).toInt() + (0..6).random()
+                    val actualEnemyHp = (currentEnemyHp - actualDmg).coerceAtLeast(0)
+                    _activeSecretBossHp.value = actualEnemyHp
+
+                    actionDescriptionEn = "You swung your weapon at secret boss ${boss.nameEn}, dealing $actualDmg damage."
+                    actionDescriptionTr = "Gizli patron ${boss.nameTr} üzerine kılıç savurup $actualDmg hasar verdiniz."
+                }
+                "SKILL" -> {
+                    val multiplier = if (profile.side != "NEUTRAL") 2.5f else 1.8f
+                    val actualDmg = (baseDmg * multiplier).toInt() + (0..10).random()
+                    val actualEnemyHp = (currentEnemyHp - actualDmg).coerceAtLeast(0)
+                    _activeSecretBossHp.value = actualEnemyHp
+
+                    selfHpDmg = 10
+                    val skillNames = getSkillNameForClass(profile.chosenClass)
+
+                    actionDescriptionEn = "Unleashed Reflection Skill [${skillNames.first}], evoking $actualDmg celestial damage (Fatigued: -$selfHpDmg HP)."
+                    actionDescriptionTr = "Yansıma Yeteneği [${skillNames.second}] fırlatarak $actualDmg kozmik hasar verdiniz (Yorgunluk: -$selfHpDmg HP)."
+                }
+                "POTION" -> {
+                    if (profile.gold >= 20) {
+                        val healedValue = 40
+                        val actualHp = (profile.currentHp + healedValue).coerceAtMost(profile.maxHp)
+                        val updated = profile.copy(
+                            gold = profile.gold - 20,
+                            currentHp = actualHp,
+                            lastUpdated = System.currentTimeMillis()
+                        )
+                        repository.savePlayerProfile(updated)
+
+                        actionDescriptionEn = "Swallowed a quick Sığınak Flask (-20 Gold), recovering +$healedValue HP."
+                        actionDescriptionTr = "Kesenizden -20 Altına Şifa İksiri içip +$healedValue Can kazandınız."
+                    } else {
+                        val healedValue = 10
+                        val actualHp = (profile.currentHp + healedValue).coerceAtMost(profile.maxHp)
+                        val updated = profile.copy(
+                            currentHp = actualHp,
+                            lastUpdated = System.currentTimeMillis()
+                        )
+                        repository.savePlayerProfile(updated)
+
+                        actionDescriptionEn = "No gold! Channeled focus to reconstruct +$healedValue HP vital cells."
+                        actionDescriptionTr = "Yeterli altınınız yok! Odaklanarak +$healedValue Can dokusunu onardınız."
+                    }
+                }
+            }
+
+            val newEnemyHp = _activeSecretBossHp.value ?: 0
+            val logs = ArrayList<String>()
+            
+            if (_activeLanguage.value == "TR") {
+                logs.add("👤 $actionDescriptionTr")
+            } else {
+                logs.add("👤 $actionDescriptionEn")
+            }
+
+            var playerHp = (profile.currentHp - selfHpDmg).coerceAtLeast(0)
+
+            if (newEnemyHp <= 0) {
+                // Secret Boss Defeated!
+                val rewardGold = boss.rewardGold
+                var currentItems = if (profile.itemsEncoded.isEmpty()) emptyList() else profile.itemsEncoded.split(",")
+                if (boss.rewardItem.isNotEmpty() && !currentItems.contains(boss.rewardItem)) {
+                    currentItems = currentItems + boss.rewardItem
+                }
+                val newItemsEncoded = currentItems.filter { it.isNotBlank() }.joinToString(",")
+
+                val updated = profile.copy(
+                    gold = (profile.gold + rewardGold),
+                    gleam = (profile.gleam + boss.rewardGleam),
+                    pyre = (profile.pyre + boss.rewardPyre),
+                    currentHp = playerHp.coerceAtMost(profile.maxHp),
+                    itemsEncoded = newItemsEncoded,
+                    lastUpdated = System.currentTimeMillis()
+                )
+                
+                // Title triggers check integration
+                val titleChecked = checkAndUnlockTitles(updated)
+                repository.savePlayerProfile(titleChecked)
+
+                // Journal entry
+                val entry = JournalEntry(
+                    floor = profile.currentFloor,
+                    actionTakenEs = "🔥 COGNITIVE SANCTUARY TRIUMPH: Slid the Secret Trial Overlord ${boss.nameEn}. Earned +$rewardGold Gold, rare item '${boss.rewardItem}'.",
+                    actionTakenTr = "🔥 GİZLİ MEKAN MUZAFFERİ: Esrarengiz düşman ${boss.nameTr} bertaraf edildi. +$rewardGold Altın, nadide '${boss.rewardItem}' hazinesi kazanıldı.",
+                    sideAlignmentShift = "NEUTRAL",
+                    alignmentImpact = 0
+                )
+                repository.insertJournalEntry(entry)
+
+                _slainSecretBosses.value = _slainSecretBosses.value + boss.id
+                _lastActionMessageEn.value = "🎉 Defeated the Trial Overlord ${boss.nameEn}! Rare artifacts claimed."
+                _lastActionMessageTr.value = "🎉 İmtihan Derebeyi ${boss.nameTr} mağlup edildi! Kadim ganimetler alındı."
+
+                _activeSecretBossCombat.value = null
+                _activeSecretBossHp.value = null
+                _combatLog.value = emptyList()
+            } else {
+                // Boss retaliation turn
+                val bossAtk = boss.atk + (0..6).random()
+                playerHp = (playerHp - bossAtk).coerceAtLeast(0)
+
+                if (_activeLanguage.value == "TR") {
+                    logs.add("👹 ${boss.nameTr} sarsıcı bir darbe vurdu: -$bossAtk Hasar!")
+                } else {
+                    logs.add("👹 ${boss.nameEn} retaliates with a crushing blow: -$bossAtk DMG!")
+                }
+
+                _combatLog.value = logs
+
+                if (playerHp <= 0) {
+                    // Spirit Fracture (Death)
+                    val fractureCount = profile.totalFractures + 1
+                    val rollbackFloor = profile.savedFloorCheckpoint
+                    
+                    val updated = profile.copy(
+                        currentHp = 50,
+                        currentFloor = rollbackFloor,
+                        totalFractures = fractureCount,
+                        gleam = (profile.gleam / 2),
+                        pyre = (profile.pyre / 2),
+                        lastUpdated = System.currentTimeMillis()
+                    )
+                    repository.savePlayerProfile(updated)
+
+                    val entry = JournalEntry(
+                        floor = profile.currentFloor,
+                        actionTakenEs = "💀 SPIRIT FRACTURE: Obliterated in trial fight against ${boss.nameEn}. Shattered back to Floor $rollbackFloor.",
+                        actionTakenTr = "💀 RUH KIRILMASI: '${boss.nameTr}' imtihanı vahşi bitti. Kat $rollbackFloor seviyesine savruldunuz.",
+                        sideAlignmentShift = "NEUTRAL",
+                        alignmentImpact = 0
+                    )
+                    repository.insertJournalEntry(entry)
+
+                    _lastActionMessageEn.value = "💀 Obliterated by ${boss.nameEn}. Slipped back to checkpoint Floor $rollbackFloor."
+                    _lastActionMessageTr.value = "💀 '${boss.nameTr}' tarafından alt edildiniz. Kat $rollbackFloor sığınağına ışınlandınız."
+
+                    _activeSecretBossCombat.value = null
+                    _activeSecretBossHp.value = null
+                    _combatLog.value = emptyList()
+                    _currentTab.value = "OUTER_WORLD"
+                } else {
+                    val updated = profile.copy(
+                        currentHp = playerHp,
+                        lastUpdated = System.currentTimeMillis()
+                    )
+                    repository.savePlayerProfile(updated)
+                }
+            }
         }
     }
 

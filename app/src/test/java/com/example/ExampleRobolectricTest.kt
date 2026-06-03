@@ -73,4 +73,23 @@ class ExampleRobolectricTest {
     org.junit.Assert.assertNotNull(chain1)
     org.junit.Assert.assertTrue(chain1!!.requirementMet)
   }
+
+  @Test
+  fun `verify quest status progress labels and fraction calculations`() {
+    val player = com.example.data.model.PlayerProfile(currentFloor = 3, gold = 150)
+    val progress = com.example.data.engine.QuestTitleSystem.getQuestProgress(player)
+
+    val mainQuest = progress.find { it.quest.id == "main_foothold" }
+    org.junit.Assert.assertNotNull(mainQuest)
+    
+    val (labelEn, fraction) = mainQuest!!.getProgressLabelAndFraction(player, isTr = false)
+    org.junit.Assert.assertEquals("Floor 3 / 5", labelEn)
+    org.junit.Assert.assertEquals(0.6f, fraction, 0.01f)
+
+    val sideQuest = progress.find { it.quest.id == "side_wealth" }
+    org.junit.Assert.assertNotNull(sideQuest)
+    val (goldLabel, goldFraction) = sideQuest!!.getProgressLabelAndFraction(player, isTr = true)
+    org.junit.Assert.assertEquals("Altın 150 / 300", goldLabel)
+    org.junit.Assert.assertEquals(0.5f, goldFraction, 0.01f)
+  }
 }

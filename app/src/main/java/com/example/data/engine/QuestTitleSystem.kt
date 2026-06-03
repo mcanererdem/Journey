@@ -25,8 +25,11 @@ data class TitleDef(
 enum class QuestType {
     MAIN,
     SIDE,
+    NORMAL,
+    SPECIAL,
+    CHAIN,
     HIDDEN,
-    CHAIN
+    EVENT
 }
 
 /**
@@ -313,6 +316,53 @@ object QuestTitleSystem {
             rewardExp = 500,
             rewardGold = 250,
             rewardTitle = "Guardian of Cosmic Neutrality"
+        ),
+
+        // --- NORMAL QUESTS ---
+        QuestDef(
+            id = "normal_climb_3",
+            type = QuestType.NORMAL,
+            titleEn = "The First Steps",
+            titleTr = "İlk Adımlar",
+            descEn = "Every long trek begins with a few courageous steps up the tower base.",
+            descTr = "Her büyük yolculuk kulenin eteklerinde atılan birkaç cesur adımla başlar.",
+            requirementEn = "Ascend to Floor 3 or higher",
+            requirementTr = "3. Kat veya üzerine tırmanın",
+            checkProgress = { it.currentFloor >= 3 },
+            rewardGold = 50,
+            rewardExp = 80
+        ),
+
+        // --- SPECIAL QUESTS ---
+        QuestDef(
+            id = "special_alignment_pioneer",
+            type = QuestType.SPECIAL,
+            titleEn = "Avenue of Conviction",
+            titleTr = "İnanç Patikası",
+            descEn = "Commit strongly to either the celestial sun rays or the depth of the void.",
+            descTr = "Göksel güneş ışıklarına ya da boşluğun karanlık fısıltılarına güçlü bir bağlılık gösterin.",
+            requirementEn = "Alignment >= +45 (Celestial) or <= -45 (Void)",
+            requirementTr = "Hizalanma >= +45 veya <= -45 olmalı",
+            checkProgress = { it.alignment >= 45 || it.alignment <= -45 },
+            rewardGold = 150,
+            rewardExp = 200,
+            rewardItem = "Scroll of Conviction"
+        ),
+
+        // --- EVENT QUESTS ---
+        QuestDef(
+            id = "event_solar_zenith",
+            type = QuestType.EVENT,
+            titleEn = "Sovereign Meridian Zenith ☀️",
+            titleTr = "Mutlak Güneş Şöleni Enlemi ☀️",
+            descEn = "A temporal star solstice has aligned. Unleash your soul's level capabilities.",
+            descTr = "Kozmik bir göksel hizalama gerçekleşti. Ruhunuzun seviyesini yükseltip andı kutlayın.",
+            requirementEn = "Reach Character Level 6+",
+            requirementTr = "Karakter Seviyesini En Az 6 Yapın",
+            checkProgress = { it.level >= 6 },
+            rewardGold = 120,
+            rewardExp = 150,
+            rewardGleam = 40
         )
     )
 
@@ -371,4 +421,106 @@ data class QuestStatus(
     val isCompleted: Boolean,
     val isUnlocked: Boolean,
     val requirementMet: Boolean
-)
+) {
+    fun getProgressLabelAndFraction(player: PlayerProfile, isTr: Boolean): Pair<String, Float> {
+        if (isCompleted) return Pair(if (isTr) "%100 Tamamlandı" else "100% Completed", 1f)
+        if (!isUnlocked) return Pair(if (isTr) "Kilitli" else "Locked", 0f)
+        val q = quest
+        return when (q.id) {
+            "main_foothold" -> {
+                val curr = player.currentFloor
+                val target = 5
+                val label = if (isTr) "Kat $curr / $target" else "Floor $curr / $target"
+                Pair(label, (curr.toFloat() / target).coerceIn(0f, 1f))
+            }
+            "main_midpoint" -> {
+                val curr = player.currentFloor
+                val target = 15
+                val label = if (isTr) "Kat $curr / $target" else "Floor $curr / $target"
+                Pair(label, (curr.toFloat() / target).coerceIn(0f, 1f))
+            }
+            "side_wealth" -> {
+                val curr = player.gold
+                val target = 300
+                val label = if (isTr) "Altın $curr / $target" else "Gold $curr / $target"
+                Pair(label, (curr.toFloat() / target).coerceIn(0f, 1f))
+            }
+            "side_sanctum_purity" -> {
+                if (player.side != "SANCTUM") {
+                    Pair(if (isTr) "Semavi Değilsiniz" else "Not Sanctum Aligned", 0f)
+                } else {
+                    val curr = player.alignment
+                    val target = 15
+                    val label = if (isTr) "Hizalanma $curr / $target" else "Alignment $curr / $target"
+                    Pair(label, (curr.toFloat() / target).coerceIn(0f, 1f))
+                }
+            }
+            "side_void_alliance" -> {
+                if (player.side != "COVENANT") {
+                    Pair(if (isTr) "Kara Ahit Değilsiniz" else "Not Covenant Aligned", 0f)
+                } else {
+                    val curr = (player.alignment * -1).coerceAtLeast(0)
+                    val target = 15
+                    val label = if (isTr) "Karanlık Hizalanma $curr / $target" else "Void Alignment $curr / $target"
+                    Pair(label, (curr.toFloat() / target).coerceIn(0f, 1f))
+                }
+            }
+            "chain_ascension_1" -> {
+                val curr = player.level
+                val target = 4
+                val label = if (isTr) "Seviye $curr / $target" else "Level $curr / $target"
+                Pair(label, (curr.toFloat() / target).coerceIn(0f, 1f))
+            }
+            "chain_ascension_2" -> {
+                val curr = player.level
+                val target = 12
+                val label = if (isTr) "Seviye $curr / $target" else "Level $curr / $target"
+                Pair(label, (curr.toFloat() / target).coerceIn(0f, 1f))
+            }
+            "chain_ascension_3" -> {
+                val curr = player.level
+                val target = 20
+                val label = if (isTr) "Seviye $curr / $target" else "Level $curr / $target"
+                Pair(label, (curr.toFloat() / target).coerceIn(0f, 1f))
+            }
+            "hidden_fractured_soul" -> {
+                val curr = player.totalFractures
+                val target = 4
+                val label = if (isTr) "Ruh Kırılması $curr / $target" else "Spirit Fractures $curr / $target"
+                Pair(label, (curr.toFloat() / target).coerceIn(0f, 1f))
+            }
+            "hidden_perfect_balance" -> {
+                val currFl = player.currentFloor
+                val align = player.alignment
+                val isBalanced = align == 0
+                if (!isUnlocked) {
+                    Pair("???", 0f)
+                } else if (!isBalanced) {
+                    Pair(if (isTr) "Denge Bozuldu (Değer: $align)" else "Imbalanced (Alignment: $align)", 0f)
+                } else {
+                    val label = if (isTr) "Dengeli Kat $currFl / 15" else "Balanced Floor $currFl / 15"
+                    Pair(label, (currFl.toFloat() / 15).coerceIn(0f, 1f))
+                }
+            }
+            "normal_climb_3" -> {
+                val curr = player.currentFloor
+                val target = 3
+                val label = if (isTr) "Kat $curr / $target" else "Floor $curr / $target"
+                Pair(label, (curr.toFloat() / target).coerceIn(0f, 1f))
+            }
+            "special_alignment_pioneer" -> {
+                val absAlign = Math.abs(player.alignment)
+                val target = 45
+                val label = if (isTr) "Hizalanma Derecesi $absAlign / $target" else "Alignment Solstice $absAlign / $target"
+                Pair(label, (absAlign.toFloat() / target).coerceIn(0f, 1f))
+            }
+            "event_solar_zenith" -> {
+                val curr = player.level
+                val target = 6
+                val label = if (isTr) "Seviye $curr / $target" else "Level $curr / $target"
+                Pair(label, (curr.toFloat() / target).coerceIn(0f, 1f))
+            }
+            else -> Pair("", 1f)
+        }
+    }
+}
