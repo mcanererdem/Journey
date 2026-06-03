@@ -939,6 +939,126 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    /**
+     * Checks all titles for qualification and automatically registers them to the player's profile if unlocked.
+     */
+    fun checkAndUnlockTitles(profile: PlayerProfile): PlayerProfile {
+        val currentUnlocked = profile.titlesEncoded.split(",").filter { it.isNotBlank() }.toMutableSet()
+        var changed = false
+        
+        com.example.data.engine.QuestTitleSystem.titles.forEach { title ->
+            if (!currentUnlocked.contains(title.id) && title.meetsPreconditions(profile)) {
+                currentUnlocked.add(title.id)
+                changed = true
+                viewModelScope.launch {
+                    _lastActionMessageEn.value = "👑 UNLOCKED TITLE: ${title.nameEn}!"
+                    _lastActionMessageTr.value = "👑 YENİ UNVAN KAZANILDI: ${title.nameTr}!"
+                }
+            }
+        }
+        
+        return if (changed) {
+            profile.copy(
+                titlesEncoded = currentUnlocked.joinToString(","),
+                lastUpdated = System.currentTimeMillis()
+            )
+        } else {
+            profile
+        }
+    }
+
+    /**
+     * Equips a specific title that the user has currently unlocked.
+     */
+    fun equipTitle(titleId: String) {
+        viewModelScope.launch {
+            val profile = repository.getPlayerProfileDirect() ?: return@launch
+            val unlocked = profile.titlesEncoded.split(",").filter { it.isNotBlank() }.toSet()
+            if (titleId.isEmpty() || unlocked.contains(titleId)) {
+                val updated = profile.copy(
+                    equippedTitle = titleId,
+                    lastUpdated = System.currentTimeMillis()
+                )
+                repository.savePlayerProfile(updated)
+                _lastActionMessageEn.value = if (titleId.isEmpty()) "Unequipped title." else "Equipped: ${com.example.data.engine.QuestTitleSystem.getTitleDef(titleId)?.nameEn}"
+                _lastActionMessageTr.value = if (titleId.isEmpty()) "Unvan çıkarıldı." else "Mistik unvan kuşanıldı: ${com.example.data.engine.QuestTitleSystem.getTitleDef(titleId)?.nameTr}"
+            }
+        }
+    }
+
+    /**
+     * Claims the rewards for a completed quest, awarding Gold, Experience, Items, and/or Titles.
+     */
+    fun claimQuestReward(questId: String) {
+        viewModelScope.launch {
+            val profile = repository.getPlayerProfileDirect() ?: return@launch
+            val quest = com.example.data.engine.QuestTitleSystem.quests.find { it.id == questId } ?: return@launch
+            
+            val completedSet = profile.completedQuestsEncoded.split(",").filter { it.isNotBlank() }.toMutableSet()
+            if (completedSet.contains(questId)) return@launch
+            
+            if (!quest.checkProgress(profile)) return@launch
+            
+            completedSet.add(questId)
+            
+            // Calculate base currency rewards
+            val newGold = profile.gold + quest.rewardGold
+            val newGleam = profile.gleam + quest.rewardGleam
+            val newPyre = profile.pyre + quest.rewardPyre
+            
+            // Experience and levels
+            var newExp = profile.exp + quest.rewardExp
+            var newLevel = profile.level
+            var newMaxExp = profile.maxExp
+            var newMaxHp = profile.maxHp
+            
+            while (newExp >= newMaxExp && newLevel < 100) {
+                newExp -= newMaxExp
+                newLevel++
+                newMaxExp += 25
+                newMaxHp += 15
+            }
+            
+            // Appends items
+            val currentItems = profile.itemsEncoded.split(",").filter { it.isNotBlank() }.toMutableList()
+            quest.rewardItem?.let { item ->
+                if (!currentItems.contains(item)) {
+                    currentItems.add(item)
+                }
+            }
+            
+            // Appends titles
+            val currentTitles = profile.titlesEncoded.split(",").filter { it.isNotBlank() }.toMutableList()
+            quest.rewardTitle?.let { title ->
+                if (!currentTitles.contains(title)) {
+                    currentTitles.add(title)
+                }
+            }
+            
+            var updated = profile.copy(
+                completedQuestsEncoded = completedSet.joinToString(","),
+                gold = newGold,
+                gleam = newGleam,
+                pyre = newPyre,
+                level = newLevel,
+                exp = newExp,
+                maxExp = newMaxExp,
+                maxHp = newMaxHp,
+                itemsEncoded = currentItems.joinToString(","),
+                titlesEncoded = currentTitles.joinToString(","),
+                lastUpdated = System.currentTimeMillis()
+            )
+            
+            // Run automatic checks on newly unlocked titles
+            updated = checkAndUnlockTitles(updated)
+            
+            repository.savePlayerProfile(updated)
+            
+            _lastActionMessageEn.value = "Quest '${quest.titleEn}' claimed! Rewards received."
+            _lastActionMessageTr.value = "'${quest.titleTr}' görevi tamamlandı! Ödülleri aldınız."
+        }
+    }
+
     companion object {
         fun getPlayerClassString(side: String, alignment: Int): String {
             val isLightBand = alignment >= 15

@@ -43,6 +43,10 @@ import com.example.ui.theme.*
 import com.example.ui.viewmodel.GameViewModel
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.runtime.saveable.rememberSaveable
+import com.example.data.engine.QuestTitleSystem
+import com.example.data.engine.QuestType
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -151,6 +155,13 @@ fun RpgGameScreen(
                     modifier = Modifier.testTag("nav_outer")
                 )
                 NavigationBarItem(
+                    selected = tab == "QUESTS",
+                    onClick = { viewModel.selectTab("QUESTS") },
+                    icon = { Icon(Icons.Default.Star, contentDescription = null) },
+                    label = { Text(LocalizationManager.getString(activeLang, "tab_quests")) },
+                    modifier = Modifier.testTag("nav_quests")
+                )
+                NavigationBarItem(
                     selected = tab == "CHAR_SHEET",
                     onClick = { viewModel.selectTab("CHAR_SHEET") },
                     icon = { Icon(Icons.Default.Person, contentDescription = null) },
@@ -245,6 +256,11 @@ fun RpgGameScreen(
                         onFactionSelect = { viewModel.selectFaction(it) },
                         onRenounce = { viewModel.renounceAllegiance() },
                         onNameUpdate = { viewModel.setPlayerName(it) }
+                    )
+                    "QUESTS" -> QuestsTab(
+                        player = player,
+                        viewModel = viewModel,
+                        activeLang = activeLang
                     )
                     "JOURNAL" -> JournalTab(
                         journal = journal,
@@ -570,11 +586,22 @@ fun HeaderStatsBlock(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column {
-                    Text(
-                        text = player.playerName,
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = player.playerName,
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        val titleObj = com.example.data.engine.QuestTitleSystem.getTitleDef(player.equippedTitle)
+                        if (titleObj != null) {
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "(${if (activeLang == "TR") titleObj.nameTr else titleObj.nameEn})",
+                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Black),
+                                color = SanctumGold
+                            )
+                        }
+                    }
                     Text(
                         text = player.chosenClass,
                         style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
@@ -1973,3 +2000,468 @@ fun JournalTab(
         }
     }
 }
+
+@Composable
+fun QuestsTab(
+    player: PlayerProfile?,
+    viewModel: GameViewModel,
+    activeLang: String
+) {
+    if (player == null) return
+
+    val questsProgress = remember(player) {
+        QuestTitleSystem.getQuestProgress(player)
+    }
+
+    var selectedCategory by rememberSaveable { mutableStateOf("ALL") }
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        // --- TITLES CARD BOARD ---
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                shape = RoundedCornerShape(12.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("👑 ", fontSize = 20.sp)
+                        Text(
+                            text = if (activeLang == "TR") "ŞANLI MİSTİK UNVANLAR" else "ARCHIVE OF SOVEREIGN TITLES",
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, letterSpacing = 1.sp),
+                            color = SanctumGold
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Text(
+                        text = if (activeLang == "TR") {
+                            "Bu kadim unvanları gerekli şartları sağlayarak açabilir ve kuşanıp pasif can (+HP) bonusu kazanabilirsiniz."
+                        } else {
+                            "Unlock and equip legendary titles by satisfying unique requirements to receive passive Vitality augmentation."
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    )
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    QuestTitleSystem.titles.forEach { title ->
+                        val isUnlocked = player.titlesEncoded.split(",").filter { it.isNotBlank() }.contains(title.id)
+                        val isEquipped = player.equippedTitle == title.id
+
+                        if (title.isHidden && !isUnlocked) {
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp),
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .padding(12.dp)
+                                        .fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text("🔒 ", fontSize = 16.sp)
+                                    Column {
+                                        Text(
+                                            text = if (activeLang == "TR") "Bilinmeyen Kadim Sır" else "🔒 Mystery Ancient Pact",
+                                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                        )
+                                        Text(
+                                            text = if (activeLang == "TR") "Şartlar kule derinliklerinde kilitli kalmış." else "The conditions are locked in the depths of current era.",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                                        )
+                                    }
+                                }
+                            }
+                        } else {
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = if (isEquipped) {
+                                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f)
+                                    } else {
+                                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)
+                                    }
+                                ),
+                                border = BorderStroke(
+                                    width = if (isEquipped) 2.dp else 1.dp,
+                                    color = if (isEquipped) SanctumGold else if (isUnlocked) SanctumGold.copy(alpha = 0.4f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+                                )
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .padding(12.dp)
+                                        .fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Text(
+                                                text = if (activeLang == "TR") title.nameTr else title.nameEn,
+                                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                                color = if (isUnlocked) SanctumGold else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                                            )
+                                            if (isUnlocked) {
+                                                Spacer(modifier = Modifier.width(6.dp))
+                                                Box(
+                                                    modifier = Modifier
+                                                        .background(SanctumGold.copy(alpha = 0.15f), RoundedCornerShape(4.dp))
+                                                        .padding(horizontal = 4.dp, vertical = 2.dp)
+                                                ) {
+                                                    Text(
+                                                        text = if (activeLang == "TR") "KAZANILDI" else "UNLOCKED",
+                                                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 8.sp, fontWeight = FontWeight.Bold),
+                                                        color = SanctumGold
+                                                    )
+                                                }
+                                            }
+                                        }
+                                        Text(
+                                            text = if (activeLang == "TR") title.descTr else title.descEn,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                                        )
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Text(
+                                            text = if (activeLang == "TR") "Bonus: +${title.hpBonus} HP • Şart: ${title.requirementDescTr}" else "Synergies: +${title.hpBonus} HP • Goal: ${title.requirementDescEn}",
+                                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium),
+                                            color = if (isUnlocked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    if (isUnlocked) {
+                                        Button(
+                                            onClick = {
+                                                if (isEquipped) {
+                                                    viewModel.equipTitle("")
+                                                } else {
+                                                    viewModel.equipTitle(title.id)
+                                                }
+                                            },
+                                            modifier = Modifier.testTag("equip_title_${title.id}"),
+                                            colors = ButtonDefaults.buttonColors(
+                                                containerColor = if (isEquipped) BlightDamageColor else SanctumGold
+                                            ),
+                                            shape = RoundedCornerShape(6.dp),
+                                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                                        ) {
+                                            Text(
+                                                text = if (isEquipped) {
+                                                    if (activeLang == "TR") "ÇIKAR" else "REMOVE"
+                                                } else {
+                                                    if (activeLang == "TR") "KUŞAN" else "EQUIP"
+                                                },
+                                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold)
+                                            )
+                                        }
+                                    } else {
+                                        Box(
+                                            modifier = Modifier
+                                                .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f), RoundedCornerShape(6.dp))
+                                                .padding(horizontal = 10.dp, vertical = 6.dp)
+                                        ) {
+                                            Text(
+                                                text = if (activeLang == "TR") "KİLİTLİ" else "LOCKED",
+                                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
+                                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // --- QUESTS SECTION ---
+        item {
+            Spacer(modifier = Modifier.height(10.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("📁 ", fontSize = 18.sp)
+                Text(
+                    text = if (activeLang == "TR") "KULE GÖREVLERİ DEKRETİ" else "SPIRE QUESTS & DECREES",
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = if (activeLang == "TR") {
+                    "Kategorize edilmiş görev turlarını tamamlayarak kadim paralar, şanlı unvanlar ve mühürlü ekipmanlar kazanın."
+                } else {
+                    "Complete special trials of power to capture currency bags, royal titles and high artifacts."
+                },
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+            )
+        }
+
+        // --- FILTER CHIPS CONTROLLER ---
+        item {
+            val categories = listOf(
+                "ALL" to (if (activeLang == "TR") "HEPSİ" else "ALL"),
+                "NORMAL" to (if (activeLang == "TR") "NORMAL" else "NORMAL"),
+                "SPECIAL" to (if (activeLang == "TR") "ÖZEL" else "SPECIAL"),
+                "CHAIN" to (if (activeLang == "TR") "ZİNCİR" else "CHAIN"),
+                "HIDDEN" to (if (activeLang == "TR") "GİZLİ" else "HIDDEN")
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                categories.forEach { (catId, catLabel) ->
+                    val isSelected = selectedCategory == catId
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(
+                                if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                            )
+                            .border(1.dp, if (isSelected) Color.Transparent else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f), RoundedCornerShape(8.dp))
+                            .clickable { selectedCategory = catId }
+                            .padding(vertical = 10.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = catLabel,
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                            color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+            }
+        }
+
+        // --- SCROLLABLE QUEST ENTRIES ---
+        val filteredQuests = questsProgress.filter { item ->
+            selectedCategory == "ALL" || item.quest.type.name == selectedCategory
+        }
+
+        if (filteredQuests.isEmpty()) {
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f))
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(24.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = if (activeLang == "TR") "Bu kategoride henüz ferman bulunmuyor." else "No decrees in this category list currently.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                        )
+                    }
+                }
+            }
+        } else {
+            items(filteredQuests.size) { index ->
+                val qStatus = filteredQuests[index]
+                val q = qStatus.quest
+
+                val cardColor = when {
+                    qStatus.isCompleted -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                    qStatus.requirementMet -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f)
+                    !qStatus.isUnlocked -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f)
+                    else -> MaterialTheme.colorScheme.surface
+                }
+
+                val borderStrokeColor = when {
+                    qStatus.isCompleted -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
+                    qStatus.requirementMet -> SanctumGold
+                    !qStatus.isUnlocked -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f)
+                    else -> MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                }
+
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 2.dp),
+                    colors = CardDefaults.cardColors(containerColor = cardColor),
+                    border = BorderStroke(if (qStatus.requirementMet) 2.dp else 1.dp, borderStrokeColor)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .padding(14.dp)
+                            .fillMaxWidth()
+                    ) {
+                        Row(
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                val badgeColor = when (q.type) {
+                                    QuestType.NORMAL -> MaterialTheme.colorScheme.primary
+                                    QuestType.SPECIAL -> SanctumGold
+                                    QuestType.CHAIN -> VoidNeonPurple
+                                    QuestType.HIDDEN -> BlightDamageColor
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .background(badgeColor.copy(alpha = 0.15f), RoundedCornerShape(4.dp))
+                                        .padding(horizontal = 6.dp, vertical = 3.dp)
+                                ) {
+                                    Text(
+                                        text = q.type.name,
+                                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 8.sp, fontWeight = FontWeight.Bold),
+                                        color = badgeColor
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(8.dp))
+
+                                val displayTitle = if (q.type == QuestType.HIDDEN && !qStatus.isCompleted && !qStatus.requirementMet) {
+                                    if (activeLang == "TR") "🔒 BİLİNMEYEN GİZEMLİ BULMACA" else "🔒 MYSTICLE TEMPLATE"
+                                } else {
+                                    if (activeLang == "TR") q.titleTr else q.titleEn
+                                }
+                                Text(
+                                    text = displayTitle,
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+
+                            when {
+                                qStatus.isCompleted -> Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color.Green, modifier = Modifier.size(18.dp))
+                                qStatus.requirementMet -> Icon(Icons.Default.Star, contentDescription = "Ready to Claim", tint = SanctumGold, modifier = Modifier.size(18.dp))
+                                !qStatus.isUnlocked -> Icon(Icons.Default.Lock, contentDescription = "Locked", tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f), modifier = Modifier.size(18.dp))
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        val displayDesc = if (q.type == QuestType.HIDDEN && !qStatus.isCompleted && !qStatus.requirementMet) {
+                            if (activeLang == "TR") "Kozmos eylemlerinizi sayıyor. Doğru katalizörü bulana dek devam edin." else "The matrix monitors your ascension metrics. Prove your power to unfold details."
+                        } else {
+                            if (activeLang == "TR") q.descTr else q.descEn
+                        }
+                        Text(
+                            text = displayDesc,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                        )
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        val displayGoal = if (q.type == QuestType.HIDDEN && !qStatus.isCompleted && !qStatus.requirementMet) {
+                            "??? (???)"
+                        } else {
+                            if (activeLang == "TR") q.requirementTr else q.requirementEn
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = if (activeLang == "TR") "Koşul: " else "Goal: ",
+                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                            )
+                            Text(
+                                text = displayGoal,
+                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
+                                color = if (qStatus.requirementMet) SanctumGold else MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Column(
+                            modifier = Modifier
+                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f), RoundedCornerShape(6.dp))
+                                .padding(8.dp)
+                                .fillMaxWidth()
+                        ) {
+                            Text(
+                                text = if (activeLang == "TR") "VAADEDİLEN GANİMETLER:" else "PROMISED LOOT REWARDS:",
+                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, fontSize = 8.sp),
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            val rList = mutableListOf<String>()
+                            if (q.rewardExp > 0) rList.add("+${q.rewardExp} EXP")
+                            if (q.rewardGold > 0) rList.add("+${q.rewardGold} GP")
+                            if (q.rewardGleam > 0) rList.add("+${q.rewardGleam} Gleam")
+                            if (q.rewardPyre > 0) rList.add("+${q.rewardPyre} Pyre")
+                            q.rewardItem?.let { rList.add("🎒 $it") }
+                            q.rewardTitle?.let {
+                                val tObj = QuestTitleSystem.getTitleDef(it)
+                                val tName = if (tObj != null) (if (activeLang == "TR") tObj.nameTr else tObj.nameEn) else it
+                                rList.add("👑 Name Title: $tName")
+                            }
+                            Text(
+                                text = rList.joinToString("  •  "),
+                                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold),
+                                color = SanctumGold
+                            )
+                        }
+
+                        if (qStatus.isCompleted) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(Color.Green.copy(alpha = 0.1f), RoundedCornerShape(6.dp))
+                                    .padding(vertical = 8.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = if (activeLang == "TR") "✓ ÖDÜLLER TAMAMEN ALINDI" else "✓ REWARDS FULLY CLAIMED",
+                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                    color = Color.Green
+                                )
+                            }
+                        } else if (qStatus.requirementMet) {
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Button(
+                                onClick = { viewModel.claimQuestReward(q.id) },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .testTag("claim_quest_${q.id}"),
+                                colors = ButtonDefaults.buttonColors(containerColor = SanctumGold),
+                                shape = RoundedCornerShape(6.dp)
+                            ) {
+                                Icon(Icons.Default.Star, contentDescription = null, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = if (activeLang == "TR") "ÖDÜLLERİ HEYBEYE EKLE 🎁" else "RECEIVE DECREE REWARDS 🎁",
+                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold)
+                                )
+                            }
+                        } else if (!qStatus.isUnlocked && q.prerequisiteQuestId != null) {
+                            Spacer(modifier = Modifier.height(6.dp))
+                            val preQuest = QuestTitleSystem.quests.find { it.id == q.prerequisiteQuestId }
+                            val preName = if (preQuest != null) (if (activeLang == "TR") preQuest.titleTr else preQuest.titleEn) else q.prerequisiteQuestId
+                            Text(
+                                text = if (activeLang == "TR") "⚠️ Önce '${preName}' aşamasını tamamlamış olmalısınız." else "⚠️ Requires preceding trial '${preName}' complete.",
+                                style = MaterialTheme.typography.labelSmall.copy(fontStyle = FontStyle.Italic),
+                                color = BlightDamageColor
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
