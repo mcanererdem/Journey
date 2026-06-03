@@ -19,6 +19,15 @@ data class PlayerProfile(
     val chosenClass: String = "Initiate", // Determined by alignment and side
     val totalFractures: Int = 0, // Count of spirit fractures
     val savedFloorCheckpoint: Int = 1, // Last checkpoint saved
+    val level: Int = 1,
+    val exp: Int = 0,
+    val maxExp: Int = 100,
+    val currentWill: Int = 10,
+    val maxWill: Int = 10,
+    val itemsEncoded: String = "",
+    val titlesEncoded: String = "",
+    val currentNodeIndex: Int = 0,
+    val currentNodeCompleted: Boolean = false,
     val lastUpdated: Long = System.currentTimeMillis()
 )
 

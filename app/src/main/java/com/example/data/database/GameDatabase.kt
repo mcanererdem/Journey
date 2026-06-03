@@ -8,7 +8,7 @@ import com.example.data.dao.GameDao
 import com.example.data.model.JournalEntry
 import com.example.data.model.PlayerProfile
 
-@Database(entities = [PlayerProfile::class, JournalEntry::class], version = 1, exportSchema = false)
+@Database(entities = [PlayerProfile::class, JournalEntry::class], version = 2, exportSchema = false)
 abstract class GameDatabase : RoomDatabase() {
     abstract fun gameDao(): GameDao
 

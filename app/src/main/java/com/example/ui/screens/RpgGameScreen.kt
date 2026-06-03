@@ -32,6 +32,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.R
 import com.example.data.engine.FloorScenario
 import com.example.data.engine.GameOption
+import com.example.data.engine.LocalizationManager
+import com.example.data.engine.NodeType
+import com.example.data.engine.AdventureNode
+import com.example.data.engine.NodeChoice
+import androidx.compose.ui.text.font.FontStyle
 import com.example.data.model.JournalEntry
 import com.example.data.model.PlayerProfile
 import com.example.ui.theme.*
@@ -48,6 +53,10 @@ fun RpgGameScreen(
     val activeLang by viewModel.activeLanguage.collectAsStateWithLifecycle()
     val scenario by viewModel.currentScenario.collectAsStateWithLifecycle()
     val tab by viewModel.currentTab.collectAsStateWithLifecycle()
+
+    val currentFloorNodes by viewModel.currentFloorNodes.collectAsStateWithLifecycle()
+    val activeEnemyHp by viewModel.activeEnemyHp.collectAsStateWithLifecycle()
+    val combatLog by viewModel.combatLog.collectAsStateWithLifecycle()
 
     val actionMessageEn by viewModel.lastActionMessageEn.collectAsStateWithLifecycle()
     val actionMessageTr by viewModel.lastActionMessageTr.collectAsStateWithLifecycle()
@@ -125,28 +134,28 @@ fun RpgGameScreen(
                     selected = tab == "TOWER",
                     onClick = { viewModel.selectTab("TOWER") },
                     icon = { Icon(Icons.Default.PlayArrow, contentDescription = null) },
-                    label = { Text(stringResource(R.string.tab_tower)) },
+                    label = { Text(LocalizationManager.getString(activeLang, "tab_tower")) },
                     modifier = Modifier.testTag("nav_tower")
                 )
                 NavigationBarItem(
                     selected = tab == "OUTER_WORLD",
                     onClick = { viewModel.selectTab("OUTER_WORLD") },
                     icon = { Icon(Icons.Default.LocationOn, contentDescription = null) },
-                    label = { Text(stringResource(R.string.tab_outer)) },
+                    label = { Text(LocalizationManager.getString(activeLang, "tab_outer")) },
                     modifier = Modifier.testTag("nav_outer")
                 )
                 NavigationBarItem(
                     selected = tab == "CHAR_SHEET",
                     onClick = { viewModel.selectTab("CHAR_SHEET") },
                     icon = { Icon(Icons.Default.Person, contentDescription = null) },
-                    label = { Text(stringResource(R.string.tab_character)) },
+                    label = { Text(LocalizationManager.getString(activeLang, "tab_character")) },
                     modifier = Modifier.testTag("nav_char")
                 )
                 NavigationBarItem(
                     selected = tab == "JOURNAL",
                     onClick = { viewModel.selectTab("JOURNAL") },
                     icon = { Icon(Icons.AutoMirrored.Filled.List, contentDescription = null) },
-                    label = { Text(stringResource(R.string.tab_journal)) },
+                    label = { Text(LocalizationManager.getString(activeLang, "tab_journal")) },
                     modifier = Modifier.testTag("nav_journal")
                 )
             }
@@ -207,9 +216,14 @@ fun RpgGameScreen(
                 when (tab) {
                     "TOWER" -> TowerClimbTab(
                         player = player,
-                        scenario = scenario,
+                        nodes = currentFloorNodes,
+                        activeEnemyHp = activeEnemyHp,
+                        combatLog = combatLog,
                         activeLang = activeLang,
-                        onChoiceSelected = { viewModel.handleRpgChoice(it) },
+                        onChoiceSelected = { viewModel.selectNodeChoice(it) },
+                        onNextNodeClick = { viewModel.advanceToNextNode() },
+                        onAscendFloorClick = { viewModel.ascendToNextFloor() },
+                        onCombatAction = { viewModel.executeCombatTurn(it) },
                         onResetClick = { viewModel.resetGame() }
                     )
                     "OUTER_WORLD" -> OuterWorldTab(
@@ -268,6 +282,18 @@ fun HeaderStatsBlock(
                         style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.primary
                     )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "${LocalizationManager.getString(activeLang, "label_level")} ${player.level}",
+                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.secondary)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "[${player.exp}/${player.maxExp} XP]",
+                            style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace, fontSize = 10.sp),
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        )
+                    }
                 }
 
                 Surface(
@@ -333,6 +359,33 @@ fun HeaderStatsBlock(
 
             Spacer(modifier = Modifier.height(10.dp))
 
+            // Willpower Progress Bar
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "⚡ WILL",
+                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                    modifier = Modifier.width(42.dp),
+                    color = SanctumGold
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                LinearProgressIndicator(
+                    progress = { player.currentWill.toFloat() / player.maxWill.toFloat() },
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(8.dp)
+                        .clip(RoundedCornerShape(4.dp)),
+                    color = SanctumGold,
+                    trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Text(
+                    text = "${player.currentWill}/${player.maxWill}",
+                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
             // Resources values Row
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -391,9 +444,14 @@ fun ResourceChip(
 @Composable
 fun TowerClimbTab(
     player: PlayerProfile?,
-    scenario: FloorScenario?,
+    nodes: List<AdventureNode>,
+    activeEnemyHp: Int?,
+    combatLog: List<String>,
     activeLang: String,
-    onChoiceSelected: (GameOption) -> Unit,
+    onChoiceSelected: (NodeChoice) -> Unit,
+    onNextNodeClick: () -> Unit,
+    onAscendFloorClick: () -> Unit,
+    onCombatAction: (String) -> Unit,
     onResetClick: () -> Unit
 ) {
     if (player == null) return
@@ -413,7 +471,7 @@ fun TowerClimbTab(
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Text(
-                    text = if (activeLang == "TR") "KULE KAT: ${player.currentFloor} / 100" else "TOWER FLOOR: ${player.currentFloor} / 100",
+                    text = LocalizationManager.formatString(activeLang, "label_floor_title", player.currentFloor),
                     modifier = Modifier.padding(16.dp, 8.dp),
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold,
@@ -428,51 +486,100 @@ fun TowerClimbTab(
         // Checkpoint indicator
         item {
             Text(
-                text = if (activeLang == "TR") "Uyanış Noktası: Kat ${player.savedFloorCheckpoint}" else "Shatter Checkpoint: Floor ${player.savedFloorCheckpoint}",
+                text = LocalizationManager.formatString(activeLang, "label_checkpoint", player.savedFloorCheckpoint),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
             )
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(12.dp))
         }
 
-        // Main chronicle/lore text card
+        // Visually Crawling Map Node Progress Row
         item {
-            if (scenario != null) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    shape = RoundedCornerShape(16.dp),
-                    border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
-                ) {
-                    Column(modifier = Modifier.padding(18.dp)) {
-                        Text(
-                            text = if (activeLang == "TR") scenario.titleTr else scenario.titleEn,
-                            style = MaterialTheme.typography.titleLarge.copy(
-                                fontWeight = FontWeight.Bold,
-                                fontFamily = FontFamily.Serif
-                            ),
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.padding(bottom = 10.dp)
-                        )
-
-                        Divider(color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f))
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        Text(
-                            text = if (activeLang == "TR") scenario.descriptionTr else scenario.descriptionEn,
-                            style = MaterialTheme.typography.bodyLarge.copy(
-                                lineHeight = 26.sp,
-                                fontFamily = FontFamily.Serif
-                            ),
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 14.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.15f))
+            ) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text(
+                        text = LocalizationManager.getString(activeLang, "label_nodes"),
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, letterSpacing = 1.sp),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    
+                    val currentIndex = player.currentNodeIndex
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Sliding window view of 5 exploration nodes around the active node
+                        val start = (currentIndex - 2).coerceAtLeast(0)
+                        val end = (start + 4).coerceAtMost(nodes.size - 1)
+                        for (idx in start..end) {
+                            val node = nodes.getOrNull(idx) ?: continue
+                            val isActive = idx == currentIndex
+                            val isCompleted = idx < currentIndex || (idx == currentIndex && player.currentNodeCompleted)
+                            
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(34.dp)
+                                        .clip(CircleShape)
+                                        .background(
+                                            if (isActive) MaterialTheme.colorScheme.primaryContainer
+                                            else if (isCompleted) SpiritHealColor.copy(alpha = 0.15f)
+                                            else MaterialTheme.colorScheme.surfaceVariant
+                                        )
+                                        .border(
+                                            width = if (isActive) 2.dp else 1.dp,
+                                            color = if (isActive) MaterialTheme.colorScheme.primary
+                                            else if (isCompleted) SpiritHealColor
+                                            else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                                            shape = CircleShape
+                                        ),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = when (node.type) {
+                                            NodeType.COMBAT -> "⚔️"
+                                            NodeType.BOSS -> "💀"
+                                            NodeType.CHEST -> "🎁"
+                                            NodeType.SHRINE -> "⛩️"
+                                            NodeType.MERCHANT -> "⚱️"
+                                            NodeType.NARRATIVE -> "📜"
+                                        },
+                                        fontSize = 13.sp
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(3.dp))
+                                Text(
+                                    text = "${idx + 1}",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal,
+                                        fontFamily = FontFamily.Monospace,
+                                        fontSize = 10.sp
+                                    ),
+                                    color = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                )
+                            }
+                        }
                     }
                 }
-            } else {
-                // Game Completed state!
+            }
+        }
+
+        // Central Active Scenario Decisions or Combat Arena
+        if (player.currentFloor > 100) {
+            // Game Fully Completed Victory State
+            item {
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -488,83 +595,339 @@ fun TowerClimbTab(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "👑 SOVEREIGN PENTACLE 👑",
+                            text = "👑 SOVEREIGN CONQUEROR 👑",
                             style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
                             color = SanctumGold,
                             textAlign = TextAlign.Center
                         )
-
                         Spacer(modifier = Modifier.height(16.dp))
-
                         Text(
-                            text = if (activeLang == "TR") {
-                                "Kule fhedilerek tamamen mühürlendi! Sen 100 katı da tırmanarak yeni çağın Hükümdarı (Sovereign) oldun. Ebedi Çürüme'nin yazgısı artık senin seçiminde kalacak."
-                            } else {
-                                "The Tower is fully conquered! You climbed all 100 floors and were crowned Sovereign of the Cosmos. The timeline belongs to your faction."
-                            },
+                            text = "You have climbed all 100 floors of the Cosmic Spires! The universe is forever saved and your name is written in stars.",
                             style = MaterialTheme.typography.bodyLarge,
                             textAlign = TextAlign.Center
                         )
-
                         Spacer(modifier = Modifier.height(24.dp))
-
                         Button(
                             onClick = onResetClick,
                             colors = ButtonDefaults.buttonColors(containerColor = SanctumGold),
                             modifier = Modifier.testTag("ascend_victory_reset")
                         ) {
-                            Text(if (activeLang == "TR") "Yeniden Başla" else "Begin New Loop")
+                            Text(LocalizationManager.getString(activeLang, "ascend_victory_reset"))
                         }
                     }
                 }
             }
-        }
+        } else {
+            val activeNode = nodes.getOrNull(player.currentNodeIndex)
+            if (activeNode != null) {
+                if (player.currentNodeCompleted) {
+                    // Sector cleared, show reward summary and continue advancing!
+                    item {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 16.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                            border = BorderStroke(1.5.dp, SpiritHealColor)
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .padding(18.dp)
+                                    .fillMaxWidth(),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    text = if (activeLang == "TR") "Sektörü Tamamladınız! 🎉" else "Sector Cleared! 🎉",
+                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                    color = SpiritHealColor
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = if (activeLang == "TR") {
+                                        "Bu bölgedeki sınamalar başarıyla aşıldı. Kule'nin bir sonraki katına çıkmaya veya derindeki diğer olay sektörüne sızmaya hazırsınız."
+                                    } else {
+                                        "All challenges here have been overcome. You are ready to transcend floors or advance to the next event sector."
+                                    },
+                                    style = MaterialTheme.typography.bodySmall,
+                                    textAlign = TextAlign.Center,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                                )
+                                Spacer(modifier = Modifier.height(18.dp))
 
-        // Choices block
-        if (scenario != null) {
-            item {
-                Text(
-                    text = if (activeLang == "TR") "KARARINI SEÇ" else "DECLARE YOUR CHOICE",
-                    style = MaterialTheme.typography.labelMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.sp
-                    ),
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
-                )
-                Spacer(modifier = Modifier.height(10.dp))
-            }
+                                if (activeNode.type == NodeType.BOSS) {
+                                    // Ascend to the next floor
+                                    Button(
+                                        onClick = onAscendFloorClick,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(50.dp)
+                                            .testTag("btn_ascend_floor"),
+                                        colors = ButtonDefaults.buttonColors(containerColor = SpiritHealColor)
+                                    ) {
+                                        Text(
+                                            text = LocalizationManager.getString(activeLang, "btn_ascend_floor"),
+                                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+                                        )
+                                    }
+                                } else {
+                                    // Move to next node
+                                    Button(
+                                        onClick = onNextNodeClick,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(50.dp)
+                                            .testTag("btn_next_node"),
+                                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                                    ) {
+                                        Text(
+                                            text = LocalizationManager.getString(activeLang, "btn_next_node"),
+                                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else if (activeNode.type == NodeType.COMBAT || activeNode.type == NodeType.BOSS) {
+                    // Turn-Based Combat UI
+                    item {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 12.dp),
+                            shape = RoundedCornerShape(14.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                            border = BorderStroke(
+                                width = if (activeNode.type == NodeType.BOSS) 2.dp else 1.dp,
+                                color = if (activeNode.type == NodeType.BOSS) SanctumGold else BlightDamageColor.copy(alpha = 0.4f)
+                            )
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = if (activeLang == "TR") activeNode.enemyNameTr else activeNode.enemyNameEn,
+                                        style = MaterialTheme.typography.titleMedium.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            fontFamily = FontFamily.Serif
+                                        ),
+                                        color = if (activeNode.type == NodeType.BOSS) SanctumGold else BlightDamageColor
+                                    )
+                                    
+                                    if (activeNode.type == NodeType.BOSS) {
+                                        Surface(
+                                            color = SanctumGold.copy(alpha = 0.15f),
+                                            shape = RoundedCornerShape(4.dp)
+                                        ) {
+                                            Text(
+                                                text = "BOSS",
+                                                modifier = Modifier.padding(6.dp, 2.dp),
+                                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                                color = SanctumGold
+                                            )
+                                        }
+                                    }
+                                }
+                                
+                                Spacer(modifier = Modifier.height(10.dp))
+                                
+                                val mobHp = activeEnemyHp ?: activeNode.enemyHp
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    LinearProgressIndicator(
+                                        progress = { mobHp.toFloat() / activeNode.enemyHp.toFloat() },
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .height(10.dp)
+                                            .clip(RoundedCornerShape(5.dp)),
+                                        color = BlightDamageColor,
+                                        trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+                                    )
+                                    Spacer(modifier = Modifier.width(10.dp))
+                                    Text(
+                                        text = "$mobHp/${activeNode.enemyHp}",
+                                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
+                                    )
+                                }
+                            }
+                        }
+                    }
 
-            // Choice A (Celestial Path)
-            item {
-                ChoiceButton(
-                    option = scenario.optionA,
-                    activeLang = activeLang,
-                    highlightColor = SanctumGold,
-                    testTagValue = "choice_a_btn",
-                    onClick = { onChoiceSelected(scenario.optionA) }
-                )
-            }
+                    // Turn-Based input options
+                    item {
+                        Column(modifier = Modifier.fillMaxWidth().padding(bottom = 14.dp)) {
+                            // Option 1: Basic Strike
+                            Button(
+                                onClick = { onCombatAction("STRIKE") },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp)
+                                    .height(48.dp)
+                                    .testTag("combat_strike_btn"),
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onSurface)
+                            ) {
+                                Text(
+                                    text = LocalizationManager.getString(activeLang, "btn_strike"),
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+                                )
+                            }
+                            
+                            // Option 2: Unique reflective alignment skills (HP cost Fatigue)
+                            Button(
+                                onClick = { onCombatAction("SKILL") },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp)
+                                    .height(48.dp)
+                                    .testTag("combat_skill_btn"),
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                            ) {
+                                Text(
+                                    text = LocalizationManager.getString(activeLang, "btn_skill"),
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+                                )
+                            }
 
-            // Choice B (Void Path)
-            item {
-                ChoiceButton(
-                    option = scenario.optionB,
-                    activeLang = activeLang,
-                    highlightColor = VoidNeonPurple,
-                    testTagValue = "choice_b_btn",
-                    onClick = { onChoiceSelected(scenario.optionB) }
-                )
-            }
+                            // Option 3: Healing potion (rests HP back, drains coins)
+                            OutlinedButton(
+                                onClick = { onCombatAction("POTION") },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp)
+                                    .height(48.dp)
+                                    .testTag("combat_potion_btn"),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = SpiritHealColor),
+                                border = BorderStroke(1.2.dp, SpiritHealColor)
+                            ) {
+                                Text(
+                                    text = LocalizationManager.getString(activeLang, "btn_potion"),
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+                                )
+                            }
+                        }
+                    }
 
-            // Choice C (Neutral Path)
-            item {
-                ChoiceButton(
-                    option = scenario.optionC,
-                    activeLang = activeLang,
-                    highlightColor = SlateBronze,
-                    testTagValue = "choice_c_btn",
-                    onClick = { onChoiceSelected(scenario.optionC) }
-                )
+                    // Scrolling Battle Logs
+                    item {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(min = 150.dp, max = 220.dp)
+                                .padding(bottom = 16.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f)),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.15f))
+                        ) {
+                            Column(modifier = Modifier.padding(12.dp)) {
+                                Text(
+                                    text = LocalizationManager.getString(activeLang, "label_combat_logs"),
+                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                )
+                                Spacer(modifier = Modifier.height(6.dp))
+                                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                                    items(combatLog.reversed()) { log ->
+                                        Text(
+                                            text = log,
+                                            style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace, fontSize = 11.sp),
+                                            color = MaterialTheme.colorScheme.onSurface,
+                                            modifier = Modifier.padding(vertical = 3.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    // Story choice node
+                    item {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 16.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                            shape = RoundedCornerShape(16.dp),
+                            border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
+                        ) {
+                            Column(modifier = Modifier.padding(18.dp)) {
+                                Text(
+                                    text = if (activeLang == "TR") activeNode.titleTr else activeNode.title,
+                                    style = MaterialTheme.typography.titleLarge.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        fontFamily = FontFamily.Serif
+                                    ),
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.padding(bottom = 10.dp)
+                                )
+
+                                Divider(color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f))
+
+                                Spacer(modifier = Modifier.height(12.dp))
+
+                                Text(
+                                    text = if (activeLang == "TR") activeNode.descriptionTr else activeNode.description,
+                                    style = MaterialTheme.typography.bodyLarge.copy(
+                                        lineHeight = 24.sp,
+                                        fontFamily = FontFamily.Serif
+                                    ),
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+                    }
+
+                    item {
+                        Text(
+                            text = LocalizationManager.getString(activeLang, "declare_choice"),
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 1.sp
+                            ),
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                    }
+
+                    // Choices
+                    activeNode.optionA?.let { choice ->
+                        item {
+                            NodeChoiceButton(
+                                choice = choice,
+                                activeLang = activeLang,
+                                highlightColor = SanctumGold,
+                                testTagValue = "choice_a_btn",
+                                onClick = { onChoiceSelected(choice) }
+                            )
+                        }
+                    }
+
+                    activeNode.optionB?.let { choice ->
+                        item {
+                            NodeChoiceButton(
+                                choice = choice,
+                                activeLang = activeLang,
+                                highlightColor = VoidNeonPurple,
+                                testTagValue = "choice_b_btn",
+                                onClick = { onChoiceSelected(choice) }
+                            )
+                        }
+                    }
+
+                    activeNode.optionC?.let { choice ->
+                        item {
+                            NodeChoiceButton(
+                                choice = choice,
+                                activeLang = activeLang,
+                                highlightColor = SlateBronze,
+                                testTagValue = "choice_c_btn",
+                                onClick = { onChoiceSelected(choice) }
+                            )
+                        }
+                    }
+                }
             }
         }
 
@@ -575,8 +938,8 @@ fun TowerClimbTab(
 }
 
 @Composable
-fun ChoiceButton(
-    option: GameOption,
+fun NodeChoiceButton(
+    choice: NodeChoice,
     activeLang: String,
     highlightColor: Color,
     testTagValue: String,
@@ -585,7 +948,7 @@ fun ChoiceButton(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 6.dp)
+            .padding(vertical = 5.dp)
             .clickable { onClick() }
             .testTag(testTagValue),
         shape = RoundedCornerShape(12.dp),
@@ -594,7 +957,7 @@ fun ChoiceButton(
     ) {
         Column(modifier = Modifier.padding(14.dp)) {
             Text(
-                text = if (activeLang == "TR") option.textTr else option.textEn,
+                text = if (activeLang == "TR") choice.textTr else choice.textEn,
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontWeight = FontWeight.Bold,
                     fontFamily = FontFamily.Serif
@@ -611,18 +974,18 @@ fun ChoiceButton(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // Alignment shift indicators
-                if (option.alignmentShift != 0) {
-                    val shiftLabel = if (option.alignmentShift > 0) "+Align ✨" else "-Align 🔥"
+                if (choice.alignmentShift != 0) {
+                    val shiftLabel = if (choice.alignmentShift > 0) "+Align ✨" else "-Align 🔥"
                     Text(
                         text = shiftLabel,
                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                        color = if (option.alignmentShift > 0) SanctumGold else VoidNeonPurple,
+                        color = if (choice.alignmentShift > 0) SanctumGold else VoidNeonPurple,
                         modifier = Modifier.padding(end = 10.dp)
                     )
                 }
 
-                if (option.goldChange != 0) {
-                    val goldLabel = if (option.goldChange > 0) "+${option.goldChange}🪙" else "${option.goldChange}🪙"
+                if (choice.goldChange != 0) {
+                    val goldLabel = if (choice.goldChange > 0) "+${choice.goldChange}🪙" else "${choice.goldChange}🪙"
                     Text(
                         text = goldLabel,
                         style = MaterialTheme.typography.labelSmall,
@@ -631,30 +994,49 @@ fun ChoiceButton(
                     )
                 }
 
-                if (option.gleamChange != 0) {
+                if (choice.gleamChange != 0) {
                     Text(
-                        text = "+${option.gleamChange}✨",
+                        text = "+${choice.gleamChange}✨",
                         style = MaterialTheme.typography.labelSmall,
                         color = GleamGold,
                         modifier = Modifier.padding(end = 10.dp)
                     )
                 }
 
-                if (option.pyreChange != 0) {
+                if (choice.pyreChange != 0) {
                     Text(
-                        text = "+${option.pyreChange}🔥",
+                        text = "+${choice.pyreChange}🔥",
                         style = MaterialTheme.typography.labelSmall,
                         color = PyrePurple,
                         modifier = Modifier.padding(end = 10.dp)
                     )
                 }
 
-                if (option.hpChange != 0) {
-                    val hpLabel = if (option.hpChange > 0) "+${option.hpChange} HP" else "${option.hpChange} HP"
+                if (choice.willChange != 0) {
+                    val willLabel = if (choice.willChange > 0) "+${choice.willChange}⚡" else "${choice.willChange}⚡"
+                    Text(
+                        text = willLabel,
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                        color = SanctumGold,
+                        modifier = Modifier.padding(end = 10.dp)
+                    )
+                }
+
+                if (choice.hpChange != 0) {
+                    val hpLabel = if (choice.hpChange > 0) "+${choice.hpChange} HP" else "${choice.hpChange} HP"
                     Text(
                         text = hpLabel,
                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                        color = if (option.hpChange > 0) SpiritHealColor else BlightDamageColor
+                        color = if (choice.hpChange > 0) SpiritHealColor else BlightDamageColor,
+                        modifier = Modifier.padding(end = 10.dp)
+                    )
+                }
+
+                if (choice.rewardItem.isNotEmpty()) {
+                    Text(
+                        text = "🎁 Eşya",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = SpiritHealColor
                     )
                 }
             }
@@ -680,7 +1062,7 @@ fun OuterWorldTab(
     ) {
         item {
             Text(
-                text = if (activeLang == "TR") "DIŞ YAŞAM SIĞINAĞI" else "OUTER HAVEN REFUGE",
+                text = LocalizationManager.getString(activeLang, "outer_haven_title"),
                 style = MaterialTheme.typography.headlineSmall.copy(
                     fontWeight = FontWeight.Bold,
                     fontFamily = FontFamily.Serif
@@ -688,11 +1070,7 @@ fun OuterWorldTab(
                 color = MaterialTheme.colorScheme.primary
             )
             Text(
-                text = if (activeLang == "TR") {
-                    "Ruh Kırılmasından sonra iyileştiğiniz veya Kule seferlerine hazırlandığınız dış sınırlar."
-                } else {
-                    "Beyond the tower gates. Trade items, Rest to replenish HP, or Scout dangers for extra gold."
-                },
+                text = LocalizationManager.getString(activeLang, "outer_haven_desc"),
                 style = MaterialTheme.typography.bodySmall,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(top = 4.dp, bottom = 16.dp)
@@ -716,15 +1094,11 @@ fun OuterWorldTab(
                     Spacer(modifier = Modifier.width(16.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = if (activeLang == "TR") "Kaplıcada Şifalan" else "Rest at Hotsprings",
+                            text = LocalizationManager.getString(activeLang, "rest_title"),
                             style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
                         )
                         Text(
-                            text = if (activeLang == "TR") {
-                                "Yaşam gücünüzü tamamen doldurur. Maliyet: 50 Altın."
-                            } else {
-                                "Restore all HP to full vitality. Costs 50 Gold."
-                            },
+                            text = LocalizationManager.getString(activeLang, "rest_desc"),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                         )
@@ -736,7 +1110,7 @@ fun OuterWorldTab(
                         enabled = player.gold >= 50 && player.currentHp < player.maxHp,
                         modifier = Modifier.testTag("heal_button")
                     ) {
-                        Text(if (activeLang == "TR") "Dinlen" else "Rest")
+                        Text(LocalizationManager.getString(activeLang, "rest_btn"))
                     }
                 }
             }
@@ -759,15 +1133,11 @@ fun OuterWorldTab(
                     Spacer(modifier = Modifier.width(16.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = if (activeLang == "TR") "Musibet Gözcülüğü Yap" else "Scout Abyss Fringes",
+                            text = LocalizationManager.getString(activeLang, "scout_title"),
                             style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
                         )
                         Text(
-                            text = if (activeLang == "TR") {
-                                "Altın ödülü verir ama Musibetten ötürü Can kaybetme riski taşır."
-                            } else {
-                                "Earn gold tokens by clearing local blight. Risk of taking HP decay."
-                            },
+                            text = LocalizationManager.getString(activeLang, "scout_desc"),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                         )
@@ -778,7 +1148,7 @@ fun OuterWorldTab(
                         colors = ButtonDefaults.buttonColors(containerColor = SlateBronze),
                         modifier = Modifier.testTag("scout_button")
                     ) {
-                        Text(if (activeLang == "TR") "Gözcü" else "Scout")
+                        Text(LocalizationManager.getString(activeLang, "scout_btn"))
                     }
                 }
             }
@@ -788,7 +1158,7 @@ fun OuterWorldTab(
         item {
             Spacer(modifier = Modifier.height(14.dp))
             Text(
-                text = if (activeLang == "TR") "KARABORSA TAKAS TEZGÂHI" else "BLACK EXCHANGE TRADER",
+                text = LocalizationManager.getString(activeLang, "exchange_title"),
                 style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold, letterSpacing = 1.sp),
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
             )
@@ -798,8 +1168,8 @@ fun OuterWorldTab(
         // Buy Gleam
         item {
             ExchangeCard(
-                title = if (activeLang == "TR") "Semavi Işıltı Satın Al" else "Aquire Celestial Gleam",
-                description = if (activeLang == "TR") "50 Altın ödeyerek 15 Işıltı alırsınız." else "Trade 50 Gold to earn 15 Gleam shards.",
+                title = LocalizationManager.getString(activeLang, "buy_gleam_title"),
+                description = LocalizationManager.getString(activeLang, "buy_gleam_desc"),
                 goldCost = 50,
                 currentGold = player.gold,
                 badgeColor = SanctumGold,
@@ -811,8 +1181,8 @@ fun OuterWorldTab(
         // Buy Pyre
         item {
             ExchangeCard(
-                title = if (activeLang == "TR") "Kara Ateş Satın Al" else "Aquire Abyssal Pyre",
-                description = if (activeLang == "TR") "50 Altın ödeyerek 15 Kara Ateş alırsınız." else "Trade 50 Gold to earn 15 Pyre fire.",
+                title = LocalizationManager.getString(activeLang, "buy_pyre_title"),
+                description = LocalizationManager.getString(activeLang, "buy_pyre_desc"),
                 goldCost = 50,
                 currentGold = player.gold,
                 badgeColor = VoidNeonPurple,
@@ -877,6 +1247,13 @@ fun CharacterSheetTab(
     if (player == null) return
 
     var nameInput by remember(player.playerName) { mutableStateOf(player.playerName) }
+
+    val itemsList = remember(player.itemsEncoded) {
+        if (player.itemsEncoded.isEmpty()) emptyList() else player.itemsEncoded.split(",").filter { it.isNotBlank() }
+    }
+    val titlesList = remember(player.titlesEncoded) {
+        if (player.titlesEncoded.isEmpty()) emptyList() else player.titlesEncoded.split(",").filter { it.isNotBlank() }
+    }
 
     LazyColumn(
         modifier = Modifier
@@ -1074,6 +1451,98 @@ fun CharacterSheetTab(
                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                             color = BlightDamageColor
                         )
+                    }
+                }
+            }
+        }
+
+        // Dynamic Materials & Loot Inventory
+        item {
+            Spacer(modifier = Modifier.height(16.dp))
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(text = "🎒 ", fontSize = 18.sp)
+                        Text(
+                            text = LocalizationManager.getString(activeLang, "label_items"),
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, letterSpacing = 1.sp),
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
+                    
+                    if (itemsList.isEmpty()) {
+                        Text(
+                            text = if (activeLang == "TR") "Sırt çantanız boş. Kule çarpışmalarından teçhizat kazanın." else "Your inventory is empty. Complete battles to loot gear.",
+                            style = MaterialTheme.typography.bodySmall.copy(fontStyle = FontStyle.Italic),
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                        )
+                    } else {
+                        itemsList.forEach { gear ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(text = "⚔️", fontSize = 14.sp)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = gear,
+                                    style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold),
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Dynamic Titles Inventory Ledger
+        item {
+            Spacer(modifier = Modifier.height(16.dp))
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(text = "👑 ", fontSize = 18.sp)
+                        Text(
+                            text = LocalizationManager.getString(activeLang, "label_titles"),
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, letterSpacing = 1.sp),
+                            color = SanctumGold
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
+                    
+                    if (titlesList.isEmpty()) {
+                        Text(
+                            text = if (activeLang == "TR") "Henüz kazanılmış bir unvanınız yok. Seçimleriniz kaderi yazar." else "No sovereign titles acquired yet. Make history on higher floors.",
+                            style = MaterialTheme.typography.bodySmall.copy(fontStyle = FontStyle.Italic),
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                        )
+                    } else {
+                        titlesList.forEach { title ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(text = "⚜️", fontSize = 14.sp)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = title,
+                                    style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
+                                    color = SanctumGold
+                                )
+                            }
+                        }
                     }
                 }
             }
