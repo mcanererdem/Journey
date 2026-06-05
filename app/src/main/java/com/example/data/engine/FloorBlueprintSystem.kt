@@ -2,6 +2,8 @@ package com.example.data.engine
 
 import com.example.data.model.PlayerProfile
 import kotlin.random.Random
+import org.json.JSONObject
+import org.json.JSONArray
 
 /**
  * Clean, scalable structural model representing an entire tower floor.
@@ -24,6 +26,12 @@ object FloorBlueprintSystem {
      * Handcrafts Floors 1-3, dynamically computes Floor 4-100 procedural tracks.
      */
     fun getBlueprintForFloor(floor: Int, player: PlayerProfile? = null): FloorBlueprint {
+        if (floor in 1..3) {
+            val jsonBlueprint = loadBlueprintFromJson(floor)
+            if (jsonBlueprint != null) {
+                return jsonBlueprint
+            }
+        }
         return when (floor) {
             1 -> getFloor1Blueprint()
             2 -> getFloor2Blueprint()
@@ -871,6 +879,147 @@ object FloorBlueprintSystem {
             optionA = GameOption("Opt A", "Sec A", 10, journalEn = "Selected Opt A on Floor $floor", journalTr = "Katta Sec A seçildi"),
             optionB = GameOption("Opt B", "Sec B", -10, journalEn = "Selected Opt B on Floor $floor", journalTr = "Katta Sec B seçildi"),
             optionC = GameOption("Opt C", "Sec C", 0, journalEn = "Selected Opt C on Floor $floor", journalTr = "Katta Sec C seçildi")
+        )
+    }
+
+    private fun loadBlueprintFromJson(floorNum: Int): FloorBlueprint? {
+        try {
+            val root = LocalizationManager.getFloorsBlueprintJson() ?: return null
+            val floorsArr = root.optJSONArray("floors") ?: return null
+            for (i in 0 until floorsArr.length()) {
+                val floorObj = floorsArr.getJSONObject(i)
+                val f = floorObj.optInt("floor", 0)
+                if (f == floorNum) {
+                    // Title and Description
+                    val titleEn = floorObj.optString("titleEn", "")
+                    val titleTr = floorObj.optString("titleTr", "")
+                    val descriptionEn = floorObj.optString("descriptionEn", "")
+                    val descriptionTr = floorObj.optString("descriptionTr", "")
+
+                    // Intro Scenario
+                    val introScenarioObj = floorObj.optJSONObject("introScenario") ?: return null
+                    val scenarioTitleEn = introScenarioObj.optString("titleEn", "")
+                    val scenarioTitleTr = introScenarioObj.optString("titleTr", "")
+                    val scenarioDescEn = introScenarioObj.optString("descriptionEn", "")
+                    val scenarioDescTr = introScenarioObj.optString("descriptionTr", "")
+
+                    val optionAObj = introScenarioObj.optJSONObject("optionA") ?: return null
+                    val optionBObj = introScenarioObj.optJSONObject("optionB") ?: return null
+                    val optionCObj = introScenarioObj.optJSONObject("optionC") ?: return null
+
+                    val optA = parseGameOption(optionAObj)
+                    val optB = parseGameOption(optionBObj)
+                    val optC = parseGameOption(optionCObj)
+
+                    val introScenario = FloorScenario(
+                        floor = floorNum,
+                        titleEn = scenarioTitleEn,
+                        titleTr = scenarioTitleTr,
+                        descriptionEn = scenarioDescEn,
+                        descriptionTr = scenarioDescTr,
+                        optionA = optA,
+                        optionB = optB,
+                        optionC = optC
+                    )
+
+                    // Nodes
+                    val nodesArr = floorObj.optJSONArray("nodes") ?: return null
+                    val nodesList = ArrayList<AdventureNode>()
+                    for (j in 0 until nodesArr.length()) {
+                        val nodeObj = nodesArr.getJSONObject(j)
+                        val idx = nodeObj.optInt("index", 0)
+                        val typeStr = nodeObj.optString("type", "NARRATIVE")
+                        val type = try { NodeType.valueOf(typeStr) } catch(e: Exception) { NodeType.NARRATIVE }
+                        val title = nodeObj.optString("title", "")
+                        val titleTr = nodeObj.optString("titleTr", "")
+                        val description = nodeObj.optString("description", "")
+                        val descriptionTr = nodeObj.optString("descriptionTr", "")
+
+                        val enemyNameEn = nodeObj.optString("enemyNameEn", "")
+                        val enemyNameTr = nodeObj.optString("enemyNameTr", "")
+                        val enemyHp = nodeObj.optInt("enemyHp", 0)
+                        val enemyMaxHp = nodeObj.optInt("enemyMaxHp", 0)
+                        val enemyAtk = nodeObj.optInt("enemyAtk", 0)
+
+                        val nodeOptAObj = nodeObj.optJSONObject("optionA")
+                        val nodeOptBObj = nodeObj.optJSONObject("optionB")
+                        val nodeOptCObj = nodeObj.optJSONObject("optionC")
+
+                        val nodeOptA = if (nodeOptAObj != null) parseNodeChoice(nodeOptAObj) else null
+                        val nodeOptB = if (nodeOptBObj != null) parseNodeChoice(nodeOptBObj) else null
+                        val nodeOptC = if (nodeOptCObj != null) parseNodeChoice(nodeOptCObj) else null
+
+                        val willCost = nodeObj.optInt("willCost", 0)
+
+                        nodesList.add(
+                            AdventureNode(
+                                index = idx,
+                                type = type,
+                                title = title,
+                                description = description,
+                                titleTr = titleTr,
+                                descriptionTr = descriptionTr,
+                                enemyNameEn = enemyNameEn,
+                                enemyNameTr = enemyNameTr,
+                                enemyHp = enemyHp,
+                                enemyMaxHp = enemyMaxHp,
+                                enemyAtk = enemyAtk,
+                                optionA = nodeOptA,
+                                optionB = nodeOptB,
+                                optionC = nodeOptC,
+                                willCost = willCost
+                            )
+                        )
+                    }
+
+                    return FloorBlueprint(
+                        floor = floorNum,
+                        titleEn = titleEn,
+                        titleTr = titleTr,
+                        descriptionEn = descriptionEn,
+                        descriptionTr = descriptionTr,
+                        introScenario = introScenario,
+                        nodes = nodesList
+                    )
+                }
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("FloorBlueprintSystem", "Error parsing floor JSON blueprint $floorNum", e)
+        }
+        return null
+    }
+
+    private fun parseGameOption(obj: JSONObject): GameOption {
+        return GameOption(
+            textEn = obj.optString("textEn", ""),
+            textTr = obj.optString("textTr", ""),
+            alignmentShift = obj.optInt("alignmentShift", 0),
+            goldChange = obj.optInt("goldChange", 0),
+            gleamChange = obj.optInt("gleamChange", 0),
+            pyreChange = obj.optInt("pyreChange", 0),
+            hpChange = obj.optInt("hpChange", 0),
+            journalEn = obj.optString("journalEn", ""),
+            journalTr = obj.optString("journalTr", "")
+        )
+    }
+
+    private fun parseNodeChoice(obj: JSONObject): NodeChoice {
+        return NodeChoice(
+            textEn = obj.optString("textEn", ""),
+            textTr = obj.optString("textTr", ""),
+            journalEn = obj.optString("journalEn", ""),
+            journalTr = obj.optString("journalTr", ""),
+            hpChange = obj.optInt("hpChange", 0),
+            goldChange = obj.optInt("goldChange", 0),
+            gleamChange = obj.optInt("gleamChange", 0),
+            pyreChange = obj.optInt("pyreChange", 0),
+            expChange = obj.optInt("expChange", 0),
+            alignmentShift = obj.optInt("alignmentShift", 0),
+            willChange = obj.optInt("willChange", 0),
+            rewardItem = obj.optString("rewardItem", ""),
+            rewardTitle = obj.optString("rewardTitle", ""),
+            skipToBoss = obj.optBoolean("skipToBoss", false),
+            skipToNextFloor = obj.optBoolean("skipToNextFloor", false)
         )
     }
 }

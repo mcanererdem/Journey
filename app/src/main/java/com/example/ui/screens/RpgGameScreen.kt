@@ -1174,6 +1174,11 @@ fun TowerClimbTab(
             Spacer(modifier = Modifier.height(12.dp))
         }
 
+        // Handcrafted Spires Cartography & Navigation Radar
+        item {
+            FloorProgressCartographyMap(player = player, activeLang = activeLang)
+        }
+
         // Visually Crawling Map Node Progress Row
         item {
             Card(
@@ -1897,6 +1902,309 @@ fun NodeChoiceButton(
                         style = MaterialTheme.typography.labelSmall,
                         color = SpiritHealColor
                     )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun FloorProgressCartographyMap(
+    player: PlayerProfile,
+    activeLang: String
+) {
+    val isTr = activeLang == "TR"
+    
+    // Remember currently inspected node (defaults/resets to current floor + room index)
+    // We coerce to 1..3 because the handcrafted maps represent Floor 1, 2, and 3
+    val defaultFloor = player.currentFloor.coerceIn(1, 3)
+    val defaultNodeIdx = player.currentNodeIndex.coerceIn(0, 4)
+    
+    var selectedFloor by remember(player.currentFloor, player.currentNodeIndex) { mutableStateOf(defaultFloor) }
+    var selectedNodeIdx by remember(player.currentFloor, player.currentNodeIndex) { mutableStateOf(defaultNodeIdx) }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 16.dp),
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.2.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f))
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            // Title Header
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "🧭",
+                    fontSize = 20.sp,
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = if (isTr) "KOZMİK HARİTACILIK VE RADAR" else "SPIRES RADAR & CARTOGRAPHY",
+                        style = MaterialTheme.typography.titleSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.5.sp
+                        ),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = if (isTr) "1-3. Kat planlarındaki odaları ve ilerlemenizi inceleyin." else "Track real-time room progress & details across Floors 1-3.",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Stacked vertical tower rows (Floor 3 down to Floor 1)
+            Column(
+                verticalArrangement = Arrangement.spacedBy(14.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                for (flNum in 3 downTo 1) {
+                    val blueprint = com.example.data.engine.FloorBlueprintSystem.getBlueprintForFloor(flNum, player)
+                    val nodes = blueprint.nodes
+
+                    val floorBadgeColor = when (flNum) {
+                        3 -> VoidNeonPurple
+                        2 -> MaterialTheme.colorScheme.primary
+                        else -> SpiritHealColor
+                    }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Floor Pill Badge
+                        Box(
+                            modifier = Modifier
+                                .width(56.dp)
+                                .height(26.dp)
+                                .background(floorBadgeColor.copy(alpha = 0.15f), RoundedCornerShape(6.dp))
+                                .border(1.dp, floorBadgeColor.copy(alpha = 0.35f), RoundedCornerShape(6.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = if (isTr) "K$flNum" else "FL $flNum",
+                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                color = floorBadgeColor
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.width(10.dp))
+
+                        // Path & Circles Row (CSS grid / linear chain simulation)
+                        Row(
+                            modifier = Modifier.weight(1f),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            for (idx in 0 until 5) {
+                                val node = nodes.getOrNull(idx)
+                                val isCurrent = player.currentFloor == flNum && player.currentNodeIndex == idx
+                                val isCleared = player.currentFloor > flNum || 
+                                        (player.currentFloor == flNum && (player.currentNodeIndex > idx || (player.currentNodeIndex == idx && player.currentNodeCompleted)))
+                                val isSelected = selectedFloor == flNum && selectedNodeIdx == idx
+
+                                val circleBorderColor = when {
+                                    isSelected -> SanctumGold
+                                    isCurrent -> MaterialTheme.colorScheme.primary
+                                    isCleared -> SpiritHealColor
+                                    else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
+                                }
+
+                                val circleBgColor = when {
+                                    isCurrent -> MaterialTheme.colorScheme.primaryContainer
+                                    isCleared -> SpiritHealColor.copy(alpha = 0.1f)
+                                    isSelected -> SanctumGold.copy(alpha = 0.1f)
+                                    else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                                }
+
+                                Box(
+                                    modifier = Modifier
+                                        .size(34.dp)
+                                        .clip(CircleShape)
+                                        .background(circleBgColor)
+                                        .border(
+                                            width = if (isSelected) 2.5.dp else if (isCurrent) 1.8.dp else 1.dp,
+                                            color = circleBorderColor,
+                                            shape = CircleShape
+                                        )
+                                        .clickable {
+                                            selectedFloor = flNum
+                                            selectedNodeIdx = idx
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    if (node != null) {
+                                        Text(
+                                            text = when (node.type) {
+                                                NodeType.COMBAT -> "⚔️"
+                                                NodeType.BOSS -> "💀"
+                                                NodeType.CHEST -> "🎁"
+                                                NodeType.SHRINE -> "⛩️"
+                                                NodeType.MERCHANT -> "⚱️"
+                                                NodeType.NARRATIVE -> "📜"
+                                            },
+                                            fontSize = 12.sp,
+                                            color = if (isCleared || isCurrent) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                                        )
+                                    } else {
+                                        Text("?", fontSize = 12.sp)
+                                    }
+                                }
+
+                                // Connecting Path Segment (Divider)
+                                if (idx < 4) {
+                                    val pathCleared = player.currentFloor > flNum || 
+                                            (player.currentFloor == flNum && player.currentNodeIndex > idx)
+                                    
+                                    val pathColor = if (pathCleared) SpiritHealColor else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.15f)
+                                    val pathHeight = if (pathCleared) 2.5.dp else 1.2.dp
+
+                                    HorizontalDivider(
+                                        modifier = Modifier.weight(1f),
+                                        thickness = pathHeight,
+                                        color = pathColor
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Inspection Panel
+            val inspectBlueprint = com.example.data.engine.FloorBlueprintSystem.getBlueprintForFloor(selectedFloor, player)
+            val inspectNode = inspectBlueprint.nodes.getOrNull(selectedNodeIdx)
+            
+            if (inspectNode != null) {
+                val nodeName = if (isTr) inspectNode.titleTr else inspectNode.title
+                val nodeDesc = if (isTr) inspectNode.descriptionTr else inspectNode.description
+                
+                val nodeTypeLabel = when (inspectNode.type) {
+                    NodeType.COMBAT -> if (isTr) "Dövüş Sektörü" else "Combat Sector"
+                    NodeType.BOSS -> if (isTr) "Zirve Canavarı Sektörü" else "Apex Boss Sanctum"
+                    NodeType.CHEST -> if (isTr) "Hazine Haznesi" else "Honeypot Cache"
+                    NodeType.SHRINE -> if (isTr) "Ruhani Mabet" else "Holy Sacrament"
+                    NodeType.MERCHANT -> if (isTr) "Seyyar Tüccar" else "Nomad Merchant"
+                    NodeType.NARRATIVE -> if (isTr) "Yol Ayrımı Kararı" else "Narrative Choice"
+                }
+
+                val inspectIsCurrent = player.currentFloor == selectedFloor && player.currentNodeIndex == selectedNodeIdx
+                val inspectIsCleared = player.currentFloor > selectedFloor || 
+                        (player.currentFloor == selectedFloor && (player.currentNodeIndex > selectedNodeIdx || (player.currentNodeIndex == selectedNodeIdx && player.currentNodeCompleted)))
+
+                Surface(
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f),
+                    shape = RoundedCornerShape(10.dp),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f), CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = when (inspectNode.type) {
+                                        NodeType.COMBAT -> "⚔️"
+                                        NodeType.BOSS -> "💀"
+                                        NodeType.CHEST -> "🎁"
+                                        NodeType.SHRINE -> "⛩️"
+                                        NodeType.MERCHANT -> "⚱️"
+                                        NodeType.NARRATIVE -> "📜"
+                                    },
+                                    fontSize = 16.sp
+                                )
+                            }
+                            
+                            Spacer(modifier = Modifier.width(10.dp))
+                            
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "$nodeName",
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Text(
+                                    text = "$nodeTypeLabel • Kat $selectedFloor, Sektor ${selectedNodeIdx + 1}",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.width(6.dp))
+
+                            // Status Tag
+                            val statusText = when {
+                                inspectIsCurrent -> if (isTr) "📍 AKTİF" else "📍 ACTIVE"
+                                inspectIsCleared -> if (isTr) "✓ GEÇİLDİ" else "✓ CLEARED"
+                                else -> if (isTr) "🔒 KİLİTLİ" else "🔒 LOCKED"
+                            }
+                            val statusBgColor = when {
+                                inspectIsCurrent -> SanctumGold.copy(alpha = 0.15f)
+                                inspectIsCleared -> SpiritHealColor.copy(alpha = 0.15f)
+                                else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
+                            }
+                            val statusTextColor = when {
+                                inspectIsCurrent -> SanctumSecondary
+                                inspectIsCleared -> Color(0xFF2E7D32)
+                                else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .background(statusBgColor, RoundedCornerShape(4.dp))
+                                    .padding(horizontal = 6.dp, vertical = 3.dp)
+                            ) {
+                                Text(
+                                    text = statusText,
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 9.sp,
+                                        letterSpacing = 0.5.sp
+                                    ),
+                                    color = statusTextColor
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        Text(
+                            text = nodeDesc,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.75f)
+                        )
+
+                        // If combat or boss, show threat assessments
+                        if (inspectNode.type == NodeType.COMBAT || inspectNode.type == NodeType.BOSS) {
+                            Spacer(modifier = Modifier.height(6.dp))
+                            val enemyName = if (isTr) inspectNode.enemyNameTr else inspectNode.enemyNameEn
+                            Text(
+                                text = if (isTr) {
+                                    "✨ Canavar: $enemyName | can: ${inspectNode.enemyHp} HP | Saldırı: +${inspectNode.enemyAtk}"
+                                } else {
+                                    "✨ Threat: $enemyName | HP: ${inspectNode.enemyHp} | Atk: +${inspectNode.enemyAtk}"
+                                },
+                                style = MaterialTheme.typography.labelSmall.copy(fontStyle = FontStyle.Italic, fontWeight = FontWeight.SemiBold),
+                                color = if (inspectNode.type == NodeType.BOSS) BlightDamageColor else MaterialTheme.colorScheme.secondary
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -3325,6 +3633,192 @@ fun QuestsTab(
                                         }
                                     }
                                 }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // --- HANDCRAFTED BLUEPRINTS DECREES & OBJECTIVES ---
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("📐 ", fontSize = 20.sp)
+                        Text(
+                            text = if (activeLang == "TR") "KAT PLANI HEDEFLERİ (1-3)" else "HANDCRAFTED FLOOR OBJECTIVES (1-3)",
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = if (activeLang == "TR") {
+                            "JSON şablonuna göre her kattaki özel görev, arınma ve canavar hedeflerinizi tamamlayın."
+                        } else {
+                            "Track dynamic targets, narrative events and boss objectives loaded from JSON floor blueprints."
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+                    )
+                }
+            }
+        }
+
+        items(3) { index ->
+            val floorNum = index + 1
+            val (completed, total) = com.example.data.engine.FloorStateManager.getFloorProgress(floorNum, player)
+            val percentage = if (total > 0) completed.toFloat() / total else 0f
+            val objectives = com.example.data.engine.FloorStateManager.getObjectivesForFloor(floorNum, player)
+            
+            // Render an elegant expandable card for each of Floor 1, 2, and 3
+            var expanded by remember { mutableStateOf(player.currentFloor == floorNum) }
+            
+            val blueprint = com.example.data.engine.FloorBlueprintSystem.getBlueprintForFloor(floorNum, player)
+            val floorTitle = if (activeLang == "TR") blueprint.titleTr else blueprint.titleEn
+            val floorDesc = if (activeLang == "TR") blueprint.descriptionTr else blueprint.descriptionEn
+
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp),
+                shape = RoundedCornerShape(10.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (player.currentFloor == floorNum) {
+                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f)
+                    } else {
+                        MaterialTheme.colorScheme.surface
+                    }
+                ),
+                border = BorderStroke(
+                    1.dp,
+                    if (player.currentFloor == floorNum) MaterialTheme.colorScheme.primary.copy(alpha = 0.5f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
+                )
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { expanded = !expanded }
+                        .padding(14.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                if (player.currentFloor == floorNum) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(8.dp)
+                                            .background(MaterialTheme.colorScheme.primary, shape = CircleShape)
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                }
+                                Text(
+                                    text = if (activeLang == "TR") "$floorNum. Kat: $floorTitle" else "Floor $floorNum: $floorTitle",
+                                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                                    color = if (player.currentFloor == floorNum) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = floorDesc,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
+                                maxLines = if (expanded) Int.MAX_VALUE else 1,
+                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                            )
+                        }
+                        
+                        Spacer(modifier = Modifier.width(10.dp))
+                        
+                        // Percentage Circle / Pill
+                        Box(
+                            modifier = Modifier
+                                .background(
+                                    if (percentage >= 1f) Color(0xFF4CAF50).copy(alpha = 0.15f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = "${(percentage * 100).toInt()}%",
+                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                color = if (percentage >= 1f) Color(0xFF2E7D32) else MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    // Progress Bar
+                    LinearProgressIndicator(
+                        progress = { percentage },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(6.dp)
+                            .clip(RoundedCornerShape(3.dp)),
+                        color = if (percentage >= 1f) Color(0xFF4CAF50) else MaterialTheme.colorScheme.primary,
+                        trackColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+                    )
+
+                    if (expanded) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f))
+                        Spacer(modifier = Modifier.height(10.dp))
+                        
+                        // Objectives List
+                        objectives.forEach { obj ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = if (obj.isCompleted) "✅" else "⏳",
+                                    fontSize = 14.sp
+                                )
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Text(
+                                    text = if (activeLang == "TR") obj.textTr else obj.textEn,
+                                    style = MaterialTheme.typography.bodySmall.copy(
+                                        fontWeight = if (obj.isCompleted) FontWeight.Normal else FontWeight.Medium
+                                    ),
+                                    color = if (obj.isCompleted) {
+                                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                    } else {
+                                        MaterialTheme.colorScheme.onSurface
+                                    }
+                                )
+                            }
+                        }
+                        
+                        // Transition action for handcrafted floors!
+                        if (player.currentFloor != floorNum) {
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Button(
+                                onClick = { viewModel.initiateTransitionToFloor(floorNum) },
+                                modifier = Modifier.align(Alignment.End),
+                                shape = RoundedCornerShape(8.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = if (player.currentFloor > floorNum) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary
+                                )
+                            ) {
+                                Text(
+                                    text = if (player.currentFloor > floorNum) {
+                                        if (activeLang == "TR") "Bu Kata Geri Dön (-2 İrade) ↩️" else "Backtrack to Floor (-2 Will) ↩️"
+                                    } else {
+                                        if (activeLang == "TR") "Bu Kata Yüksel (-2 İrade) 🚀" else "Ascend to Floor (-2 Will) 🚀"
+                                    },
+                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold)
+                                )
                             }
                         }
                     }

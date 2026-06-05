@@ -10,6 +10,7 @@ object LocalizationManager {
     private const val TAG = "LocalizationManager"
     private var enJson: JSONObject? = null
     private var trJson: JSONObject? = null
+    private var floorsBlueprintJson: JSONObject? = null
 
     fun init(context: Context) {
         if (enJson == null) {
@@ -18,7 +19,12 @@ object LocalizationManager {
         if (trJson == null) {
             trJson = loadJsonFromAsset(context, "locales/tr.json")
         }
+        if (floorsBlueprintJson == null) {
+            floorsBlueprintJson = loadJsonFromAsset(context, "locales/floors_blueprint.json")
+        }
     }
+
+    fun getFloorsBlueprintJson(): JSONObject? = floorsBlueprintJson
 
     private fun loadJsonFromAsset(context: Context, fileName: String): JSONObject? {
         return try {

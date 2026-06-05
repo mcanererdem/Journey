@@ -700,6 +700,36 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun initiateTransitionToFloor(targetFloor: Int) {
+        viewModelScope.launch {
+            val profile = repository.getPlayerProfileDirect() ?: return@launch
+            when (val res = com.example.data.engine.FloorStateManager.attemptFloorTransition(profile, targetFloor)) {
+                is com.example.data.engine.FloorStateManager.TransitionResult.Success -> {
+                    repository.savePlayerProfile(res.updatedProfile)
+                    
+                    _activeEnemyHp.value = null
+                    _combatLog.value = emptyList()
+                    
+                    val logEntry = JournalEntry(
+                        floor = profile.currentFloor,
+                        actionTakenEs = res.journalEn,
+                        actionTakenTr = res.journalTr,
+                        sideAlignmentShift = profile.side,
+                        alignmentImpact = 0
+                    )
+                    repository.insertJournalEntry(logEntry)
+                    
+                    _lastActionMessageEn.value = res.messageEn
+                    _lastActionMessageTr.value = res.messageTr
+                }
+                is com.example.data.engine.FloorStateManager.TransitionResult.Failure -> {
+                    _lastActionMessageEn.value = "❌ " + res.reasonEn
+                    _lastActionMessageTr.value = "❌ " + res.reasonTr
+                }
+            }
+        }
+    }
+
     fun executeCombatTurn(action: String) {
         viewModelScope.launch {
             val profile = repository.getPlayerProfileDirect() ?: return@launch
