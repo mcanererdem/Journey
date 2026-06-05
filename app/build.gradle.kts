@@ -119,3 +119,8 @@ dependencies {
   "ksp"(libs.androidx.room.compiler)
   "ksp"(libs.moshi.kotlin.codegen)
 }
+
+tasks.withType<Test> {
+  systemProperty("user.language", "en")
+  systemProperty("user.country", "US")
+}

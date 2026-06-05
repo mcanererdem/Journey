@@ -53,6 +53,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.saveable.rememberSaveable
 import com.example.data.engine.QuestTitleSystem
 import com.example.data.engine.QuestType
+import androidx.compose.ui.unit.IntOffset
+import kotlin.math.roundToInt
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -1137,6 +1139,28 @@ fun TowerClimbTab(
 ) {
     if (player == null) return
 
+    val shakeOffsetX = remember { androidx.compose.animation.core.Animatable(0f) }
+    val shakeOffsetY = remember { androidx.compose.animation.core.Animatable(0f) }
+
+    LaunchedEffect(combatLog.size) {
+        if (combatLog.isNotEmpty()) {
+            for (i in 0..5) {
+                val dx = if (i % 2 == 0) 12f else -12f
+                val dy = if (i % 2 == 0) -8f else 8f
+                shakeOffsetX.animateTo(
+                    targetValue = dx,
+                    animationSpec = androidx.compose.animation.core.tween(durationMillis = 45)
+                )
+                shakeOffsetY.animateTo(
+                    targetValue = dy,
+                    animationSpec = androidx.compose.animation.core.tween(durationMillis = 45)
+                )
+            }
+            shakeOffsetX.animateTo(0f, animationSpec = androidx.compose.animation.core.tween(durationMillis = 45))
+            shakeOffsetY.animateTo(0f, animationSpec = androidx.compose.animation.core.tween(durationMillis = 45))
+        }
+    }
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -1381,7 +1405,8 @@ fun TowerClimbTab(
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(bottom = 12.dp),
+                                .padding(bottom = 12.dp)
+                                .offset { IntOffset(shakeOffsetX.value.roundToInt(), shakeOffsetY.value.roundToInt()) },
                             shape = RoundedCornerShape(14.dp),
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                             border = BorderStroke(
@@ -3272,10 +3297,33 @@ fun SecretBossCombatView(
     onEscape: () -> Unit,
     activeLang: String
 ) {
+    val shakeOffsetX = remember { androidx.compose.animation.core.Animatable(0f) }
+    val shakeOffsetY = remember { androidx.compose.animation.core.Animatable(0f) }
+
+    LaunchedEffect(combatLog.size) {
+        if (combatLog.isNotEmpty()) {
+            for (i in 0..5) {
+                val dx = if (i % 2 == 0) 12f else -12f
+                val dy = if (i % 2 == 0) -8f else 8f
+                shakeOffsetX.animateTo(
+                    targetValue = dx,
+                    animationSpec = androidx.compose.animation.core.tween(durationMillis = 45)
+                )
+                shakeOffsetY.animateTo(
+                    targetValue = dy,
+                    animationSpec = androidx.compose.animation.core.tween(durationMillis = 45)
+                )
+            }
+            shakeOffsetX.animateTo(0f, animationSpec = androidx.compose.animation.core.tween(durationMillis = 45))
+            shakeOffsetY.animateTo(0f, animationSpec = androidx.compose.animation.core.tween(durationMillis = 45))
+        }
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(16.dp)
+            .offset { IntOffset(shakeOffsetX.value.roundToInt(), shakeOffsetY.value.roundToInt()) },
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(16.dp),
         border = BorderStroke(2.dp, BlightDamageColor)
@@ -3855,11 +3903,8 @@ fun QuestsTab(
                 "ALL" to (if (activeLang == "TR") "HEPSİ" else "ALL"),
                 "MAIN" to (if (activeLang == "TR") "ANA" else "MAIN"),
                 "SIDE" to (if (activeLang == "TR") "YAN" else "SIDE"),
-                "NORMAL" to (if (activeLang == "TR") "NORMAL" else "NORMAL"),
-                "SPECIAL" to (if (activeLang == "TR") "ÖZEL" else "SPECIAL"),
                 "CHAIN" to (if (activeLang == "TR") "ZİNCİR" else "CHAIN"),
-                "HIDDEN" to (if (activeLang == "TR") "GİZLİ" else "HIDDEN"),
-                "EVENT" to (if (activeLang == "TR") "ETKİNLİK" else "EVENT")
+                "HIDDEN" to (if (activeLang == "TR") "GİZLİ" else "HIDDEN")
             )
 
             LazyRow(
@@ -3957,11 +4002,8 @@ fun QuestsTab(
                                 val badgeColor = when (q.type) {
                                     QuestType.MAIN -> MaterialTheme.colorScheme.primary
                                     QuestType.SIDE -> SanctumGold
-                                    QuestType.NORMAL -> MaterialTheme.colorScheme.secondary
-                                    QuestType.SPECIAL -> MaterialTheme.colorScheme.tertiary
                                     QuestType.CHAIN -> VoidNeonPurple
                                     QuestType.HIDDEN -> BlightDamageColor
-                                    QuestType.EVENT -> Color(0xFFFF9800)
                                 }
                                 Box(
                                     modifier = Modifier
