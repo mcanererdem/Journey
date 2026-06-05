@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -19,6 +20,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -76,6 +78,13 @@ fun RpgGameScreen(
     val actionMessageEn by viewModel.lastActionMessageEn.collectAsStateWithLifecycle()
     val actionMessageTr by viewModel.lastActionMessageTr.collectAsStateWithLifecycle()
 
+    // Add Settings flows collection
+    val themeSelection by viewModel.themeSelection.collectAsStateWithLifecycle()
+    val showNotificationBanner by viewModel.showNotificationBanner.collectAsStateWithLifecycle()
+    val soundEnabled by viewModel.soundEnabled.collectAsStateWithLifecycle()
+    val showTitlePrefix by viewModel.showTitlePrefix.collectAsStateWithLifecycle()
+    var isSettingsDialogShown by remember { mutableStateOf(false) }
+
     val context = LocalContext.current
     val currentSide = player?.side ?: "NEUTRAL"
 
@@ -131,6 +140,18 @@ fun RpgGameScreen(
                             imageVector = Icons.Default.Refresh,
                             contentDescription = "Restart RPG",
                             tint = BlightDamageColor
+                        )
+                    }
+
+                    // Settings Button
+                    IconButton(
+                        onClick = { isSettingsDialogShown = true },
+                        modifier = Modifier.testTag("settings_button")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Settings",
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
                 },
@@ -191,41 +212,48 @@ fun RpgGameScreen(
         ) {
             // Header stats block
             player?.let { p ->
-                HeaderStatsBlock(player = p, activeLang = activeLang, onStoreClick = { viewModel.setPurchaseDialogShown(true) })
+                HeaderStatsBlock(
+                    player = p,
+                    activeLang = activeLang,
+                    showTitlePrefix = showTitlePrefix,
+                    onStoreClick = { viewModel.setPurchaseDialogShown(true) }
+                )
             }
 
             // Flash action logger alert banner
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 6.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)
-                ),
-                shape = RoundedCornerShape(8.dp),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
-            ) {
-                Row(
+            if (showNotificationBanner) {
+                Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(10.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                        .padding(horizontal = 16.dp, vertical = 6.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)
+                    ),
+                    shape = RoundedCornerShape(8.dp),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Info,
-                        contentDescription = "Notification",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Text(
-                        text = if (activeLang == "TR") actionMessageTr else actionMessageEn,
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            fontWeight = FontWeight.Medium,
-                            fontFamily = FontFamily.Serif
-                        ),
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = "Notification",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            text = if (activeLang == "TR") actionMessageTr else actionMessageEn,
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                fontWeight = FontWeight.Medium,
+                                fontFamily = FontFamily.Serif
+                            ),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
                 }
             }
 
@@ -567,12 +595,317 @@ fun RpgGameScreen(
             }
         )
     }
+
+    if (isSettingsDialogShown) {
+        AlertDialog(
+            onDismissRequest = { isSettingsDialogShown = false },
+            confirmButton = {
+                Button(
+                    onClick = { isSettingsDialogShown = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                    modifier = Modifier.testTag("settings_done_button")
+                ) {
+                    Text(if (activeLang == "TR") "Kapat" else "Close")
+                }
+            },
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = "Settings",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+                    Text(
+                        text = if (activeLang == "TR") "OYUN AYARLARI" else "GAME SETTINGS",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            },
+            text = {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    // Category 1: Player Account & Stats
+                    Text(
+                        text = if (activeLang == "TR") "👤 KAHRAMAN DURUMU & STATLAR" else "👤 HERO STATUS & STATS",
+                        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    
+                    player?.let { p ->
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+                        ) {
+                            Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = if (activeLang == "TR") "İsim:" else "Hero Name:",
+                                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold)
+                                    )
+                                    Text(
+                                        text = p.playerName,
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                }
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = if (activeLang == "TR") "Seviye / Deneyim (EXP):" else "Level / Experience (EXP):",
+                                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold)
+                                    )
+                                    Text(
+                                        text = "Lv ${p.level} (${p.exp}/${p.maxExp} EXP)",
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                }
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = if (activeLang == "TR") "Hizalanma (Alignment):" else "Alignment Score:",
+                                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold)
+                                    )
+                                    val alignText = when {
+                                        p.alignment > 0 -> "Light / Saintly (+${p.alignment})"
+                                        p.alignment < 0 -> "Abyss / Void (${p.alignment})"
+                                        else -> "Neutral (0)"
+                                    }
+                                    val alignTextTr = when {
+                                        p.alignment > 0 -> "Işık / Aziz (+${p.alignment})"
+                                        p.alignment < 0 -> "Boşluk / Kaos (${p.alignment})"
+                                        else -> "Nötr (0)"
+                                    }
+                                    Text(
+                                        text = if (activeLang == "TR") alignTextTr else alignText,
+                                        style = MaterialTheme.typography.bodySmall.copy(
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = if (p.alignment > 0) SanctumGold else if (p.alignment < 0) VoidNeonPurple else MaterialTheme.colorScheme.onSurface
+                                        )
+                                    )
+                                }
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = if (activeLang == "TR") "Sınıf (Class):" else "Current Class:",
+                                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold)
+                                    )
+                                    Text(
+                                        text = p.chosenClass,
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                }
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = if (activeLang == "TR") "Kuşanılmış Unvan:" else "Equipped Title:",
+                                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold)
+                                    )
+                                    Text(
+                                        text = p.equippedTitle.ifEmpty { if (activeLang == "TR") "Yok" else "None" },
+                                        style = MaterialTheme.typography.bodySmall.copy(fontStyle = FontStyle.Italic)
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    HorizontalDivider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f))
+
+                    // Category 2: Theme & Palette Settings (with activeThemeSide reactivity)
+                    Text(
+                        text = if (activeLang == "TR") "🎨 GÖRÜNÜM & TEMA SEÇİMİ" else "🎨 DISPLAY & THEME SETTINGS",
+                        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(
+                            text = if (activeLang == "TR") {
+                                "Nasıl bir kule ambiyansı istersiniz? Hizalanmaya Göre seçeneği, hizalanma puanınıza göre temayı otomatik belirler."
+                            } else {
+                                "How do you want the environment to look? 'Alignment Driven' dynamically chooses between Sanctum and Abyss based on your alignment score."
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+
+                        // Alignment Driven option
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { viewModel.setThemeSelection("ALIGNMENT") }
+                                .padding(vertical = 4.dp)
+                        ) {
+                            RadioButton(
+                                selected = themeSelection == "ALIGNMENT",
+                                onClick = { viewModel.setThemeSelection("ALIGNMENT") },
+                                modifier = Modifier.testTag("theme_radio_alignment")
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = if (activeLang == "TR") "Hizalanmaya Göre (Dinamik)" else "Alignment Driven (Dynamic)",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+
+                        // Light (Sanctum) option
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { viewModel.setThemeSelection("LIGHT") }
+                                .padding(vertical = 4.dp)
+                        ) {
+                            RadioButton(
+                                selected = themeSelection == "LIGHT",
+                                onClick = { viewModel.setThemeSelection("LIGHT") },
+                                modifier = Modifier.testTag("theme_radio_light")
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = if (activeLang == "TR") "Işık Teması (Celestial Sanctum)" else "Light Theme (Celestial Sanctum)",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+
+                        // Abyss (Covenant) option
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { viewModel.setThemeSelection("ABYSS") }
+                                .padding(vertical = 4.dp)
+                        ) {
+                            RadioButton(
+                                selected = themeSelection == "ABYSS",
+                                onClick = { viewModel.setThemeSelection("ABYSS") },
+                                modifier = Modifier.testTag("theme_radio_abyss")
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = if (activeLang == "TR") "Boşluk Teması (Abyss Covenant)" else "Abyss Theme (Void Covenant)",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    }
+
+                    HorizontalDivider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f))
+
+                    // Category 3: Display Settings & Notifications
+                    Text(
+                        text = if (activeLang == "TR") {
+                            "🔔 BİLDİRİM & GÖRÜNTÜLEME AYARLARI"
+                        } else {
+                            "🔔 NOTIFICATIONS & PREFERENCES"
+                        },
+                        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+
+                    // Show Notification Card Switch
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = if (activeLang == "TR") "Hızlı Karar Bildirimi" else "Action Banner Notification",
+                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)
+                            )
+                            Text(
+                                text = if (activeLang == "TR") "Son oyun kararlarını gösteren başlık kartı" else "The floating banner showing recent action logs",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Switch(
+                            checked = showNotificationBanner,
+                            onCheckedChange = { viewModel.setShowNotificationBanner(it) },
+                            modifier = Modifier.testTag("switch_notification_banner")
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    // Prefix Equipped Title Switch
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = if (activeLang == "TR") "Unvan Başlığını Göster" else "Show Active Title Prefix",
+                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)
+                            )
+                            Text(
+                                text = if (activeLang == "TR") "Kuşanılmış unvanı ismin önünde gösterir" else "Prepends active equipped title before name",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Switch(
+                            checked = showTitlePrefix,
+                            onCheckedChange = { viewModel.setShowTitlePrefix(it) },
+                            modifier = Modifier.testTag("switch_title_prefix")
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    // Sound Effects Switch
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = if (activeLang == "TR") "Oyun Efekt Sesleri" else "Combat Sound Effects",
+                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)
+                            )
+                            Text(
+                                text = if (activeLang == "TR") "Savaş ve buton tıklama tınıları" else "Atmospheric audio and selection tones",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Switch(
+                            checked = soundEnabled,
+                            onCheckedChange = { viewModel.setSoundEnabled(it) },
+                            modifier = Modifier.testTag("switch_sound_effects")
+                        )
+                    }
+                }
+            }
+        )
+    }
 }
 
 @Composable
 fun HeaderStatsBlock(
     player: PlayerProfile,
     activeLang: String,
+    showTitlePrefix: Boolean = true,
     onStoreClick: () -> Unit
 ) {
     Card(
@@ -598,7 +931,7 @@ fun HeaderStatsBlock(
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         val titleObj = com.example.data.engine.QuestTitleSystem.getTitleDef(player.equippedTitle)
-                        if (titleObj != null) {
+                        if (titleObj != null && showTitlePrefix) {
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 text = "(${if (activeLang == "TR") titleObj.nameTr else titleObj.nameEn})",
@@ -1099,6 +1432,184 @@ fun TowerClimbTab(
                                         text = "$mobHp/${activeNode.enemyHp}",
                                         style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
                                     )
+                                }
+
+                                // Advanced turn-based stats and alignment-influenced tactical modifiers panel
+                                val enemyFaction = com.example.data.model.EnemyFaction.fromName(activeNode.enemyNameEn)
+                                val isSanctum = player.side == "SANCTUM" || player.alignment > 20
+                                val isCovenant = player.side == "COVENANT" || player.alignment < -20
+                                val critChance = (10 + player.currentWill * 4).coerceIn(10, 50)
+                                val hpPercentage = player.currentHp.toFloat() / player.maxHp.toFloat()
+
+                                val textText = when (enemyFaction) {
+                                    com.example.data.model.EnemyFaction.SANCTUM_WRATH -> if (activeLang == "TR") "KUTSAL ORDU" else "HOLY WRATH"
+                                    com.example.data.model.EnemyFaction.VOID_CORRUPTION -> if (activeLang == "TR") "ABIS MUSİBETİ" else "VOID CORRUPTION"
+                                    com.example.data.model.EnemyFaction.BLIGHTED_AMALGAM -> if (activeLang == "TR") "KADİM MUSİBET" else "CORRUPTED BLIGHT"
+                                }
+                                val badgeColor = when (enemyFaction) {
+                                    com.example.data.model.EnemyFaction.SANCTUM_WRATH -> SanctumGold
+                                    com.example.data.model.EnemyFaction.VOID_CORRUPTION -> VoidNeonPurple
+                                    com.example.data.model.EnemyFaction.BLIGHTED_AMALGAM -> BlightDamageColor
+                                }
+                                val descText = when (enemyFaction) {
+                                    com.example.data.model.EnemyFaction.SANCTUM_WRATH -> if (activeLang == "TR") "Karanlık/Boşluk saldırılarına karşı zayıf, Kutsal inançlılara dirençli." else "Weak to Void alignment, resistant to Sanctum holy radiance."
+                                    com.example.data.model.EnemyFaction.VOID_CORRUPTION -> if (activeLang == "TR") "Kutsal Işıltıya karşı son derece zayıf, Abis saldırılarına dirençli." else "Weak to Sanctum holy radiance, resistant to Void corruption."
+                                    com.example.data.model.EnemyFaction.BLIGHTED_AMALGAM -> if (activeLang == "TR") "Nötr ve dengeli savaşçılara karşı zayıftır." else "Weak to Neutral alignment and steady balanced strikes."
+                                }
+
+                                Spacer(modifier = Modifier.height(12.dp))
+
+                                // Faction badge and Weakness details flow
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .background(badgeColor.copy(alpha = 0.15f), RoundedCornerShape(4.dp))
+                                            .border(1.dp, badgeColor.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
+                                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                                    ) {
+                                        Text(
+                                            text = textText,
+                                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp, fontWeight = FontWeight.Bold),
+                                            color = badgeColor
+                                        )
+                                    }
+
+                                    Text(
+                                        text = descText,
+                                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, fontWeight = FontWeight.Normal),
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                }
+
+                                Spacer(modifier = Modifier.height(10.dp))
+
+                                // Detailed tactical multipliers description card
+                                Card(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.03f)
+                                    ),
+                                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f)),
+                                    shape = RoundedCornerShape(8.dp)
+                                ) {
+                                    Column(modifier = Modifier.padding(10.dp)) {
+                                        Text(
+                                            text = if (activeLang == "TR") "⚔️ SAVAŞ ETKİNLİĞİ VE DURUM ETKİLERİ" else "⚔️ COMBAT EFFECTIVENESS & MODIFIERS",
+                                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, letterSpacing = 0.5.sp),
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+
+                                        Spacer(modifier = Modifier.height(6.dp))
+
+                                        // Row 1: Faction effectiveness
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            Text(
+                                                text = if (activeLang == "TR") "🛡️ İnanç-Düşman Uyumu:" else "🛡️ Faction Matchup:",
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                                            )
+
+                                            val (matchText, matchColor) = when {
+                                                isSanctum && enemyFaction == com.example.data.model.EnemyFaction.VOID_CORRUPTION -> {
+                                                    val bonus = 20 + (player.alignment / 4)
+                                                    Pair(if (activeLang == "TR") "✨ Avantaj: +$bonus% (Işık)" else "✨ Advantage: +$bonus% (Light)", SanctumGold)
+                                                }
+                                                isCovenant && enemyFaction == com.example.data.model.EnemyFaction.SANCTUM_WRATH -> {
+                                                    val bonus = 20 + (Math.abs(player.alignment) / 4)
+                                                    Pair(if (activeLang == "TR") "🔮 Avantaj: +$bonus% (Boşluk)" else "🔮 Advantage: +$bonus% (Void)", VoidNeonPurple)
+                                                }
+                                                isSanctum && enemyFaction == com.example.data.model.EnemyFaction.SANCTUM_WRATH -> {
+                                                    Pair(if (activeLang == "TR") "⚠️ Direnç: -15% Azalmış Hasar" else "⚠️ Resisted: -15% Holy Kinship", BlightDamageColor)
+                                                }
+                                                isCovenant && enemyFaction == com.example.data.model.EnemyFaction.VOID_CORRUPTION -> {
+                                                    Pair(if (activeLang == "TR") "⚠️ Direnç: -15% Azalmış Hasar" else "⚠️ Resisted: -15% Shadow Kinship", BlightDamageColor)
+                                                }
+                                                (!isSanctum && !isCovenant) && enemyFaction == com.example.data.model.EnemyFaction.BLIGHTED_AMALGAM -> {
+                                                    Pair(if (activeLang == "TR") "⚖️ Nötr Odak: +20% Hasar" else "⚖️ Neutral Focus: +20% Dmg", SanctumGold)
+                                                }
+                                                else -> {
+                                                    Pair(if (activeLang == "TR") "⚖️ Dengeli: Standart" else "⚖️ Balanced: Standard", MaterialTheme.colorScheme.onSurface)
+                                                }
+                                            }
+
+                                            Text(
+                                                text = matchText,
+                                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
+                                                color = matchColor
+                                            )
+                                        }
+
+                                        // Row 2: Willpower critical rate
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            Text(
+                                                text = if (activeLang == "TR") "🧠 Konsantrasyon (İrade):" else "🧠 Focus & Critical Chance:",
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                                            )
+
+                                            val critText = if (activeLang == "TR") "%$critChance Kritik Şans (x1.5 Hasar)" else "$critChance% Crit Rate (x1.5 Dmg)"
+                                            Text(
+                                                text = "🔥 $critText",
+                                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
+                                                color = if (player.currentWill >= 7) SanctumGold else if (player.currentWill == 0) BlightDamageColor else MaterialTheme.colorScheme.onSurface
+                                            )
+                                        }
+
+                                        // Row 3: Mind state
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            Text(
+                                                text = if (activeLang == "TR") "⚡ Zihin Durumu:" else "⚡ Cognitive State:",
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                                            )
+
+                                            val (stateText, stateColor) = when {
+                                                player.currentWill == 0 -> Pair(if (activeLang == "TR") "Zihinsel Sürsaj (-%25 Hasar)" else "Mental Fatigue (-25% Dmg)", BlightDamageColor)
+                                                player.currentWill >= 7 -> Pair(if (activeLang == "TR") "Berrak Zihin (+%15 Hasar)" else "Inspired State (+15% Dmg)", SanctumGold)
+                                                else -> Pair(if (activeLang == "TR") "Odaklanmış" else "Standard Focus", MaterialTheme.colorScheme.onSurface)
+                                            }
+
+                                            Text(
+                                                text = stateText,
+                                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
+                                                color = stateColor
+                                            )
+                                        }
+
+                                        // Row 4: Low HP adren surge
+                                        if (hpPercentage < 0.3f && hpPercentage > 0.0f) {
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+                                                horizontalArrangement = Arrangement.SpaceBetween
+                                            ) {
+                                                Text(
+                                                    text = if (activeLang == "TR") "🩸 Cam Havli (Öfke):" else "🩸 Low HP Survival Fury:",
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                    color = BlightDamageColor
+                                                )
+
+                                                Text(
+                                                    text = if (activeLang == "TR") "+%30 Hasar / %25 Karşı Saldırı" else "+30% Damage / +25% Recoil",
+                                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                                    color = BlightDamageColor
+                                                )
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -1830,13 +2341,21 @@ fun CharacterSheetTab(
                         )
                     } else {
                         itemsList.forEach { gear ->
+                            val bulletIcon = when {
+                                gear.startsWith("Familiar:") -> "🐾"
+                                gear.startsWith("Companion:") -> "🧚"
+                                gear.contains("Shield", ignoreCase = true) || gear.contains("Aegis", ignoreCase = true) -> "🛡️"
+                                gear.contains("Plate", ignoreCase = true) || gear.contains("Cloak", ignoreCase = true) -> "🧥"
+                                gear.contains("Ring", ignoreCase = true) || gear.contains("Signet", ignoreCase = true) -> "💍"
+                                else -> "⚔️"
+                            }
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(vertical = 4.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(text = "⚔️", fontSize = 14.sp)
+                                Text(text = bulletIcon, fontSize = 14.sp)
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     text = gear,
@@ -1898,36 +2417,267 @@ fun CharacterSheetTab(
     }
 }
 
+// Helper function to format timestamp in relative time
+fun formatTimestamp(timestamp: Long, lang: String): String {
+    val diff = System.currentTimeMillis() - timestamp
+    val seconds = diff / 1000
+    val minutes = seconds / 60
+    val hours = minutes / 60
+
+    return when {
+         seconds < 60 -> if (lang == "TR") "Az önce" else "Just now"
+         minutes < 60 -> if (lang == "TR") "Göz açıp kapayana dek ($minutes dk önce)" else "Just moments ago ($minutes m ago)"
+         hours < 24 -> if (lang == "TR") "$hours saat önce" else "$hours hours ago"
+         else -> {
+             val days = hours / 24
+             if (lang == "TR") "$days gün önce" else "$days days ago"
+         }
+    }
+}
+
 @Composable
 fun JournalTab(
     journal: List<JournalEntry>,
     activeLang: String,
     onClear: () -> Unit
 ) {
+    var searchQuery by remember { mutableStateOf("") }
+    var selectedFilter by remember { mutableStateOf("ALL") } // "ALL", "SANCTUM", "COVENANT", "NEUTRAL"
+
+    val totalChoices = journal.size
+    val sanctumChoices = journal.count { it.alignmentImpact > 0 }
+    val covenantChoices = journal.count { it.alignmentImpact < 0 }
+    val totalNet = journal.sumOf { it.alignmentImpact }
+
+    val filteredJournal = journal.filter { entry ->
+        val textMatches = if (activeLang == "TR") {
+            entry.actionTakenTr.contains(searchQuery, ignoreCase = true)
+        } else {
+            entry.actionTakenEs.contains(searchQuery, ignoreCase = true)
+        } || "Floor ${entry.floor}".contains(searchQuery, ignoreCase = true) || "Kat ${entry.floor}".contains(searchQuery, ignoreCase = true)
+
+        val filterMatches = when (selectedFilter) {
+            "SANCTUM" -> entry.alignmentImpact > 0
+            "COVENANT" -> entry.alignmentImpact < 0
+            "NEUTRAL" -> entry.alignmentImpact == 0
+            else -> true
+        }
+
+        textMatches && filterMatches
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        Text(
-            text = if (activeLang == "TR") "EBEDİ KRONOLOJİ GÜNCESİ" else "THE ETERNAL CHRONOLOGY",
-            style = MaterialTheme.typography.titleMedium.copy(
-                fontWeight = FontWeight.Bold,
-                fontFamily = FontFamily.Serif
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = if (activeLang == "TR") "EBEDİ KRONOLOJİ GÜNCESİ" else "THE ETERNAL CHRONOLOGY",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = FontFamily.Serif
+                    ),
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = if (activeLang == "TR") {
+                        "Tırmanışınız sırasında verdiğiniz kararların ve kader mühürlerinizin kutsal kaydı."
+                    } else {
+                        "The immutable history of your choices made across the 100 floors of the tower."
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                    modifier = Modifier.padding(top = 4.dp, bottom = 14.dp)
+                )
+            }
+
+            // Clear Button
+            IconButton(
+                onClick = onClear,
+                modifier = Modifier
+                    .minimumInteractiveComponentSize()
+                    .testTag("clear_journal_button")
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = if (activeLang == "TR") "Geçmişi Sıfırla" else "Clear History",
+                    tint = BlightDamageColor
+                )
+            }
+        }
+
+        // Stats Summary Dashboard Card
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 14.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
             ),
-            color = MaterialTheme.colorScheme.primary
-        )
-        Text(
-            text = if (activeLang == "TR") {
-                "Tırmanışınız sırasında verdiğiniz kararların ve kader mühürlerinizin kutsal kaydı."
-            } else {
-                "The immutable history of your choices made across the 100 floors of the tower."
-            },
-            style = MaterialTheme.typography.bodySmall,
-            modifier = Modifier.padding(top = 4.dp, bottom = 14.dp)
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.15f))
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Total Decisions
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = if (activeLang == "TR") "Kararlar" else "Decisions",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = "$totalChoices",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        modifier = Modifier.testTag("stats_total_choices")
+                    )
+                }
+
+                // Split metrics
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = if (activeLang == "TR") "Kutsal / Boşluk" else "Light / Abyss",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = "✨$sanctumChoices / 🔮$covenantChoices",
+                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+                    )
+                }
+
+                // Net Alignment shift
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = if (activeLang == "TR") "Net Odak" else "Net Balance",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    val netColor = when {
+                        totalNet > 0 -> SanctumGold
+                        totalNet < 0 -> VoidNeonPurple
+                        else -> MaterialTheme.colorScheme.onSurface
+                    }
+                    Text(
+                        text = if (totalNet >= 0) "+$totalNet" else "$totalNet",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        color = netColor,
+                        modifier = Modifier.testTag("stats_net_alignment")
+                    )
+                }
+            }
+        }
+
+        // Search Bar
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = { searchQuery = it },
+            placeholder = { Text(if (activeLang == "TR") "Macerada ara..." else "Search chronicles...") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 12.dp)
+                .testTag("journal_search_input"),
+            singleLine = true,
+            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+            trailingIcon = if (searchQuery.isNotEmpty()) {
+                {
+                    IconButton(onClick = { searchQuery = "" }) {
+                        Icon(Icons.Default.Clear, contentDescription = "Clear search")
+                    }
+                }
+            } else null,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
+            )
         )
 
-        if (journal.isEmpty()) {
+        // Custom Filter Chips
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            val filters = listOf(
+                "ALL" to (if (activeLang == "TR") "Hepsi" else "All"),
+                "SANCTUM" to "✨ Sanctum",
+                "COVENANT" to "🔮 Covenant",
+                "NEUTRAL" to "⚖️ Neutral"
+            )
+
+            filters.forEach { (filterVal, label) ->
+                val isSelected = selectedFilter == filterVal
+                val chipBg = if (isSelected) {
+                    when (filterVal) {
+                        "SANCTUM" -> SanctumGold.copy(alpha = 0.2f)
+                        "COVENANT" -> VoidNeonPurple.copy(alpha = 0.2f)
+                        else -> MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+                    }
+                } else {
+                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                }
+
+                val chipBorder = if (isSelected) {
+                    when (filterVal) {
+                        "SANCTUM" -> SanctumGold
+                        "COVENANT" -> VoidNeonPurple
+                        else -> MaterialTheme.colorScheme.primary
+                    }
+                } else {
+                    MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+                }
+
+                val chipTextColor = if (isSelected) {
+                    when (filterVal) {
+                        "SANCTUM" -> SanctumGold
+                        "COVENANT" -> VoidNeonPurple
+                        else -> MaterialTheme.colorScheme.primary
+                    }
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                }
+
+                Box(
+                    modifier = Modifier
+                        .background(chipBg, RoundedCornerShape(16.dp))
+                        .border(1.dp, chipBorder, RoundedCornerShape(16.dp))
+                        .clickable { selectedFilter = filterVal }
+                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                        .testTag("filter_chip_$filterVal"),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                        color = chipTextColor
+                    )
+                }
+            }
+        }
+
+        // Empty state versus Scrolling Timeline list
+        if (filteredJournal.isEmpty()) {
             Box(
                 modifier = Modifier
                     .weight(1f)
@@ -1935,16 +2685,17 @@ fun JournalTab(
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("📜", fontSize = 48.sp)
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("📜", fontSize = 48.sp, modifier = Modifier.padding(bottom = 8.dp))
                     Text(
                         text = if (activeLang == "TR") {
-                            "Günce boş. Kule tırmanışına başla!"
+                            if (searchQuery.isNotEmpty() || selectedFilter != "ALL") "Aranan kriterlere uygun kayıt bulunamadı." else "Hala tırmanışa devam ediyorsun. Kronolojide bir kayıt yok."
                         } else {
-                            "Your Chronology registry is empty. Begin climbing."
+                            if (searchQuery.isNotEmpty() || selectedFilter != "ALL") "No ledger logs match your criteria." else "Your Chronology registry is empty. Begin climbing."
                         },
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        modifier = Modifier.padding(horizontal = 24.dp)
                     )
                 }
             }
@@ -1954,50 +2705,128 @@ fun JournalTab(
                     .weight(1f)
                     .fillMaxWidth()
             ) {
-                items(journal) { entry ->
-                    Card(
+                itemsIndexed(filteredJournal) { index, entry ->
+                    val density = androidx.compose.ui.platform.LocalDensity.current
+                    
+                    val nodeColor = when {
+                        entry.alignmentImpact > 0 -> SanctumGold
+                        entry.alignmentImpact < 0 -> VoidNeonPurple
+                        else -> MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)
+                    }
+
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 6.dp)
-                            .testTag("journal_item_${entry.floor}"),
-                        shape = RoundedCornerShape(10.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surface
-                        ),
-                        border = BorderStroke(
-                            1.dp,
-                            when (entry.sideAlignmentShift) {
-                                "SANCTUM" -> SanctumGold.copy(alpha = 0.4f)
-                                "COVENANT" -> VoidNeonPurple.copy(alpha = 0.4f)
-                                else -> MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                            .drawBehind {
+                                // Draw continuous connect track to the next node if we're not the last index
+                                if (index < filteredJournal.lastIndex) {
+                                    val lineX = with(density) { 16.dp.toPx() } // Align exactly under our timeline dot
+                                    val stemWidth = with(density) { 2.dp.toPx() }
+                                    val startY = with(density) { 24.dp.toPx() }
+                                    drawLine(
+                                        color = nodeColor.copy(alpha = 0.25f),
+                                        start = androidx.compose.ui.geometry.Offset(lineX, startY),
+                                        end = androidx.compose.ui.geometry.Offset(lineX, size.height),
+                                        strokeWidth = stemWidth
+                                    )
+                                }
                             }
-                        )
+                            .padding(vertical = 4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        verticalAlignment = Alignment.Top
                     ) {
-                        Column(modifier = Modifier.padding(14.dp)) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
+                        // Timeline Connector Left Panel
+                        Box(
+                            modifier = Modifier
+                                .width(32.dp)
+                                .padding(top = 10.dp),
+                            contentAlignment = Alignment.TopCenter
+                        ) {
+                            val nodeSymbol = when {
+                                entry.alignmentImpact > 0 -> "✦"
+                                entry.alignmentImpact < 0 -> "✧"
+                                else -> "•"
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .background(nodeColor.copy(alpha = 0.15f), CircleShape)
+                                    .border(2.2.dp, nodeColor, CircleShape),
+                                contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = if (activeLang == "TR") "Kat ${entry.floor} Kaydı" else "Floor ${entry.floor} Ledger",
-                                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-
-                                val shiftSymbol = if (entry.alignmentImpact > 0) "✨ Sanctum" else if (entry.alignmentImpact < 0) "🔥 Covenant" else "⚖️"
-                                Text(
-                                    text = shiftSymbol,
-                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                    color = if (entry.alignmentImpact > 0) SanctumGold else if (entry.alignmentImpact < 0) VoidNeonPurple else MaterialTheme.colorScheme.onSurface
+                                    text = nodeSymbol,
+                                    color = nodeColor,
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
                                 )
                             }
-                            Spacer(modifier = Modifier.height(6.dp))
-                            Text(
-                                text = if (activeLang == "TR") entry.actionTakenTr else entry.actionTakenEs,
-                                style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Serif),
-                                color = MaterialTheme.colorScheme.onSurface
+                        }
+
+                        // Chronology Event Info Card
+                        Card(
+                            modifier = Modifier
+                                .weight(1f)
+                                .testTag("journal_item_${entry.floor}"),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surface
+                            ),
+                            border = BorderStroke(
+                                1.dp,
+                                when {
+                                    entry.alignmentImpact > 0 -> SanctumGold.copy(alpha = 0.35f)
+                                    entry.alignmentImpact < 0 -> VoidNeonPurple.copy(alpha = 0.35f)
+                                    else -> MaterialTheme.colorScheme.outline.copy(alpha = 0.15f)
+                                }
                             )
+                        ) {
+                            Column(modifier = Modifier.padding(14.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = if (activeLang == "TR") "Kat ${entry.floor} Güncesi" else "Floor ${entry.floor} History",
+                                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+
+                                    val shiftSymbol = when {
+                                        entry.alignmentImpact > 0 -> "✨ +${entry.alignmentImpact} Sanctum"
+                                        entry.alignmentImpact < 0 -> "🔮 ${entry.alignmentImpact} Covenant"
+                                        else -> "⚖️ Neutral"
+                                    }
+                                    val shiftSymbolTr = when {
+                                        entry.alignmentImpact > 0 -> "✨ +${entry.alignmentImpact} Işık"
+                                        entry.alignmentImpact < 0 -> "🔮 ${entry.alignmentImpact} Boşluk"
+                                        else -> "⚖️ Nötr"
+                                    }
+                                    Text(
+                                        text = if (activeLang == "TR") shiftSymbolTr else shiftSymbol,
+                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                        color = if (entry.alignmentImpact > 0) SanctumGold else if (entry.alignmentImpact < 0) VoidNeonPurple else MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = if (activeLang == "TR") entry.actionTakenTr else entry.actionTakenEs,
+                                    style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Serif, lineHeight = 16.sp),
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                // Localized elapsed/formatted timestamp indicator
+                                Text(
+                                    text = formatTimestamp(entry.timestamp, activeLang),
+                                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, fontWeight = FontWeight.Light),
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                                    modifier = Modifier.fillMaxWidth(),
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.End
+                                )
+                            }
                         }
                     }
                 }

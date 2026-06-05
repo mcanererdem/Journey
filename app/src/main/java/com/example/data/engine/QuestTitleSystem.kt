@@ -166,10 +166,95 @@ object QuestTitleSystem {
             requirementDescTr = "Semavi yeminli, Seviye 15 ve üzeri & En az +85 Hizalanma",
             hpBonus = 60,
             meetsPreconditions = { it.side == "SANCTUM" && it.level >= 15 && it.alignment >= 85 }
+        ),
+        TitleDef(
+            id = "plague_vanquisher",
+            nameEn = "Plague Vanquisher 🐀",
+            nameTr = "Veba Fatihi 🐀",
+            descEn = "Slayer of Golgoth, the corrupted Plague Rat King of floor 1.",
+            descTr = "1. katın yozlaşmış Veba Lağım Faresi Kralı Golgoth'u dize getiren kahraman.",
+            isHidden = false,
+            requirementDescEn = "Complete Floor 1 Quest",
+            requirementDescTr = "1. Kat Görevini Tamamlayın",
+            hpBonus = 15,
+            meetsPreconditions = { it.currentFloor > 1 }
+        ),
+        TitleDef(
+            id = "shard_bearer",
+            nameEn = "Shard Bearer 💎",
+            nameTr = "Kristal Sancaktarı 💎",
+            descEn = "Slayer of Clarith, the Shimmering Crystal Guardian of floor 2.",
+            descTr = "2. katın Işıldayan Kristal Muhafızı Clarith'i yıkan kahraman.",
+            isHidden = false,
+            requirementDescEn = "Complete Floor 2 Quest",
+            requirementDescTr = "2. Kat Görevini Tamamlayın",
+            hpBonus = 25,
+            meetsPreconditions = { it.currentFloor > 2 }
+        ),
+        TitleDef(
+            id = "crypt_breaker",
+            nameEn = "Crypt Breaker ⚰️",
+            nameTr = "Mezar Kırıcı ⚰️",
+            descEn = "Slayer of Malakar, the Shadow Necromancer Oracle of floor 3.",
+            descTr = "3. katın Gölge Necromancer Kahini Malakar'ı kovup mezarı fetheden kahraman.",
+            isHidden = false,
+            requirementDescEn = "Complete Floor 3 Quest",
+            requirementDescTr = "3. Kat Görevini Tamamlayın",
+            hpBonus = 35,
+            meetsPreconditions = { it.currentFloor > 3 }
         )
     )
 
     val quests = listOf(
+        // --- FLOOR PROGRESSION QUESTS ---
+        QuestDef(
+            id = "floor_1_rat_king",
+            type = QuestType.MAIN,
+            titleEn = "Floor 1 Apex: Plague Vanquisher",
+            titleTr = "1. Kat Zirvesi: Veba Fatihi",
+            descEn = "Defeat Golgoth, the Plague Rat King who sits bloated upon his pile of garbage.",
+            descTr = "Çöp yığınları üzerine kurulmuş olan devasa Veba Faresi Kralı Golgoth'u dize getirin.",
+            requirementEn = "Conquer Floor 1 Boss and ascend to Floor 2",
+            requirementTr = "1. Kat Patronunu yenip 2. Kata yükselin",
+            checkProgress = { it.currentFloor > 1 },
+            rewardGold = 100,
+            rewardExp = 150,
+            rewardItem = "Familiar: Pet Ember Kitten",
+            rewardTitle = "Plague Vanquisher 🐀"
+        ),
+        QuestDef(
+            id = "floor_2_crystal_heart",
+            type = QuestType.MAIN,
+            titleEn = "Floor 2 Apex: Shard Unearther",
+            titleTr = "2. Kat Zirvesi: Parça Çıkarıcı",
+            descEn = "Unearth crystal hearts by defeating Clarith, the Shimmering Crystal Guardian.",
+            descTr = "Işıldayan Kristal Muhafız Clarith'i yenerek kozmik kristal kalbini ortaya çıkarın.",
+            requirementEn = "Conquer Floor 2 Boss and ascend to Floor 3",
+            requirementTr = "2. Kat Patronunu yenip 3. Kata yükselin",
+            prerequisiteQuestId = "floor_1_rat_king",
+            checkProgress = { it.currentFloor > 2 },
+            rewardGold = 150,
+            rewardExp = 200,
+            rewardItem = "Companion: Holographic Pixie",
+            rewardTitle = "Shard Bearer 💎"
+        ),
+        QuestDef(
+            id = "floor_3_oracle_scourge",
+            type = QuestType.MAIN,
+            titleEn = "Floor 3 Apex: Oracle Banisher",
+            titleTr = "3. Kat Zirvesi: Kahin Kovucu",
+            descEn = "Banish Malakar, the Shadow Necromancer Oracle guarding the deep sub-cathedrals.",
+            descTr = "Derin mahzenleri ve gölgeli kutsal alanları koruyan Gölge Kahini Malakar'ı dehlizlerden kovun.",
+            requirementEn = "Conquer Floor 3 Boss and ascend to Floor 4",
+            requirementTr = "3. Kat Patronunu yenip 4. Kata yükselin",
+            prerequisiteQuestId = "floor_2_crystal_heart",
+            checkProgress = { it.currentFloor > 3 },
+            rewardGold = 200,
+            rewardExp = 300,
+            rewardItem = "Familiar: Petite Void Drake",
+            rewardTitle = "Crypt Breaker ⚰️"
+        ),
+
         // --- MAIN QUESTS ---
         QuestDef(
             id = "main_foothold",
@@ -501,6 +586,21 @@ data class QuestStatus(
                     val label = if (isTr) "Dengeli Kat $currFl / 15" else "Balanced Floor $currFl / 15"
                     Pair(label, (currFl.toFloat() / 15).coerceIn(0f, 1f))
                 }
+            }
+            "floor_1_rat_king" -> {
+                val curr = player.currentFloor
+                val label = if (isTr) "Kat $curr / 2" else "Floor $curr / 2"
+                Pair(label, (if (curr >= 2) 1f else 0.5f))
+            }
+            "floor_2_crystal_heart" -> {
+                val curr = player.currentFloor
+                val label = if (isTr) "Kat $curr / 3" else "Floor $curr / 3"
+                Pair(label, (if (curr >= 3) 1f else (if (curr == 2) 0.5f else 0f)))
+            }
+            "floor_3_oracle_scourge" -> {
+                val curr = player.currentFloor
+                val label = if (isTr) "Kat $curr / 4" else "Floor $curr / 4"
+                Pair(label, (if (curr >= 4) 1f else (if (curr == 3) 0.5f else 0f)))
             }
             "normal_climb_3" -> {
                 val curr = player.currentFloor

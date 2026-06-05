@@ -3,6 +3,32 @@ package com.example.data.model
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
+enum class EnemyFaction {
+    SANCTUM_WRATH,
+    VOID_CORRUPTION,
+    BLIGHTED_AMALGAM;
+
+    companion object {
+        fun fromName(nameEn: String): EnemyFaction {
+            val nameLower = nameEn.lowercase()
+            return when {
+                nameLower.contains("celestial") || nameLower.contains("arbiter") || nameLower.contains("auriel") || 
+                nameLower.contains("angel") || nameLower.contains("purifier") || nameLower.contains("templar") || 
+                nameLower.contains("order") || nameLower.contains("sentinel") || nameLower.contains("guardian") ||
+                nameLower.contains("centurion") || nameLower.contains("paladin") -> SANCTUM_WRATH
+                
+                nameLower.contains("void") || nameLower.contains("abyss") || nameLower.contains("shadow") || 
+                nameLower.contains("stalker") || nameLower.contains("ghoul") || nameLower.contains("necromancer") || 
+                nameLower.contains("terror") || nameLower.contains("sorrow") || nameLower.contains("spectre") || 
+                nameLower.contains("wraith") || nameLower.contains("lord") || nameLower.contains("overlord") ||
+                nameLower.contains("blight") || nameLower.contains("covenant") || nameLower.contains("reaper") -> VOID_CORRUPTION
+                
+                else -> BLIGHTED_AMALGAM
+            }
+        }
+    }
+}
+
 @Entity(tableName = "player_profile")
 data class PlayerProfile(
     @PrimaryKey val id: Int = 1, // Single active player slot

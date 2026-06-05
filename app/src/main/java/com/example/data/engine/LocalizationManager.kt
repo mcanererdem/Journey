@@ -57,6 +57,10 @@ object LocalizationManager {
 
     // Dynamic floor scenario builder directly from JSON
     fun getScenarioForFloor(lang: String, floor: Int): FloorScenario {
+        if (floor in 1..3) {
+            val blueprint = FloorBlueprintSystem.getBlueprintForFloor(floor)
+            return blueprint.introScenario
+        }
         val root = if (lang.lowercase() == "tr") trJson else enJson
         val fallbackRoot = enJson
 

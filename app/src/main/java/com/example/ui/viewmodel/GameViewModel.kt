@@ -7,6 +7,7 @@ import com.example.data.database.GameDatabase
 import com.example.data.engine.*
 import com.example.data.model.JournalEntry
 import com.example.data.model.PlayerProfile
+import com.example.data.model.EnemyFaction
 import com.example.data.repository.GameRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,8 +15,10 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import android.content.Context
 import kotlin.random.Random
 
 class GameViewModel(application: Application) : AndroidViewModel(application) {
@@ -23,6 +26,22 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val repository: GameRepository
     val playerProfile: StateFlow<PlayerProfile?>
     val journalEntries: StateFlow<List<JournalEntry>>
+
+    // Display and notification preferences state
+    private val _themeSelection = MutableStateFlow("ALIGNMENT")
+    val themeSelection: StateFlow<String> = _themeSelection.asStateFlow()
+
+    private val _showNotificationBanner = MutableStateFlow(true)
+    val showNotificationBanner: StateFlow<Boolean> = _showNotificationBanner.asStateFlow()
+
+    private val _soundEnabled = MutableStateFlow(true)
+    val soundEnabled: StateFlow<Boolean> = _soundEnabled.asStateFlow()
+
+    private val _showTitlePrefix = MutableStateFlow(true)
+    val showTitlePrefix: StateFlow<Boolean> = _showTitlePrefix.asStateFlow()
+
+    // Combined activeThemeSide flow
+    val activeThemeSide: StateFlow<String>
 
     // Game interface states
     private val _activeLanguage = MutableStateFlow("TR") // "TR" or "EN"
@@ -79,6 +98,13 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val database = GameDatabase.getDatabase(application)
         repository = GameRepository(database.gameDao())
 
+        // Load persisted settings from SharedPreferences
+        val prefs = application.getSharedPreferences("rpg_settings", Context.MODE_PRIVATE)
+        _themeSelection.value = prefs.getString("themeSelection", "ALIGNMENT") ?: "ALIGNMENT"
+        _showNotificationBanner.value = prefs.getBoolean("showNotificationBanner", true)
+        _soundEnabled.value = prefs.getBoolean("soundEnabled", true)
+        _showTitlePrefix.value = prefs.getBoolean("showTitlePrefix", true)
+
         playerProfile = repository.playerProfile.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -89,6 +115,24 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
+        )
+
+        activeThemeSide = combine(
+            repository.playerProfile,
+            _themeSelection
+        ) { profile, themeSel ->
+            when (themeSel) {
+                "LIGHT" -> "SANCTUM"
+                "ABYSS" -> "COVENANT"
+                else -> { // "ALIGNMENT"
+                    val alignment = profile?.alignment ?: 0
+                    if (alignment >= 0) "SANCTUM" else "COVENANT"
+                }
+            }
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = "SANCTUM"
         )
 
         // Automatically load procedurally generated floor nodes when player profile loads
@@ -665,31 +709,135 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             
             val currentEnemyHp = _activeEnemyHp.value ?: activeNode.enemyHp
 
-            var baseDmg = 12 + profile.level * 2
+            // 1. Analyze Factions & Multipliers
+            val enemyFaction = EnemyFaction.fromName(activeNode.enemyNameEn)
+            var alignmentModEn = ""
+            var alignmentModTr = ""
+            var factionMod = 1.0f
+
+            // Alignment / Side modifiers
+            val isSanctum = profile.side == "SANCTUM" || profile.alignment > 20
+            val isCovenant = profile.side == "COVENANT" || profile.alignment < -20
+
+            if (isSanctum) {
+                when (enemyFaction) {
+                    EnemyFaction.VOID_CORRUPTION -> {
+                        val sanctumBonus = 0.20f + (profile.alignment / 400.0f).coerceIn(0.0f, 0.25f)
+                        factionMod += sanctumBonus
+                        val pct = (sanctumBonus * 100).toInt()
+                        alignmentModEn = "[✨ Radiant Resonance: +$pct% Holy Radiant Damage!]"
+                        alignmentModTr = "[✨ Işıltılı Rezonans: +$pct% Ek Kutsal Hasar!]"
+                    }
+                    EnemyFaction.SANCTUM_WRATH -> {
+                        factionMod -= 0.15f
+                        alignmentModEn = "[⚠️ Celestial Affinity: -15% kinship resistance]"
+                        alignmentModTr = "[⚠️ Gök Bağı: Kutsal direnç nedeniyle -15% Azalmış Hasar]"
+                    }
+                    else -> {}
+                }
+                if (profile.gleam > 0) {
+                    val gleamBonus = ((profile.gleam / 50) * 0.05f).coerceAtMost(0.15f)
+                    if (gleamBonus > 0f) {
+                        factionMod += gleamBonus
+                        val pct = (gleamBonus * 100).toInt()
+                        alignmentModEn = if (alignmentModEn.isEmpty()) "[✨ Gleam Amplification: +$pct%]" else alignmentModEn + " [✨ +$pct% Gleam]"
+                        alignmentModTr = if (alignmentModTr.isEmpty()) "[✨ Cevher Güçlendirmesi: +$pct%]" else alignmentModTr + " [✨ +$pct% Cevher]"
+                    }
+                }
+            } else if (isCovenant) {
+                when (enemyFaction) {
+                    EnemyFaction.SANCTUM_WRATH -> {
+                        val voidBonus = 0.20f + (Math.abs(profile.alignment) / 400.0f).coerceIn(0.0f, 0.25f)
+                        factionMod += voidBonus
+                        val pct = (voidBonus * 100).toInt()
+                        alignmentModEn = "[🔮 Ruinous Eclipse: +$pct% Chaos Abyss Damage!]"
+                        alignmentModTr = "[🔮 Yıkıcı Tutulma: +$pct% Ek Boşluk Hasarı!]"
+                    }
+                    EnemyFaction.VOID_CORRUPTION -> {
+                        factionMod -= 0.15f
+                        alignmentModEn = "[⚠️ Shadow Affinity: -15% void resistance]"
+                        alignmentModTr = "[⚠️ Gölgelerin Bağı: Karanlık direnci nedeniyle -15% Azalmış Hasar]"
+                    }
+                    else -> {}
+                }
+                if (profile.pyre > 0) {
+                    val pyreBonus = ((profile.pyre / 50) * 0.05f).coerceAtMost(0.15f)
+                    if (pyreBonus > 0f) {
+                        factionMod += pyreBonus
+                        val pct = (pyreBonus * 100).toInt()
+                        alignmentModEn = if (alignmentModEn.isEmpty()) "[🔥 Pyre Immolation: +$pct%]" else alignmentModEn + " [🔥 +$pct% Pyre]"
+                        alignmentModTr = if (alignmentModTr.isEmpty()) "[🔥 Ateş Yıkımı: +$pct%]" else alignmentModTr + " [🔥 +$pct% Ateş]"
+                    }
+                }
+            } else {
+                if (enemyFaction == EnemyFaction.BLIGHTED_AMALGAM) {
+                    factionMod += 0.20f
+                    alignmentModEn = "[⚖️ Indomitable Balance: +20% focus damage]"
+                    alignmentModTr = "[⚖️ Sarsılmaz Denge: Canavarlara odaklanma ile +20% Hasar]"
+                }
+            }
+
+            // Stat Modifiers: Willpower Inspired or Fatigue
+            var statModEn = ""
+            var statModTr = ""
+            var statDamageMod = 1.0f
+
+            if (profile.currentWill == 0) {
+                statDamageMod -= 0.25f
+                statModEn = "[⚠️ Mind Fatigue: -25% weapon efficiency due to 0 Willpower]"
+                statModTr = "[⚠️ Zihinsel Sürsaj: 0 İrade gücüyle -25% Azalmış Savaş Gücü]"
+            } else if (profile.currentWill >= 7) {
+                statDamageMod += 0.15f
+                statModEn = "[⚡ High Clarity: +15% damage from steady focus]"
+                statModTr = "[⚡ Berrak Zihin: Yüksek İrade gücüyle +15% Hasar]"
+            }
+
+            // Low HP Adrenaline Burst
+            var adrenalineMod = 1.0f
+            var enemyRetaliationMod = 1.0f
+            val hpPercentage = profile.currentHp.toFloat() / profile.maxHp.toFloat()
+            if (hpPercentage < 0.3f && hpPercentage > 0.0f) {
+                adrenalineMod = 1.30f
+                enemyRetaliationMod = 1.25f
+                statModEn += if (statModEn.isEmpty()) "[🩸 Adrenaline Siege: +30% Survival Fury!]" else " [🩸 +30% Adrenaline]"
+                statModTr += if (statModTr.isEmpty()) "[🩸 Can Havli: Seferberlikte +30% Hasar!]" else " [🩸 +30% Can Havli]"
+            }
+
+            // Calculate Base Strike Dmg
+            val baseDmg = 12 + profile.level * 2
             var actionDescriptionEn = ""
             var actionDescriptionTr = ""
             var selfHpDmg = 0
 
+            // Critical hit calculation based on Willpower stat
+            val critChance = (10 + profile.currentWill * 4).coerceIn(10, 50)
+            val isCrit = (1..100).random() <= critChance
+            val criticalMultiplier = if (isCrit) 1.5f else 1.0f
+
+            var computedDmg = 0
+
             when (action) {
                 "STRIKE" -> {
-                    val actualDmg = (baseDmg * 0.9).toInt() + (0..6).random()
-                    val actualEnemyHp = (currentEnemyHp - actualDmg).coerceAtLeast(0)
+                    val rawDmg = (baseDmg * 0.9).toInt() + (0..6).random()
+                    computedDmg = (rawDmg * factionMod * statDamageMod * adrenalineMod * criticalMultiplier).toInt().coerceAtLeast(1)
+                    val actualEnemyHp = (currentEnemyHp - computedDmg).coerceAtLeast(0)
                     _activeEnemyHp.value = actualEnemyHp
 
-                    actionDescriptionEn = "You swung your weapon at ${activeNode.enemyNameEn}, dealing $actualDmg damage."
-                    actionDescriptionTr = "${activeNode.enemyNameTr} üzerine hücum edip silahınızla $actualDmg hasar verdiniz."
+                    actionDescriptionEn = "You swung your weapon at ${activeNode.enemyNameEn}, dealing $computedDmg damage."
+                    actionDescriptionTr = "${activeNode.enemyNameTr} üzerine hücum edip silahınızla $computedDmg hasar verdiniz."
                 }
                 "SKILL" -> {
                     val multiplier = if (profile.side != "NEUTRAL") 2.5f else 1.8f
-                    val actualDmg = (baseDmg * multiplier).toInt() + (0..10).random()
-                    val actualEnemyHp = (currentEnemyHp - actualDmg).coerceAtLeast(0)
+                    val rawDmg = (baseDmg * multiplier).toInt() + (0..10).random()
+                    computedDmg = (rawDmg * factionMod * statDamageMod * adrenalineMod * criticalMultiplier).toInt().coerceAtLeast(1)
+                    val actualEnemyHp = (currentEnemyHp - computedDmg).coerceAtLeast(0)
                     _activeEnemyHp.value = actualEnemyHp
 
                     selfHpDmg = 10
                     val skillNames = getSkillNameForClass(profile.chosenClass)
 
-                    actionDescriptionEn = "Unleashed Sınıf Yeteneği [${skillNames.first}], evoking $actualDmg cosmic damage (Fatigued: -$selfHpDmg HP)."
-                    actionDescriptionTr = "Sınıf Yeteneği [${skillNames.second}] fırlatarak $actualDmg kozmik hasar verdiniz (Yorgunluk: -$selfHpDmg HP)."
+                    actionDescriptionEn = "Unleashed Sınıf Yeteneği [${skillNames.first}], evoking $computedDmg cosmic damage (Fatigued: -$selfHpDmg HP)."
+                    actionDescriptionTr = "Sınıf Yeteneği [${skillNames.second}] fırlatarak $computedDmg kozmik hasar verdiniz (Yorgunluk: -$selfHpDmg HP)."
                 }
                 "POTION" -> {
                     if (profile.gold >= 20) {
@@ -722,10 +870,29 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val newEnemyHp = _activeEnemyHp.value ?: 0
             val logs = ArrayList<String>()
             
+            // Log core action
             if (_activeLanguage.value == "TR") {
                 logs.add("👤 $actionDescriptionTr")
+                if (isCrit && action != "POTION") {
+                    logs.add("💥 KRİTİK DOĞRUDAN DARBE! (%${critChance} şans ile x1.5 hasar!)")
+                }
+                if (alignmentModTr.isNotEmpty() && action != "POTION") {
+                    logs.add("🛡️ Faksiyon Mod: $alignmentModTr")
+                }
+                if (statModTr.isNotEmpty() && action != "POTION") {
+                    logs.add("🏋️ Stat Mod: $statModTr")
+                }
             } else {
                 logs.add("👤 $actionDescriptionEn")
+                if (isCrit && action != "POTION") {
+                    logs.add("💥 CRITICAL DIRECT BURST! (Chance: $critChance%, dealt x1.5 damage!)")
+                }
+                if (alignmentModEn.isNotEmpty() && action != "POTION") {
+                    logs.add("🛡️ Faction Mod: $alignmentModEn")
+                }
+                if (statModEn.isNotEmpty() && action != "POTION") {
+                    logs.add("🏋️ Stat Mod: $statModEn")
+                }
             }
 
             var playerHp = (profile.currentHp - selfHpDmg).coerceAtLeast(0)
@@ -793,7 +960,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 _lastActionMessageTr.value = "${activeNode.enemyNameTr} yok edildi!"
             } else {
                 // Enemy retaliates
-                val enemyDmg = (activeNode.enemyAtk * 0.85).toInt() + (0..4).random()
+                val enemyDmg = ((activeNode.enemyAtk * 0.85).toInt() + (0..4).random() * enemyRetaliationMod).toInt()
                 playerHp = (playerHp - enemyDmg).coerceAtLeast(0)
 
                 if (_activeLanguage.value == "TR") {
@@ -852,6 +1019,30 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setPurchaseDialogShown(shown: Boolean) {
         _isPurchaseDialogShown.value = shown
+    }
+
+    fun setThemeSelection(selection: String) {
+        _themeSelection.value = selection
+        val prefs = getApplication<Application>().getSharedPreferences("rpg_settings", Context.MODE_PRIVATE)
+        prefs.edit().putString("themeSelection", selection).apply()
+    }
+
+    fun setShowNotificationBanner(show: Boolean) {
+        _showNotificationBanner.value = show
+        val prefs = getApplication<Application>().getSharedPreferences("rpg_settings", Context.MODE_PRIVATE)
+        prefs.edit().putBoolean("showNotificationBanner", show).apply()
+    }
+
+    fun setSoundEnabled(enabled: Boolean) {
+        _soundEnabled.value = enabled
+        val prefs = getApplication<Application>().getSharedPreferences("rpg_settings", Context.MODE_PRIVATE)
+        prefs.edit().putBoolean("soundEnabled", enabled).apply()
+    }
+
+    fun setShowTitlePrefix(show: Boolean) {
+        _showTitlePrefix.value = show
+        val prefs = getApplication<Application>().getSharedPreferences("rpg_settings", Context.MODE_PRIVATE)
+        prefs.edit().putBoolean("showTitlePrefix", show).apply()
     }
 
     private var cooldownJob: kotlinx.coroutines.Job? = null
@@ -1145,31 +1336,135 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val boss = _activeSecretBossCombat.value ?: return@launch
             val currentEnemyHp = _activeSecretBossHp.value ?: boss.hp
 
-            var baseDmg = 12 + profile.level * 2
+            // 1. Analyze Factions & Multipliers
+            val enemyFaction = EnemyFaction.fromName(boss.nameEn)
+            var alignmentModEn = ""
+            var alignmentModTr = ""
+            var factionMod = 1.0f
+
+            // Alignment / Side modifiers
+            val isSanctum = profile.side == "SANCTUM" || profile.alignment > 20
+            val isCovenant = profile.side == "COVENANT" || profile.alignment < -20
+
+            if (isSanctum) {
+                when (enemyFaction) {
+                    EnemyFaction.VOID_CORRUPTION -> {
+                        val sanctumBonus = 0.20f + (profile.alignment / 400.0f).coerceIn(0.0f, 0.25f)
+                        factionMod += sanctumBonus
+                        val pct = (sanctumBonus * 100).toInt()
+                        alignmentModEn = "[✨ Radiant Resonance: +$pct% Holy Radiant Damage!]"
+                        alignmentModTr = "[✨ Işıltılı Rezonans: +$pct% Ek Kutsal Hasar!]"
+                    }
+                    EnemyFaction.SANCTUM_WRATH -> {
+                        factionMod -= 0.15f
+                        alignmentModEn = "[⚠️ Celestial Affinity: -15% kinship resistance]"
+                        alignmentModTr = "[⚠️ Gök Bağı: Kutsal direnç nedeniyle -15% Azalmış Hasar]"
+                    }
+                    else -> {}
+                }
+                if (profile.gleam > 0) {
+                    val gleamBonus = ((profile.gleam / 50) * 0.05f).coerceAtMost(0.15f)
+                    if (gleamBonus > 0f) {
+                        factionMod += gleamBonus
+                        val pct = (gleamBonus * 100).toInt()
+                        alignmentModEn = if (alignmentModEn.isEmpty()) "[✨ Gleam Amplification: +$pct%]" else alignmentModEn + " [✨ +$pct% Gleam]"
+                        alignmentModTr = if (alignmentModTr.isEmpty()) "[✨ Cevher Güçlendirmesi: +$pct%]" else alignmentModTr + " [✨ +$pct% Cevher]"
+                    }
+                }
+            } else if (isCovenant) {
+                when (enemyFaction) {
+                    EnemyFaction.SANCTUM_WRATH -> {
+                        val voidBonus = 0.20f + (Math.abs(profile.alignment) / 400.0f).coerceIn(0.0f, 0.25f)
+                        factionMod += voidBonus
+                        val pct = (voidBonus * 100).toInt()
+                        alignmentModEn = "[🔮 Ruinous Eclipse: +$pct% Chaos Abyss Damage!]"
+                        alignmentModTr = "[🔮 Yıkıcı Tutulma: +$pct% Ek Boşluk Hasarı!]"
+                    }
+                    EnemyFaction.VOID_CORRUPTION -> {
+                        factionMod -= 0.15f
+                        alignmentModEn = "[⚠️ Shadow Affinity: -15% void resistance]"
+                        alignmentModTr = "[⚠️ Gölgelerin Bağı: Karanlık direnci nedeniyle -15% Azalmış Hasar]"
+                    }
+                    else -> {}
+                }
+                if (profile.pyre > 0) {
+                    val pyreBonus = ((profile.pyre / 50) * 0.05f).coerceAtMost(0.15f)
+                    if (pyreBonus > 0f) {
+                        factionMod += pyreBonus
+                        val pct = (pyreBonus * 100).toInt()
+                        alignmentModEn = if (alignmentModEn.isEmpty()) "[🔥 Pyre Immolation: +$pct%]" else alignmentModEn + " [🔥 +$pct% Pyre]"
+                        alignmentModTr = if (alignmentModTr.isEmpty()) "[🔥 Ateş Yıkımı: +$pct%]" else alignmentModTr + " [🔥 +$pct% Ateş]"
+                    }
+                }
+            } else {
+                if (enemyFaction == EnemyFaction.BLIGHTED_AMALGAM) {
+                    factionMod += 0.20f
+                    alignmentModEn = "[⚖️ Indomitable Balance: +20% focus damage]"
+                    alignmentModTr = "[⚖️ Sarsılmaz Denge: Canavarlara odaklanma ile +20% Hasar]"
+                }
+            }
+
+            // Stat Modifiers: Willpower Inspired or Fatigue
+            var statModEn = ""
+            var statModTr = ""
+            var statDamageMod = 1.0f
+
+            if (profile.currentWill == 0) {
+                statDamageMod -= 0.25f
+                statModEn = "[⚠️ Mind Fatigue: -25% weapon efficiency due to 0 Willpower]"
+                statModTr = "[⚠️ Zihinsel Sürsaj: 0 İrade gücüyle -25% Azalmış Savaş Gücü]"
+            } else if (profile.currentWill >= 7) {
+                statDamageMod += 0.15f
+                statModEn = "[⚡ High Clarity: +15% damage from steady focus]"
+                statModTr = "[⚡ Berrak Zihin: Yüksek İrade gücüyle +15% Hasar]"
+            }
+
+            // Low HP Adrenaline Burst
+            var adrenalineMod = 1.0f
+            var enemyRetaliationMod = 1.0f
+            val hpPercentage = profile.currentHp.toFloat() / profile.maxHp.toFloat()
+            if (hpPercentage < 0.3f && hpPercentage > 0.0f) {
+                adrenalineMod = 1.30f
+                enemyRetaliationMod = 1.25f
+                statModEn += if (statModEn.isEmpty()) "[🩸 Adrenaline Siege: +30% Survival Fury!]" else " [🩸 +30% Adrenaline]"
+                statModTr += if (statModTr.isEmpty()) "[🩸 Can Havli: Seferberlikte +30% Hasar!]" else " [🩸 +30% Can Havli]"
+            }
+
+            // Calculate Base Strike Dmg
+            val baseDmg = 12 + profile.level * 2
             var actionDescriptionEn = ""
             var actionDescriptionTr = ""
             var selfHpDmg = 0
 
+            // Critical hit calculation based on Willpower stat
+            val critChance = (10 + profile.currentWill * 4).coerceIn(10, 50)
+            val isCrit = (1..100).random() <= critChance
+            val criticalMultiplier = if (isCrit) 1.5f else 1.0f
+
+            var computedDmg = 0
+
             when (action) {
                 "STRIKE" -> {
-                    val actualDmg = (baseDmg * 0.9).toInt() + (0..6).random()
-                    val actualEnemyHp = (currentEnemyHp - actualDmg).coerceAtLeast(0)
+                    val rawDmg = (baseDmg * 0.9).toInt() + (0..6).random()
+                    computedDmg = (rawDmg * factionMod * statDamageMod * adrenalineMod * criticalMultiplier).toInt().coerceAtLeast(1)
+                    val actualEnemyHp = (currentEnemyHp - computedDmg).coerceAtLeast(0)
                     _activeSecretBossHp.value = actualEnemyHp
 
-                    actionDescriptionEn = "You swung your weapon at secret boss ${boss.nameEn}, dealing $actualDmg damage."
-                    actionDescriptionTr = "Gizli patron ${boss.nameTr} üzerine kılıç savurup $actualDmg hasar verdiniz."
+                    actionDescriptionEn = "You swung your weapon at secret boss ${boss.nameEn}, dealing $computedDmg damage."
+                    actionDescriptionTr = "Gizli patron ${boss.nameTr} üzerine kılıç savurup $computedDmg hasar verdiniz."
                 }
                 "SKILL" -> {
                     val multiplier = if (profile.side != "NEUTRAL") 2.5f else 1.8f
-                    val actualDmg = (baseDmg * multiplier).toInt() + (0..10).random()
-                    val actualEnemyHp = (currentEnemyHp - actualDmg).coerceAtLeast(0)
+                    val rawDmg = (baseDmg * multiplier).toInt() + (0..10).random()
+                    computedDmg = (rawDmg * factionMod * statDamageMod * adrenalineMod * criticalMultiplier).toInt().coerceAtLeast(1)
+                    val actualEnemyHp = (currentEnemyHp - computedDmg).coerceAtLeast(0)
                     _activeSecretBossHp.value = actualEnemyHp
 
                     selfHpDmg = 10
                     val skillNames = getSkillNameForClass(profile.chosenClass)
 
-                    actionDescriptionEn = "Unleashed Reflection Skill [${skillNames.first}], evoking $actualDmg celestial damage (Fatigued: -$selfHpDmg HP)."
-                    actionDescriptionTr = "Yansıma Yeteneği [${skillNames.second}] fırlatarak $actualDmg kozmik hasar verdiniz (Yorgunluk: -$selfHpDmg HP)."
+                    actionDescriptionEn = "Unleashed Reflection Skill [${skillNames.first}], evoking $computedDmg celestial damage (Fatigued: -$selfHpDmg HP)."
+                    actionDescriptionTr = "Yansıma Yeteneği [${skillNames.second}] fırlatarak $computedDmg kozmik hasar verdiniz (Yorgunluk: -$selfHpDmg HP)."
                 }
                 "POTION" -> {
                     if (profile.gold >= 20) {
@@ -1202,10 +1497,29 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val newEnemyHp = _activeSecretBossHp.value ?: 0
             val logs = ArrayList<String>()
             
+            // Log core action
             if (_activeLanguage.value == "TR") {
                 logs.add("👤 $actionDescriptionTr")
+                if (isCrit && action != "POTION") {
+                    logs.add("💥 KRİTİK DOĞRUDAN DARBE! (%${critChance} şans ile x1.5 hasar!)")
+                }
+                if (alignmentModTr.isNotEmpty() && action != "POTION") {
+                    logs.add("🛡️ Faksiyon Mod: $alignmentModTr")
+                }
+                if (statModTr.isNotEmpty() && action != "POTION") {
+                    logs.add("🏋️ Stat Mod: $statModTr")
+                }
             } else {
                 logs.add("👤 $actionDescriptionEn")
+                if (isCrit && action != "POTION") {
+                    logs.add("💥 CRITICAL DIRECT BURST! (Chance: $critChance%, dealt x1.5 damage!)")
+                }
+                if (alignmentModEn.isNotEmpty() && action != "POTION") {
+                    logs.add("🛡️ Faction Mod: $alignmentModEn")
+                }
+                if (statModEn.isNotEmpty() && action != "POTION") {
+                    logs.add("🏋️ Stat Mod: $statModEn")
+                }
             }
 
             var playerHp = (profile.currentHp - selfHpDmg).coerceAtLeast(0)

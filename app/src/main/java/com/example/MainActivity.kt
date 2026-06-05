@@ -19,10 +19,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val viewModel: GameViewModel = viewModel()
-            val playerProfile by viewModel.playerProfile.collectAsState()
-            val side = playerProfile?.side ?: "NEUTRAL"
+            val themeSide by viewModel.activeThemeSide.collectAsState()
 
-            RpgTheme(side = side) {
+            RpgTheme(side = themeSide) {
                 RpgGameScreen(
                     viewModel = viewModel,
                     modifier = Modifier.fillMaxSize()

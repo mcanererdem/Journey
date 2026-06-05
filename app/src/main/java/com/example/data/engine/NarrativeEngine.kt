@@ -26,6 +26,10 @@ data class FloorScenario(
 object NarrativeEngine {
 
     fun getScenarioForFloor(floor: Int): FloorScenario {
+        if (floor in 1..3) {
+            val blueprint = FloorBlueprintSystem.getBlueprintForFloor(floor)
+            return blueprint.introScenario
+        }
         return when {
             floor == 100 -> FloorScenario(
                 floor = 100,
