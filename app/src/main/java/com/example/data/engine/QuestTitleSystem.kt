@@ -25,8 +25,11 @@ data class TitleDef(
 enum class QuestType {
     MAIN,
     SIDE,
+    NORMAL,
+    SPECIAL,
     CHAIN,
-    HIDDEN
+    HIDDEN,
+    EVENT
 }
 
 /**
@@ -403,7 +406,7 @@ object QuestTitleSystem {
         // --- NORMAL QUESTS ---
         QuestDef(
             id = "normal_climb_3",
-            type = QuestType.MAIN,
+            type = QuestType.NORMAL,
             titleEn = "The First Steps",
             titleTr = "İlk Adımlar",
             descEn = "Every long trek begins with a few courageous steps up the tower base.",
@@ -418,7 +421,7 @@ object QuestTitleSystem {
         // --- SPECIAL QUESTS ---
         QuestDef(
             id = "special_alignment_pioneer",
-            type = QuestType.SIDE,
+            type = QuestType.SPECIAL,
             titleEn = "Avenue of Conviction",
             titleTr = "İnanç Patikası",
             descEn = "Commit strongly to either the celestial sun rays or the depth of the void.",
@@ -434,7 +437,7 @@ object QuestTitleSystem {
         // --- EVENT QUESTS ---
         QuestDef(
             id = "event_solar_zenith",
-            type = QuestType.SIDE,
+            type = QuestType.EVENT,
             titleEn = "Sovereign Meridian Zenith ☀️",
             titleTr = "Mutlak Güneş Şöleni Enlemi ☀️",
             descEn = "A temporal star solstice has aligned. Unleash your soul's level capabilities.",

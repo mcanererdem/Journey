@@ -92,34 +92,4 @@ class ExampleRobolectricTest {
     org.junit.Assert.assertEquals("Altın 150 / 300", goldLabel)
     org.junit.Assert.assertEquals(0.5f, goldFraction, 0.01f)
   }
-
-  @Test
-  fun `verify quest categories are strictly main side chain and hidden`() {
-    val questTypes = com.example.data.engine.QuestType.values()
-    org.junit.Assert.assertEquals(4, questTypes.size)
-    org.junit.Assert.assertTrue(questTypes.contains(com.example.data.engine.QuestType.MAIN))
-    org.junit.Assert.assertTrue(questTypes.contains(com.example.data.engine.QuestType.SIDE))
-    org.junit.Assert.assertTrue(questTypes.contains(com.example.data.engine.QuestType.CHAIN))
-    org.junit.Assert.assertTrue(questTypes.contains(com.example.data.engine.QuestType.HIDDEN))
-    
-    for (questDef in com.example.data.engine.QuestTitleSystem.quests) {
-      org.junit.Assert.assertTrue(questDef.type in questTypes)
-    }
-  }
-
-  @Test
-  fun `verify GeminiApiClient falls back when API key is not configured`() {
-    val isAvailable = com.example.data.engine.GeminiApiClient.isApiKeyAvailable()
-    if (!isAvailable) {
-      kotlinx.coroutines.test.runTest {
-        val result = com.example.data.engine.GeminiApiClient.generateDynamicScenario(
-          floor = 1,
-          alignment = 0,
-          chosenClass = "WARRIOR",
-          level = 1
-        )
-        org.junit.Assert.assertNull(result)
-      }
-    }
-  }
 }

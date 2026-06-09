@@ -67,5 +67,6 @@ data class JournalEntry(
     val actionTakenTr: String, // Turkish action description
     val sideAlignmentShift: String, // SANCTUM / COVENANT / NEUTRAL
     val alignmentImpact: Int,
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = System.currentTimeMillis(),
+    val nodeIndex: Int = -1
 )

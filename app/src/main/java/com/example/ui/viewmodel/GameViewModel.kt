@@ -44,7 +44,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     val activeThemeSide: StateFlow<String>
 
     // Game interface states
-    private val _activeLanguage = MutableStateFlow("TR") // "TR" or "EN"
+    private val _activeLanguage = MutableStateFlow("EN") // "TR" or "EN"
     val activeLanguage: StateFlow<String> = _activeLanguage.asStateFlow()
 
     private val _currentScenario = MutableStateFlow<FloorScenario?>(null)
@@ -93,6 +93,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val _activeSecretBossHp = MutableStateFlow<Int?>(null)
     val activeSecretBossHp: StateFlow<Int?> = _activeSecretBossHp.asStateFlow()
 
+    private val _scoutedNodeIndices = MutableStateFlow<Set<Int>>(emptySet())
+    val scoutedNodeIndices: StateFlow<Set<Int>> = _scoutedNodeIndices.asStateFlow()
+
     init {
         LocalizationManager.init(application)
         val database = GameDatabase.getDatabase(application)
@@ -137,8 +140,13 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
         // Automatically load procedurally generated floor nodes when player profile loads
         viewModelScope.launch {
+            var lastLoadedFloor = -1
             repository.playerProfile.collect { profile ->
                 if (profile != null) {
+                    if (profile.currentFloor != lastLoadedFloor) {
+                        lastLoadedFloor = profile.currentFloor
+                        _scoutedNodeIndices.value = emptySet()
+                    }
                     // Automatically run title checks if any status preconditions are met
                     val checkedProfile = checkAndUnlockTitles(profile)
                     if (checkedProfile.titlesEncoded != profile.titlesEncoded) {
@@ -187,9 +195,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     currentNodeCompleted = false
                 )
                 repository.savePlayerProfile(newProfile)
-                loadScenarioForFloor(initialLang, 1, newProfile)
+                _currentScenario.value = LocalizationManager.getScenarioForFloor(initialLang, 1)
             } else {
-                loadScenarioForFloor(initialLang, direct.currentFloor, direct)
+                _currentScenario.value = LocalizationManager.getScenarioForFloor(initialLang, direct.currentFloor)
             }
         }
     }
@@ -200,7 +208,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             val direct = repository.getPlayerProfileDirect()
             if (direct != null) {
-                loadScenarioForFloor(lang, direct.currentFloor, direct)
+                _currentScenario.value = LocalizationManager.getScenarioForFloor(lang, direct.currentFloor)
             }
         }
     }
@@ -283,7 +291,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     lastUpdated = System.currentTimeMillis()
                 )
                 repository.savePlayerProfile(updatedProfile)
-                loadScenarioForFloor(_activeLanguage.value, rollbackFloor, updatedProfile)
+                _currentScenario.value = LocalizationManager.getScenarioForFloor(_activeLanguage.value, rollbackFloor)
                 
                 _lastActionMessageEn.value = "💀 Spirit Fracture triggered! Slipped from Tower back to checkpoint Floor $rollbackFloor."
                 _lastActionMessageTr.value = "💀 Ruh Kırılması Yaşandı! Kule'den güvenli koridor kontrol noktası Kat $rollbackFloor seviyesine savruldun."
@@ -310,7 +318,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 repository.savePlayerProfile(updatedProfile)
                 
                 if (nextFloor <= 100) {
-                    loadScenarioForFloor(_activeLanguage.value, nextFloor, updatedProfile)
+                    _currentScenario.value = LocalizationManager.getScenarioForFloor(_activeLanguage.value, nextFloor)
                 } else {
                     _currentScenario.value = null // Ultimate completion!
                     _lastActionMessageEn.value = "🎉 Absolute Ascent complete! You have conquered the Sovereign Throne!"
@@ -324,7 +332,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             val profile = repository.getPlayerProfileDirect() ?: return@launch
             if (profile.gold >= cost) {
-                if (_soundEnabled.value) SoundManager.playHeal()
                 val updated = profile.copy(
                     gold = profile.gold - cost,
                     currentHp = profile.maxHp,
@@ -458,7 +465,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             _activeNarrativeEvent.value = null
             _activeSecretBossCombat.value = null
             _activeSecretBossHp.value = null
-            loadScenarioForFloor(_activeLanguage.value, 1, newProfile)
+            _currentScenario.value = LocalizationManager.getScenarioForFloor(_activeLanguage.value, 1)
             _lastActionMessageEn.value = "Game restarted. Chronology reset."
             _lastActionMessageTr.value = "Zaman döngüsü sıfırlandı. Macera yeniden başlıyor."
             _currentTab.value = "TOWER"
@@ -528,7 +535,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 actionTakenEs = choice.journalEn,
                 actionTakenTr = choice.journalTr,
                 sideAlignmentShift = if (choice.alignmentShift > 0) "SANCTUM" else if (choice.alignmentShift < 0) "COVENANT" else "NEUTRAL",
-                alignmentImpact = choice.alignmentShift
+                alignmentImpact = choice.alignmentShift,
+                nodeIndex = profile.currentNodeIndex
             )
             repository.insertJournalEntry(logEntry)
 
@@ -550,11 +558,37 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     completedState = false
                     targetCheckpoint = if (targetFloor % 10 == 1) targetFloor else profile.savedFloorCheckpoint
                     targetRank = calculateRank(targetFloor)
+                    
+                    // Regenerate the floor nodes
+                    val nodes = AdventureEngine.generateNodesForFloor(targetFloor, profile)
+                    _currentFloorNodes.value = nodes
+                    _currentScenario.value = LocalizationManager.getScenarioForFloor(_activeLanguage.value, targetFloor)
+
+                    if (nodes.isNotEmpty()) {
+                        val firstNode = nodes[0]
+                        if (firstNode.type == NodeType.COMBAT || firstNode.type == NodeType.BOSS) {
+                            _activeEnemyHp.value = firstNode.enemyHp
+                            _combatLog.value = listOf(
+                                "TR" to "⚔️ ${firstNode.enemyNameTr} ile kule yolunda savaşa girdiniz! Can: ${firstNode.enemyHp}",
+                                "EN" to "⚔️ Engaged in battle with ${firstNode.enemyNameEn}! HP: ${firstNode.enemyHp}"
+                            ).map { if (_activeLanguage.value == "TR") it.first else it.second }
+                        } else {
+                            _activeEnemyHp.value = null
+                            _combatLog.value = emptyList()
+                        }
+                    }
                 } else if (choice.skipToBoss) {
                     val nodes = _currentFloorNodes.value
                     if (nodes.isNotEmpty()) {
                         targetNodeIndex = nodes.size - 1
                         completedState = false
+                        
+                        val bossNode = nodes[targetNodeIndex]
+                        _activeEnemyHp.value = bossNode.enemyHp
+                        _combatLog.value = listOf(
+                            "TR" to "⚔️ MEKAN KISAYOLU! Doğrudan kat patronu ${bossNode.enemyNameTr} ile savaşa girdiniz! Can: ${bossNode.enemyHp}",
+                            "EN" to "⚔️ SPATIAL SHORTCUT! Teleported straight to battle with floor boss ${bossNode.enemyNameEn}! HP: ${bossNode.enemyHp}"
+                        ).map { if (_activeLanguage.value == "TR") it.first else it.second }
                     }
                 }
 
@@ -579,38 +613,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     chosenClass = calculatePlayerClass(activeFactionSide, newAlignment),
                     lastUpdated = System.currentTimeMillis()
                 )
-
-                if (choice.skipToNextFloor) {
-                    // Regenerate the floor nodes
-                    val nodes = AdventureEngine.generateNodesForFloor(targetFloor, profile)
-                    _currentFloorNodes.value = nodes
-                    loadScenarioForFloor(_activeLanguage.value, targetFloor, updated)
-
-                    if (nodes.isNotEmpty()) {
-                        val firstNode = nodes[0]
-                        if (firstNode.type == NodeType.COMBAT || firstNode.type == NodeType.BOSS) {
-                            _activeEnemyHp.value = firstNode.enemyHp
-                            _combatLog.value = listOf(
-                                "TR" to "⚔️ ${firstNode.enemyNameTr} ile kule yolunda savaşa girdiniz! Can: ${firstNode.enemyHp}",
-                                "EN" to "⚔️ Engaged in battle with ${firstNode.enemyNameEn}! HP: ${firstNode.enemyHp}"
-                            ).map { if (_activeLanguage.value == "TR") it.first else it.second }
-                        } else {
-                            _activeEnemyHp.value = null
-                            _combatLog.value = emptyList()
-                        }
-                    }
-                } else if (choice.skipToBoss) {
-                    val nodes = _currentFloorNodes.value
-                    if (nodes.isNotEmpty()) {
-                        val bossNode = nodes[targetNodeIndex]
-                        _activeEnemyHp.value = bossNode.enemyHp
-                        _combatLog.value = listOf(
-                            "TR" to "⚔️ MEKAN KISAYOLU! Doğrudan kat patronu ${bossNode.enemyNameTr} ile savaşa girdiniz! Can: ${bossNode.enemyHp}",
-                            "EN" to "⚔️ SPATIAL SHORTCUT! Teleported straight to battle with floor boss ${bossNode.enemyNameEn}! HP: ${bossNode.enemyHp}"
-                        ).map { if (_activeLanguage.value == "TR") it.first else it.second }
-                    }
-                }
-
                 repository.savePlayerProfile(updated)
             }
         }
@@ -657,6 +659,54 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun showActionMessage(messageEn: String, messageTr: String) {
+        _lastActionMessageEn.value = messageEn
+        _lastActionMessageTr.value = messageTr
+    }
+
+    fun performScouting() {
+        viewModelScope.launch {
+            val profile = repository.getPlayerProfileDirect() ?: return@launch
+            val nodes = _currentFloorNodes.value
+            if (nodes.isEmpty()) return@launch
+
+            val hasPass = profile.itemsEncoded.split(",").any { it.trim() == "Seasonal Sovereign Pass" }
+            val scoutCost = 1
+
+            if (!hasPass && profile.currentWill < scoutCost) {
+                _lastActionMessageEn.value = "❌ Insufficient Willpower to Scout (Costs $scoutCost Will)!"
+                _lastActionMessageTr.value = "❌ Gözlem yapmak için yetersiz İrade (Maliyet $scoutCost İrade)!"
+                return@launch
+            }
+
+            val currentIdx = profile.currentNodeIndex
+            val unscoutedIndices = nodes.indices.filter { idx ->
+                idx > currentIdx && !scoutedNodeIndices.value.contains(idx)
+            }
+
+            if (unscoutedIndices.isEmpty()) {
+                _lastActionMessageEn.value = "🔍 All future sectors are already scouted or cleared on this floor!"
+                _lastActionMessageTr.value = "🔍 Bu kattaki tüm gelecek sektörler zaten gözlendi veya temizlendi!"
+                return@launch
+            }
+
+            val newlyScouted = unscoutedIndices.shuffled().take(2)
+            val updatedScouted = scoutedNodeIndices.value + newlyScouted
+            _scoutedNodeIndices.value = updatedScouted
+
+            val updatedProfile = profile.copy(
+                currentWill = if (hasPass) profile.currentWill else (profile.currentWill - scoutCost).coerceAtLeast(0),
+                lastUpdated = System.currentTimeMillis()
+            )
+            repository.savePlayerProfile(updatedProfile)
+
+            val sectorNumsEn = newlyScouted.map { it + 1 }.joinToString(" and ") { "Sector $it" }
+            val sectorNumsTr = newlyScouted.map { it + 1 }.joinToString(" ve ") { "$it. Sektör" }
+            _lastActionMessageEn.value = "🔍 Scouted map! Revealed the node types for $sectorNumsEn."
+            _lastActionMessageTr.value = "🔍 Harita gözetlendi! $sectorNumsTr tipi açığa çıkarıldı."
+        }
+    }
+
     fun ascendToNextFloor() {
         viewModelScope.launch {
             val profile = repository.getPlayerProfileDirect() ?: return@launch
@@ -688,7 +738,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val newCheckpoint = if (isCheckpoint) nextFloor else profile.savedFloorCheckpoint
             val nextRank = calculateRank(nextFloor)
 
-            if (_soundEnabled.value) SoundManager.playChime()
             val updated = profile.copy(
                 currentFloor = nextFloor,
                 currentNodeIndex = 0,
@@ -713,7 +762,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val profile = repository.getPlayerProfileDirect() ?: return@launch
             when (val res = com.example.data.engine.FloorStateManager.attemptFloorTransition(profile, targetFloor)) {
                 is com.example.data.engine.FloorStateManager.TransitionResult.Success -> {
-                    if (_soundEnabled.value) SoundManager.playChime()
                     repository.savePlayerProfile(res.updatedProfile)
                     
                     _activeEnemyHp.value = null
@@ -857,7 +905,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
             when (action) {
                 "STRIKE" -> {
-                    if (_soundEnabled.value) SoundManager.playStrike()
                     val rawDmg = (baseDmg * 0.9).toInt() + (0..6).random()
                     computedDmg = (rawDmg * factionMod * statDamageMod * adrenalineMod * criticalMultiplier).toInt().coerceAtLeast(1)
                     val actualEnemyHp = (currentEnemyHp - computedDmg).coerceAtLeast(0)
@@ -867,7 +914,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     actionDescriptionTr = "${activeNode.enemyNameTr} üzerine hücum edip silahınızla $computedDmg hasar verdiniz."
                 }
                 "SKILL" -> {
-                    if (_soundEnabled.value) SoundManager.playSkill()
                     val multiplier = if (profile.side != "NEUTRAL") 2.5f else 1.8f
                     val rawDmg = (baseDmg * multiplier).toInt() + (0..10).random()
                     computedDmg = (rawDmg * factionMod * statDamageMod * adrenalineMod * criticalMultiplier).toInt().coerceAtLeast(1)
@@ -881,7 +927,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     actionDescriptionTr = "Sınıf Yeteneği [${skillNames.second}] fırlatarak $computedDmg kozmik hasar verdiniz (Yorgunluk: -$selfHpDmg HP)."
                 }
                 "POTION" -> {
-                    if (_soundEnabled.value) SoundManager.playHeal()
                     if (profile.gold >= 20) {
                         val healedValue = 40
                         val actualHp = (profile.currentHp + healedValue).coerceAtMost(profile.maxHp)
@@ -973,7 +1018,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     currentNodeCompleted = true,
                     lastUpdated = System.currentTimeMillis()
                 )
-                if (_soundEnabled.value && rewards.didLevelUp) SoundManager.playLevelUp()
                 repository.savePlayerProfile(updatedProfile)
 
                 if (_activeLanguage.value == "TR") {
@@ -994,7 +1038,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     actionTakenEs = "Defeated ${activeNode.enemyNameEn} in combat on Floor ${profile.currentFloor}.",
                     actionTakenTr = "${profile.currentFloor}. Katta ${activeNode.enemyNameTr} karşısındaki düelloyu kazandınız.",
                     sideAlignmentShift = "NEUTRAL",
-                    alignmentImpact = 0
+                    alignmentImpact = 0,
+                    nodeIndex = profile.currentNodeIndex
                 )
                 repository.insertJournalEntry(journalEntry)
 
@@ -1034,7 +1079,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         newPyre: Int,
         factionSide: String
     ) {
-        if (_soundEnabled.value) SoundManager.playDeath()
         val fractureCount = profile.totalFractures + 1
         val rollbackFloor = profile.savedFloorCheckpoint
 
@@ -1660,24 +1704,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 }
             }
         }
-    }
-
-    private suspend fun loadScenarioForFloor(lang: String, floor: Int, profile: PlayerProfile) {
-        if (GeminiApiClient.isApiKeyAvailable()) {
-            val dynamic = withContext(Dispatchers.IO) {
-                GeminiApiClient.generateDynamicScenario(
-                    floor = floor,
-                    alignment = profile.alignment,
-                    chosenClass = profile.chosenClass,
-                    level = profile.level
-                )
-            }
-            if (dynamic != null) {
-                _currentScenario.value = dynamic
-                return
-            }
-        }
-        _currentScenario.value = LocalizationManager.getScenarioForFloor(lang, floor)
     }
 
     companion object {

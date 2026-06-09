@@ -545,19 +545,19 @@ object FloorBlueprintSystem {
         val scenario = buildNormalScenario(floor, themeIndex)
 
         // Construct nodes List dynamically based on deterministic distribution
-        val totalNodes = 15 + random.nextInt(6) // 15..20 nodes
+        val totalNodes = 20 + random.nextInt(3) // Ensure at least 20 targeted (20..22)
         val nodes = ArrayList<AdventureNode>()
 
         val innerCount = totalNodes - 2
-        var combatCount = (innerCount * 0.40).toInt().coerceAtLeast(3)
-        var merchantCount = (innerCount * 0.10).toInt().coerceAtLeast(1)
-        var chestCount = (innerCount * 0.10).toInt().coerceAtLeast(1)
+        var combatCount = (innerCount * 0.40).toInt().coerceAtLeast(4)
+        var merchantCount = (innerCount * 0.10).toInt().coerceAtLeast(2)
+        var chestCount = (innerCount * 0.10).toInt().coerceAtLeast(2)
         var shrineCount = (innerCount * 0.10).toInt().coerceAtLeast(1)
         var narrativeCount = innerCount - combatCount - merchantCount - chestCount - shrineCount
 
-        if (narrativeCount < 2) {
-            narrativeCount = 2
-            combatCount = (innerCount - merchantCount - chestCount - shrineCount - narrativeCount).coerceAtLeast(1)
+        if (narrativeCount < 3) {
+            narrativeCount = 3
+            combatCount = (innerCount - merchantCount - chestCount - shrineCount - narrativeCount).coerceAtLeast(3)
         }
 
         val pool = ArrayList<NodeType>()
