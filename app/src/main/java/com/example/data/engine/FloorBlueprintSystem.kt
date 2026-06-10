@@ -57,18 +57,18 @@ object FloorBlueprintSystem {
             descriptionEn = "You stand before the massive iron seal of Floor 1. Cold mist swirls as the wind from the tower corridors whispers secrets.",
             descriptionTr = "1. Katın devasa demir mührü önündesin. Koridorlardan esen soğuk rüzgarlar zihnine sırlar fısıldarken pus girdap gibi dönüyor.",
             optionA = GameOption(
-                textEn = "Pledge your blade to the Spires (+Gleam, +Order)",
-                textTr = "Kılıcını Ak Kuleler'e ada (+Gleam, +Düzen)",
+                textEn = "Pledge your blade to the Spires (+Aether, +Order)",
+                textTr = "Kılıcını Ak Kuleler'e ada (+Aether, +Düzen)",
                 alignmentShift = 10,
-                gleamChange = 30,
+                aetherChange = 30,
                 journalEn = "Pledged alignment to the Sanctum at the base gateway.",
                 journalTr = "Giriş geçidinde Ak Kuleler idealine sadakat yemini ettiniz."
             ),
             optionB = GameOption(
-                textEn = "Absorb the mold to harden your willpower (+Pyre, +Void)",
-                textTr = "İradeni çelikleştirmek için küfü içine çek (+Pyre, +Boşluk)",
+                textEn = "Absorb the mold to harden your willpower (+Aether, +Void)",
+                textTr = "İradeni çelikleştirmek için küfü içine çek (+Aether, +Boşluk)",
                 alignmentShift = -10,
-                pyreChange = 30,
+                aetherChange = 30,
                 journalEn = "Absorbed decay energy to strengthen the dark soul.",
                 journalTr = "Karanlık ruhu beslemek için odağı yozlaşma enerjisine çevirdiniz."
             ),
@@ -160,12 +160,12 @@ object FloorBlueprintSystem {
                     hpChange = 25
                 ),
                 optionB = NodeChoice(
-                    textEn = "Sacrifice blood to receive power (-10 HP, +15 Gleam)",
-                    textTr = "Güç elde etmek için kan ada (-10 HP, +15 Gleam)",
+                    textEn = "Sacrifice blood to receive power (-10 HP, +15 Aether)",
+                    textTr = "Güç elde etmek için kan ada (-10 HP, +15 Aether)",
                     journalEn = "Shed blood for the Sanctum's warm light on Floor 1.",
                     journalTr = "Lütuf ve ışık parıltısı için sunağa canından kan adadınız.",
                     hpChange = -10,
-                    gleamChange = 15
+                    aetherChange = 15
                 ),
                 willCost = 1
             ),
@@ -205,18 +205,18 @@ object FloorBlueprintSystem {
             descriptionEn = "You enter a vast cavern decorated with floating crystals. An ancient mirror pool reflects your inner reflection.",
             descriptionTr = "Havada süzülen dev kristallerle bezeli devasa bir mağaraya giriyorsun. Kadim ayna havuzu içsel benliğini yansıtıyor.",
             optionA = GameOption(
-                textEn = "Focus the pure beam of light into your heart (+Gleam, +Order)",
-                textTr = "Ruhunu saf ışık huzmesiyle doldur (+Gleam, +Düzen)",
+                textEn = "Focus the pure beam of light into your heart (+Aether, +Order)",
+                textTr = "Ruhunu saf ışık huzmesiyle doldur (+Aether, +Düzen)",
                 alignmentShift = 10,
-                gleamChange = 40,
+                aetherChange = 40,
                 journalEn = "Aligned with the crystal light on Floor 2.",
                 journalTr = "2. Katta yansıtıcı kristal havuzunun saf enerjisiyle temizlendiniz."
             ),
             optionB = GameOption(
-                textEn = "Crush a crystal to feed the dark void (+Pyre, +Void)",
-                textTr = "Karanlık boşluğu beslemek için bir kristal kır (+Pyre, +Boşluk)",
+                textEn = "Crush a crystal to feed the dark void (+Aether, +Void)",
+                textTr = "Karanlık boşluğu beslemek için bir kristal kır (+Aether, +Boşluk)",
                 alignmentShift = -10,
-                pyreChange = 40,
+                aetherChange = 40,
                 journalEn = "Shattered crystals to draw shadow particles on Floor 2.",
                 journalTr = "Sarkıt kristallerini kırıp açığa çıkan gölge parçacıklarını emdiniz."
             ),
@@ -285,12 +285,12 @@ object FloorBlueprintSystem {
                     rewardItem = "Quartz Guardian Signet"
                 ),
                 optionB = NodeChoice(
-                    textEn = "Exchange alignment for Gleam potion (+15 Gleam, -5 alignment)",
-                    textTr = "Hizalamayı Gleam iksirine dönüştür (+15 Gleam, -5 faksiyon)",
-                    journalEn = "Sacrificed minor integrity for Gleam essence shards on Floor 2.",
+                    textEn = "Exchange alignment for Aether potion (+15 Aether, -5 alignment)",
+                    textTr = "Hizalamayı Aether iksirine dönüştür (+15 Aether, -5 faksiyon)",
+                    journalEn = "Sacrificed minor integrity for Aether essence shards on Floor 2.",
                     journalTr = "Işık banyosu yapıp lütuf kazanmak için saflıktan taviz verdiniz.",
                     alignmentShift = -5,
-                    gleamChange = 15
+                    aetherChange = 15
                 ),
                 optionC = NodeChoice(
                     textEn = "Wave farewell",
@@ -360,18 +360,18 @@ object FloorBlueprintSystem {
             descriptionEn = "You stumble into an ancient sanctuary holding the ashes of lost crusaders. Shadow figures dance of bygone memories, offering paths.",
             descriptionTr = "Kayıp kutsal şövalyelerin küllerini barındıran kadim bir mabede giriyorsun. Gölgeler kayıp anıları fisgıldayarak sana yol gösteriyor.",
             optionA = GameOption(
-                textEn = "Recite the Sanctum's Prayer of Sealing (+Gleam, +Order)",
-                textTr = "Ak Sığınağın Mühür Dua'sını oku (+Gleam, +Düzen)",
+                textEn = "Recite the Sanctum's Prayer of Sealing (+Aether, +Order)",
+                textTr = "Ak Sığınağın Mühür Dua'sını oku (+Aether, +Düzen)",
                 alignmentShift = 10,
-                gleamChange = 50,
+                aetherChange = 50,
                 journalEn = "recited sealing prayers on Floor 3.",
                 journalTr = "Dehlizlerin karanlığında mühür duaları fısıldayarak şövalye küllerini huzura erdirdiniz."
             ),
             optionB = GameOption(
-                textEn = "Embrace the void spectres whispers (+Pyre, +Void)",
-                textTr = "Boşluk hayaletlerinin fısıltılarını kucakla (+Pyre, +Boşluk)",
+                textEn = "Embrace the void spectres whispers (+Aether, +Void)",
+                textTr = "Boşluk hayaletlerinin fısıltılarını kucakla (+Aether, +Boşluk)",
                 alignmentShift = -10,
-                pyreChange = 50,
+                aetherChange = 50,
                 journalEn = "Sought power from void whispers on Floor 3.",
                 journalTr = "Duvarlardan sızan mor hayalet fısıltılarına odaklanıp Ahit yolunu seçtiniz."
             ),
@@ -440,11 +440,11 @@ object FloorBlueprintSystem {
                     rewardItem = "Ancient Steel Wardplate"
                 ),
                 optionB = NodeChoice(
-                    textEn = "Purify the tomb with Gleam (-20 Gleam, +Vesper's Cloak)",
-                    textTr = "Mezarı Semavi Işıkla kutsayıp aç (-20 Gleam, +Vesper's Cloak)",
+                    textEn = "Purify the tomb with Aether (-20 Aether, +Vesper's Cloak)",
+                    textTr = "Mezarı Semavi Işıkla kutsayıp aç (-20 Aether, +Vesper's Cloak)",
                     journalEn = "Sanctified tomb to claim the Vesper's Cloak on Floor 3.",
                     journalTr = "Eski mezarı Işıkla takdis ederek paha biçilmez Gece Örtüsü aldınız.",
-                    gleamChange = -20,
+                    aetherChange = -20,
                     rewardItem = "Vesper's Cloak"
                 ),
                 willCost = 1
@@ -664,12 +664,12 @@ object FloorBlueprintSystem {
                     description = "A sealed decorative chest humming with celestial or dark currents.",
                     descriptionTr = "Semavi veya karanlık dalgalarla mırıldayan kilitli kutsal bir mahfaza.",
                     optionA = NodeChoice(
-                        textEn = "Unlock using light keys (+20 Gleam, -10 HP)",
-                        textTr = "Işık gücüyle aç (+20 Gleam, -10 HP)",
+                        textEn = "Unlock using light keys (+20 Aether, -10 HP)",
+                        textTr = "Işık gücüyle aç (+20 Aether, -10 HP)",
                         journalEn = "Purified a sealed relic chest.",
                         journalTr = "Sıkışmış mühürlü sandığı can enerjisiyle temizleyip açtınız.",
                         hpChange = -10,
-                        gleamChange = 20
+                        aetherChange = 20
                     ),
                     optionB = NodeChoice(
                         textEn = "Break open roughly (+30 Gold, -15 HP)",
@@ -790,7 +790,7 @@ object FloorBlueprintSystem {
             )
         }
         // 2. Secret Shadow Event
-        else if (player.alignment < -30 && random.nextInt(100) < 40) {
+        else if (player.momentum < 20 && random.nextInt(100) < 40) {
             nodes[targetIndex] = AdventureNode(
                 index = targetIndex,
                 type = NodeType.NARRATIVE,
@@ -799,12 +799,12 @@ object FloorBlueprintSystem {
                 description = "Recognizing your dark eclipse alignment, an outcast Void Hermit approaches holding forbidden scrolls.",
                 descriptionTr = "Ruhundaki karanlık parıltıyı fark eden dışlanmış bir Boşluk Hermiti, yasaklanmış rün yazmaları tutarak sana doğru yanaşıyor.",
                 optionA = NodeChoice(
-                    textEn = "Receive shadow knowledge (+45 EXP, +20 Pyre, -5 alignment)",
-                    textTr = "Kara ilmi sahiplen (+45 EXP, +20 Pyre, -5 faksiyon)",
+                    textEn = "Receive shadow knowledge (+45 EXP, +20 Aether, -5 alignment)",
+                    textTr = "Kara ilmi sahiplen (+45 EXP, +20 Aether, -5 faksiyon)",
                     journalEn = "Studied under the Dark Void Hermit in secret.",
                     journalTr = "Gizli fısıltılar koridorunda Hermit'ten yasaklı boşluk ilmini edindiniz.",
                     expChange = 45,
-                    pyreChange = 20,
+                    aetherChange = 20,
                     alignmentShift = -5
                 ),
                 optionB = NodeChoice(
@@ -995,8 +995,7 @@ object FloorBlueprintSystem {
             textTr = obj.optString("textTr", ""),
             alignmentShift = obj.optInt("alignmentShift", 0),
             goldChange = obj.optInt("goldChange", 0),
-            gleamChange = obj.optInt("gleamChange", 0),
-            pyreChange = obj.optInt("pyreChange", 0),
+            aetherChange = obj.optInt("aetherChange", 0),
             hpChange = obj.optInt("hpChange", 0),
             journalEn = obj.optString("journalEn", ""),
             journalTr = obj.optString("journalTr", "")
@@ -1011,8 +1010,7 @@ object FloorBlueprintSystem {
             journalTr = obj.optString("journalTr", ""),
             hpChange = obj.optInt("hpChange", 0),
             goldChange = obj.optInt("goldChange", 0),
-            gleamChange = obj.optInt("gleamChange", 0),
-            pyreChange = obj.optInt("pyreChange", 0),
+            aetherChange = obj.optInt("aetherChange", 0),
             expChange = obj.optInt("expChange", 0),
             alignmentShift = obj.optInt("alignmentShift", 0),
             willChange = obj.optInt("willChange", 0),

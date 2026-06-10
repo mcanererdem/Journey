@@ -1,4 +1,4 @@
-package com.example.data.engine
+﻿package com.example.data.engine
 
 import com.example.data.model.PlayerProfile
 import kotlin.random.Random
@@ -128,10 +128,10 @@ object RewardGenerator {
             // General loot drops
             when {
                 floor <= 30 -> listOf(
-                    "Rustblade Dagger", "Sporeplated Helm", "Scout's Sigil", "Iron Girdle", "Gleam Coin Pendant"
+                    "Rustblade Dagger", "Sporeplated Helm", "Scout's Sigil", "Iron Girdle", "Aether Coin Pendant"
                 )
                 floor <= 70 -> listOf(
-                    "Blightslayer Sabret", "Vanguard Aegis Shield", "Sanctified Greatsword", "Voidweave Tunic", "Pyre Signet Ring"
+                    "Blightslayer Sabret", "Vanguard Aegis Shield", "Sanctified Greatsword", "Voidweave Tunic", "Aether Signet Ring"
                 )
                 else -> listOf(
                     "Sovereign Pentacle Sceptre", "Cosmic Will Band", "Blight Purifier Plate", "Archon Void Fang", "Celestial Halo Crown"
@@ -142,29 +142,30 @@ object RewardGenerator {
 
     /**
      * Yields a custom, high-flavor title for the character sheet.
-     * Considers the player's faction ("SANCTUM", "COVENANT", "NEUTRAL") and player alignment indicators.
+     * Considers the player's faction ("SANCTUM", "COVENANT", "NEUTRAL") and player momentum indicators.
      */
     private fun getUniqueTitle(player: PlayerProfile, isBoss: Boolean, random: Random): String {
-        val alignment = player.alignment
+        val momentum = player.momentum
         val isSanctum = player.side == "SANCTUM"
         val isCovenant = player.side == "COVENANT"
 
         return if (isBoss) {
             when {
-                isSanctum && alignment > 40 -> listOf("Saint of the Golden Spire", "Divine Arbiter of Light", "Exarch of Saintly Vigil")
-                isCovenant && alignment < -40 -> listOf("Demon Emperor of the Abyss", "Malefic Scourge of Heavens", "Void Ascendant Sovereign")
-                alignment > 25 -> listOf("Paragon of Cleansing Flame", "Warden of Untainted Dawn", "Radiant Spire Vanguard")
-                alignment < -25 -> listOf("Eldritch Plague Carrier", "Harbinger of Nightfall", "Shattered Reaper")
+                isSanctum && momentum > 90 -> listOf("Saint of the Golden Spire", "Divine Arbiter of Light", "Exarch of Saintly Vigil")
+                isCovenant && momentum < 10 -> listOf("Demon Emperor of the Abyss", "Malefic Scourge of Heavens", "Void Ascendant Sovereign")
+                momentum > 75 -> listOf("Paragon of Cleansing Flame", "Warden of Untainted Dawn", "Radiant Spire Vanguard")
+                momentum < 25 -> listOf("Eldritch Plague Carrier", "Harbinger of Nightfall", "Shattered Reaper")
                 else -> listOf("Apex Spire Conqueror", "Blight's Ultimate Bane", "Keeper of the Cosmic Scales")
             }.random(random)
         } else {
             when {
                 isSanctum -> listOf("Zealous Lightseeker", "Sanctified Shieldbearer", "Initiate of Grace")
                 isCovenant -> listOf("Void Disciple", "Midnight Executioner", "Acolyte of Shadow")
-                alignment > 30 -> listOf("Serene Pathfinder", "Gleamweaver", "Benevolent Sage")
-                alignment < -30 -> listOf("Fierce Hellion", "Pyre-Touched Outcast", "Blight Stalker")
+                momentum > 80 -> listOf("Serene Pathfinder", "Aetherweaver", "Benevolent Sage")
+                momentum < 20 -> listOf("Fierce Hellion", "Aether-Touched Outcast", "Blight Stalker")
                 else -> listOf("Blight Survivor", "Iron Ascent Scout", "Spire Champion Apprentice")
             }.random(random)
         }
     }
 }
+

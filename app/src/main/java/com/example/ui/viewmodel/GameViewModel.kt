@@ -96,6 +96,17 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val _scoutedNodeIndices = MutableStateFlow<Set<Int>>(emptySet())
     val scoutedNodeIndices: StateFlow<Set<Int>> = _scoutedNodeIndices.asStateFlow()
 
+    private val _playerStatuses = MutableStateFlow<List<CombatStatus>>(emptyList())
+    val playerStatuses: StateFlow<List<CombatStatus>> = _playerStatuses.asStateFlow()
+
+    private val _enemyStatuses = MutableStateFlow<List<CombatStatus>>(emptyList())
+    val enemyStatuses: StateFlow<List<CombatStatus>> = _enemyStatuses.asStateFlow()
+
+    private val _currentEnemyIntent = MutableStateFlow<EnemyIntent>(EnemyIntent.ATTACK)
+    val currentEnemyIntent: StateFlow<EnemyIntent> = _currentEnemyIntent.asStateFlow()
+
+    private var hasTriggeredPhase2 = false
+
     init {
         LocalizationManager.init(application)
         val database = GameDatabase.getDatabase(application)
@@ -128,8 +139,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 "LIGHT" -> "SANCTUM"
                 "ABYSS" -> "COVENANT"
                 else -> { // "ALIGNMENT"
-                    val alignment = profile?.alignment ?: 0
-                    if (alignment >= 0) "SANCTUM" else "COVENANT"
+                    val momentum = profile?.momentum ?: 50
+                    if (momentum >= 50) "SANCTUM" else "COVENANT"
                 }
             }
         }.stateIn(
@@ -162,6 +173,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                         val activeNode = nodes[profile.currentNodeIndex]
                         if ((activeNode.type == NodeType.COMBAT || activeNode.type == NodeType.BOSS) && !profile.currentNodeCompleted && _activeEnemyHp.value == null) {
                             _activeEnemyHp.value = activeNode.enemyHp
+                            _playerStatuses.value = emptyList()
+                            _enemyStatuses.value = emptyList()
+                            _currentEnemyIntent.value = EnemyIntent.random()
+                            hasTriggeredPhase2 = false
                             _combatLog.value = listOf(
                                 "TR" to "⚔️ ${activeNode.enemyNameTr} ile kule yolunda savaşa girdiniz! Can: ${activeNode.enemyHp}",
                                 "EN" to "⚔️ Engaged in battle with ${activeNode.enemyNameEn}! HP: ${activeNode.enemyHp}"
@@ -230,7 +245,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val profile = repository.getPlayerProfileDirect() ?: PlayerProfile()
             val updated = profile.copy(
                 side = faction,
-                chosenClass = calculatePlayerClass(faction, profile.alignment),
+                chosenClass = calculatePlayerClass(faction, profile.momentum),
                 lastUpdated = System.currentTimeMillis()
             )
             repository.savePlayerProfile(updated)
@@ -244,16 +259,15 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val profile = repository.getPlayerProfileDirect() ?: return@launch
             
             // Calculate status adjustments
-            val newAlignment = (profile.alignment + option.alignmentShift).coerceIn(-100, 100)
+            val newMomentum = (profile.momentum + option.alignmentShift).coerceIn(-100, 100)
             val newGold = (profile.gold + option.goldChange).coerceAtLeast(0)
-            val newGleam = (profile.gleam + option.gleamChange).coerceAtLeast(0)
-            val newPyre = (profile.pyre + option.pyreChange).coerceAtLeast(0)
+            val newAether = (profile.aether + option.aetherChange).coerceAtLeast(0)
             var newHp = profile.currentHp + option.hpChange
             
             val activeFactionSide = if (profile.side == "NEUTRAL" && option.alignmentShift != 0) {
                 // Automagic alignment detection
-                if (option.alignmentShift > 0 && profile.alignment > 20) "SANCTUM"
-                else if (option.alignmentShift < 0 && profile.alignment < -20) "COVENANT"
+                if (option.alignmentShift > 0 && profile.momentum > 70) "SANCTUM"
+                else if (option.alignmentShift < 0 && profile.momentum < 30) "COVENANT"
                 else "NEUTRAL"
             } else {
                 profile.side
@@ -279,14 +293,13 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 val rollbackFloor = profile.savedFloorCheckpoint // Back to outer checkpoint
                 
                 val updatedProfile = profile.copy(
-                    alignment = newAlignment,
+                    momentum = newMomentum,
                     gold = newGold,
-                    gleam = (newGleam / 2), // Lose half current faction currencies due to void shatter
-                    pyre = (newPyre / 2),
+                    aether = (newAether / 2), // Lose half current faction currencies due to void shatter
                     currentHp = 50, // Reincarnate with 50% HP
                     currentFloor = rollbackFloor,
                     totalFractures = fractureCount,
-                    chosenClass = calculatePlayerClass(activeFactionSide, newAlignment),
+                    chosenClass = calculatePlayerClass(activeFactionSide, newMomentum),
                     rank = calculateRank(rollbackFloor),
                     lastUpdated = System.currentTimeMillis()
                 )
@@ -304,14 +317,13 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
                 val nextRank = calculateRank(nextFloor)
                 val updatedProfile = profile.copy(
-                    alignment = newAlignment,
+                    momentum = newMomentum,
                     gold = newGold,
-                    gleam = newGleam,
-                    pyre = newPyre,
+                    aether = newAether,
                     currentHp = newHp.coerceAtMost(profile.maxHp),
                     currentFloor = nextFloor,
                     savedFloorCheckpoint = newCheckpoint,
-                    chosenClass = calculatePlayerClass(activeFactionSide, newAlignment),
+                    chosenClass = calculatePlayerClass(activeFactionSide, newMomentum),
                     rank = nextRank,
                     lastUpdated = System.currentTimeMillis()
                 )
@@ -359,8 +371,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 val updated = profile.copy(
                     gold = profile.gold + reward,
                     currentHp = profile.currentHp - damage,
-                    alignment = (profile.alignment + if (isVoid) -2 else 2).coerceIn(-100, 100),
-                    chosenClass = calculatePlayerClass(profile.side, (profile.alignment + if (isVoid) -2 else 2).coerceIn(-100, 100)),
+                    momentum = (profile.momentum + (if (isVoid) -2 else 2)).coerceIn(0, 100),
+                    chosenClass = calculatePlayerClass(profile.side, (profile.momentum + (if (isVoid) -2 else 2)).coerceIn(0, 100)),
                     lastUpdated = System.currentTimeMillis()
                 )
                 repository.savePlayerProfile(updated)
@@ -377,35 +389,20 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     fun tradeCurrency(type: String) {
         viewModelScope.launch {
             val profile = repository.getPlayerProfileDirect() ?: return@launch
-            when (type) {
-                "GOLD_TO_GLEAM" -> {
+            when (type.uppercase()) {
+                "GOLD_TO_AETHER" -> {
                     if (profile.gold >= 50) {
                         val updated = profile.copy(
                             gold = profile.gold - 50,
-                            gleam = profile.gleam + 15,
+                            aether = profile.aether + 15,
                             lastUpdated = System.currentTimeMillis()
                         )
                         repository.savePlayerProfile(updated)
-                        _lastActionMessageEn.value = "Gleam exchange complete (+15 Gleam, -50 Gold)."
+                        _lastActionMessageEn.value = "Aether exchange complete (+15 Aether, -50 Gold)."
                         _lastActionMessageTr.value = "Işıltı takası tamamlandı (+15 Işıltı, -50 Altın)."
                     } else {
-                        _lastActionMessageEn.value = "Insufficient gold to secure Gleam."
+                        _lastActionMessageEn.value = "Insufficient gold to secure Aether."
                         _lastActionMessageTr.value = "Işıltı satın almak için yetersiz altın."
-                    }
-                }
-                "GOLD_TO_PYRE" -> {
-                    if (profile.gold >= 50) {
-                        val updated = profile.copy(
-                            gold = profile.gold - 50,
-                            pyre = profile.pyre + 15,
-                            lastUpdated = System.currentTimeMillis()
-                        )
-                        repository.savePlayerProfile(updated)
-                        _lastActionMessageEn.value = "Pyre exchange complete (+15 Pyre, -50 Gold)."
-                        _lastActionMessageTr.value = "Ateş takası tamamlandı (+15 Ateş, -50 Altın)."
-                    } else {
-                        _lastActionMessageEn.value = "Insufficient gold to secure Void Pyre."
-                        _lastActionMessageTr.value = "Kara Ateş satın almak için yetersiz altın."
                     }
                 }
             }
@@ -419,7 +416,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 val updated = profile.copy(
                     side = "NEUTRAL",
                     chosenClass = "Exiled Sovereign / Outcast",
-                    alignment = 0,
+                    momentum = 50,
                     lastUpdated = System.currentTimeMillis()
                 )
                 repository.savePlayerProfile(updated)
@@ -440,9 +437,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 maxHp = 100,
                 gold = 150,
                 side = "NEUTRAL",
-                alignment = 0,
-                gleam = 0,
-                pyre = 0,
+                momentum = 50,
+                aether = 0,
                 rank = "EMISSARY",
                 chosenClass = "Initiate",
                 totalFractures = 0,
@@ -487,10 +483,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 return@launch
             }
 
-            val newAlignment = (profile.alignment + choice.alignmentShift).coerceIn(-100, 100)
+            val newMomentum = (profile.momentum + choice.alignmentShift).coerceIn(-100, 100)
             val newGold = (profile.gold + choice.goldChange).coerceAtLeast(0)
-            val newGleam = (profile.gleam + choice.gleamChange).coerceAtLeast(0)
-            val newPyre = (profile.pyre + choice.pyreChange).coerceAtLeast(0)
+            val newAether = (profile.aether + choice.aetherChange).coerceAtLeast(0)
             val newWill = (profile.currentWill + resolvedWillChange).coerceIn(0, profile.maxWill)
             var newHp = profile.currentHp + choice.hpChange
             
@@ -522,8 +517,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             }
 
             val activeFactionSide = if (profile.side == "NEUTRAL" && choice.alignmentShift != 0) {
-                if (choice.alignmentShift > 0 && profile.alignment > 20) "SANCTUM"
-                else if (choice.alignmentShift < 0 && profile.alignment < -20) "COVENANT"
+                if (choice.alignmentShift > 0 && profile.momentum > 70) "SANCTUM"
+                else if (choice.alignmentShift < 0 && profile.momentum < 30) "COVENANT"
                 else "NEUTRAL"
             } else {
                 profile.side
@@ -544,7 +539,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             _lastActionMessageTr.value = choice.journalTr
 
             if (newHp <= 0) {
-                triggerSpiritFracture(profile, newAlignment, newGold, newGleam, newPyre, activeFactionSide)
+                triggerSpiritFracture(profile, newMomentum, newGold, newAether, activeFactionSide)
             } else {
                 var targetFloor = profile.currentFloor
                 var targetNodeIndex = profile.currentNodeIndex
@@ -568,6 +563,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                         val firstNode = nodes[0]
                         if (firstNode.type == NodeType.COMBAT || firstNode.type == NodeType.BOSS) {
                             _activeEnemyHp.value = firstNode.enemyHp
+                            _playerStatuses.value = emptyList()
+                            _enemyStatuses.value = emptyList()
+                            _currentEnemyIntent.value = EnemyIntent.random()
+                            hasTriggeredPhase2 = false
                             _combatLog.value = listOf(
                                 "TR" to "⚔️ ${firstNode.enemyNameTr} ile kule yolunda savaşa girdiniz! Can: ${firstNode.enemyHp}",
                                 "EN" to "⚔️ Engaged in battle with ${firstNode.enemyNameEn}! HP: ${firstNode.enemyHp}"
@@ -585,6 +584,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                         
                         val bossNode = nodes[targetNodeIndex]
                         _activeEnemyHp.value = bossNode.enemyHp
+                        _playerStatuses.value = emptyList()
+                        _enemyStatuses.value = emptyList()
+                        _currentEnemyIntent.value = EnemyIntent.random()
+                        hasTriggeredPhase2 = false
                         _combatLog.value = listOf(
                             "TR" to "⚔️ MEKAN KISAYOLU! Doğrudan kat patronu ${bossNode.enemyNameTr} ile savaşa girdiniz! Can: ${bossNode.enemyHp}",
                             "EN" to "⚔️ SPATIAL SHORTCUT! Teleported straight to battle with floor boss ${bossNode.enemyNameEn}! HP: ${bossNode.enemyHp}"
@@ -598,10 +601,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     currentNodeCompleted = completedState,
                     savedFloorCheckpoint = targetCheckpoint,
                     rank = targetRank,
-                    alignment = newAlignment,
+                    momentum = newMomentum,
                     gold = newGold,
-                    gleam = newGleam,
-                    pyre = newPyre,
+                    aether = newAether,
                     currentHp = newHp.coerceAtMost(newMaxHp),
                     maxHp = newMaxHp,
                     currentWill = newWill,
@@ -610,7 +612,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     maxExp = newMaxExp,
                     itemsEncoded = newItemsEncoded,
                     titlesEncoded = newTitlesEncoded,
-                    chosenClass = calculatePlayerClass(activeFactionSide, newAlignment),
+                    chosenClass = calculatePlayerClass(activeFactionSide, newMomentum),
                     lastUpdated = System.currentTimeMillis()
                 )
                 repository.savePlayerProfile(updated)
@@ -637,6 +639,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 val nextNode = nodes[nextIndex]
                 if (nextNode.type == NodeType.COMBAT || nextNode.type == NodeType.BOSS) {
                     _activeEnemyHp.value = nextNode.enemyHp
+                    _playerStatuses.value = emptyList()
+                    _enemyStatuses.value = emptyList()
+                    _currentEnemyIntent.value = EnemyIntent.random()
+                    hasTriggeredPhase2 = false
                     _combatLog.value = listOf(
                         "TR" to "⚔️ ${nextNode.enemyNameTr} ile kule yolunda savaşa girdiniz! Can: ${nextNode.enemyHp}",
                         "EN" to "⚔️ Engaged in battle with ${nextNode.enemyNameEn}! HP: ${nextNode.enemyHp}"
@@ -791,308 +797,341 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             val profile = repository.getPlayerProfileDirect() ?: return@launch
             val nodes = _currentFloorNodes.value
-            if (profile.currentNodeIndex !in nodes.indices) return@launch
-            val activeNode = nodes[profile.currentNodeIndex]
-            
-            val currentEnemyHp = _activeEnemyHp.value ?: activeNode.enemyHp
+            val nodeIndex = profile.currentNodeIndex
+            if (nodeIndex !in nodes.indices) return@launch
+            val node = nodes[nodeIndex]
+            val maxEnemyHp = node.enemyHp
+            var currentEnemyHp = _activeEnemyHp.value ?: maxEnemyHp
 
-            // 1. Analyze Factions & Multipliers
-            val enemyFaction = EnemyFaction.fromName(activeNode.enemyNameEn)
-            var alignmentModEn = ""
-            var alignmentModTr = ""
-            var factionMod = 1.0f
+            val logs = mutableListOf<String>()
 
-            // Alignment / Side modifiers
-            val isSanctum = profile.side == "SANCTUM" || profile.alignment > 20
-            val isCovenant = profile.side == "COVENANT" || profile.alignment < -20
+            // 1. Process turn start status effects on player
+            var playerHp = profile.currentHp
+            val updatedPlayerStatuses = _playerStatuses.value.map { it.copy() }.toMutableList()
+            val updatedEnemyStatuses = _enemyStatuses.value.map { it.copy() }.toMutableList()
 
-            if (isSanctum) {
-                when (enemyFaction) {
-                    EnemyFaction.VOID_CORRUPTION -> {
-                        val sanctumBonus = 0.20f + (profile.alignment / 400.0f).coerceIn(0.0f, 0.25f)
-                        factionMod += sanctumBonus
-                        val pct = (sanctumBonus * 100).toInt()
-                        alignmentModEn = "[✨ Radiant Resonance: +$pct% Holy Radiant Damage!]"
-                        alignmentModTr = "[✨ Işıltılı Rezonans: +$pct% Ek Kutsal Hasar!]"
-                    }
-                    EnemyFaction.SANCTUM_WRATH -> {
-                        factionMod -= 0.15f
-                        alignmentModEn = "[⚠️ Celestial Affinity: -15% kinship resistance]"
-                        alignmentModTr = "[⚠️ Gök Bağı: Kutsal direnç nedeniyle -15% Azalmış Hasar]"
-                    }
-                    else -> {}
-                }
-                if (profile.gleam > 0) {
-                    val gleamBonus = ((profile.gleam / 50) * 0.05f).coerceAtMost(0.15f)
-                    if (gleamBonus > 0f) {
-                        factionMod += gleamBonus
-                        val pct = (gleamBonus * 100).toInt()
-                        alignmentModEn = if (alignmentModEn.isEmpty()) "[✨ Gleam Amplification: +$pct%]" else alignmentModEn + " [✨ +$pct% Gleam]"
-                        alignmentModTr = if (alignmentModTr.isEmpty()) "[✨ Cevher Güçlendirmesi: +$pct%]" else alignmentModTr + " [✨ +$pct% Cevher]"
-                    }
-                }
-            } else if (isCovenant) {
-                when (enemyFaction) {
-                    EnemyFaction.SANCTUM_WRATH -> {
-                        val voidBonus = 0.20f + (Math.abs(profile.alignment) / 400.0f).coerceIn(0.0f, 0.25f)
-                        factionMod += voidBonus
-                        val pct = (voidBonus * 100).toInt()
-                        alignmentModEn = "[🔮 Ruinous Eclipse: +$pct% Chaos Abyss Damage!]"
-                        alignmentModTr = "[🔮 Yıkıcı Tutulma: +$pct% Ek Boşluk Hasarı!]"
-                    }
-                    EnemyFaction.VOID_CORRUPTION -> {
-                        factionMod -= 0.15f
-                        alignmentModEn = "[⚠️ Shadow Affinity: -15% void resistance]"
-                        alignmentModTr = "[⚠️ Gölgelerin Bağı: Karanlık direnci nedeniyle -15% Azalmış Hasar]"
-                    }
-                    else -> {}
-                }
-                if (profile.pyre > 0) {
-                    val pyreBonus = ((profile.pyre / 50) * 0.05f).coerceAtMost(0.15f)
-                    if (pyreBonus > 0f) {
-                        factionMod += pyreBonus
-                        val pct = (pyreBonus * 100).toInt()
-                        alignmentModEn = if (alignmentModEn.isEmpty()) "[🔥 Pyre Immolation: +$pct%]" else alignmentModEn + " [🔥 +$pct% Pyre]"
-                        alignmentModTr = if (alignmentModTr.isEmpty()) "[🔥 Ateş Yıkımı: +$pct%]" else alignmentModTr + " [🔥 +$pct% Ateş]"
-                    }
-                }
-            } else {
-                if (enemyFaction == EnemyFaction.BLIGHTED_AMALGAM) {
-                    factionMod += 0.20f
-                    alignmentModEn = "[⚖️ Indomitable Balance: +20% focus damage]"
-                    alignmentModTr = "[⚖️ Sarsılmaz Denge: Canavarlara odaklanma ile +20% Hasar]"
+            // Player Poison
+            if (updatedPlayerStatuses.any { it.type == StatusType.POISONED }) {
+                playerHp = (playerHp - 5).coerceAtLeast(0)
+                logs.add(if (_activeLanguage.value == "TR") "ğŸ§ª Zehirlendiniz! -5 Can aldÄ±nÄ±z." else "ğŸ§ª Poisoned! Took -5 HP damage.")
+                if (playerHp <= 0) {
+                    triggerSpiritFracture(profile, profile.momentum, profile.gold, profile.aether, profile.side)
+                    return@launch
                 }
             }
 
-            // Stat Modifiers: Willpower Inspired or Fatigue
-            var statModEn = ""
-            var statModTr = ""
-            var statDamageMod = 1.0f
-
-            if (profile.currentWill == 0) {
-                statDamageMod -= 0.25f
-                statModEn = "[⚠️ Mind Fatigue: -25% weapon efficiency due to 0 Willpower]"
-                statModTr = "[⚠️ Zihinsel Sürsaj: 0 İrade gücüyle -25% Azalmış Savaş Gücü]"
-            } else if (profile.currentWill >= 7) {
-                statDamageMod += 0.15f
-                statModEn = "[⚡ High Clarity: +15% damage from steady focus]"
-                statModTr = "[⚡ Berrak Zihin: Yüksek İrade gücüyle +15% Hasar]"
+            // Player Stun check
+            val playerStunned = updatedPlayerStatuses.any { it.type == StatusType.STUNNED }
+            if (playerStunned) {
+                logs.add(if (_activeLanguage.value == "TR") "ğŸŒ€ Sersemlediniz! SÄ±ranÄ±zÄ± geÃ§tiniz." else "ğŸŒ€ Stunned! Your turn is skipped.")
+                decrementStatuses(updatedPlayerStatuses)
+                _playerStatuses.value = updatedPlayerStatuses.filter { it.durationTurns > 0 }
+                
+                executeEnemyTurn(profile, playerHp, currentEnemyHp, node, updatedPlayerStatuses, updatedEnemyStatuses, logs)
+                return@launch
             }
 
-            // Low HP Adrenaline Burst
-            var adrenalineMod = 1.0f
-            var enemyRetaliationMod = 1.0f
-            val hpPercentage = profile.currentHp.toFloat() / profile.maxHp.toFloat()
-            if (hpPercentage < 0.3f && hpPercentage > 0.0f) {
-                adrenalineMod = 1.30f
-                enemyRetaliationMod = 1.25f
-                statModEn += if (statModEn.isEmpty()) "[🩸 Adrenaline Siege: +30% Survival Fury!]" else " [🩸 +30% Adrenaline]"
-                statModTr += if (statModTr.isEmpty()) "[🩸 Can Havli: Seferberlikte +30% Hasar!]" else " [🩸 +30% Can Havli]"
-            }
-
-            // Calculate Base Strike Dmg
-            val baseDmg = 12 + profile.level * 2
-            var actionDescriptionEn = ""
-            var actionDescriptionTr = ""
-            var selfHpDmg = 0
-
-            // Critical hit calculation based on Willpower stat
+            // 2. Process player's action
+            var damageDealt = 0
+            var isCrit = false
             val critChance = (10 + profile.currentWill * 4).coerceIn(10, 50)
-            val isCrit = (1..100).random() <= critChance
-            val criticalMultiplier = if (isCrit) 1.5f else 1.0f
-
-            var computedDmg = 0
+            val isBlessed = updatedPlayerStatuses.any { it.type == StatusType.BLESSED }
 
             when (action) {
-                "STRIKE" -> {
-                    val rawDmg = (baseDmg * 0.9).toInt() + (0..6).random()
-                    computedDmg = (rawDmg * factionMod * statDamageMod * adrenalineMod * criticalMultiplier).toInt().coerceAtLeast(1)
-                    val actualEnemyHp = (currentEnemyHp - computedDmg).coerceAtLeast(0)
-                    _activeEnemyHp.value = actualEnemyHp
+                "LIGHT_STRIKE" -> {
+                    val baseDmg = 10 + profile.level * 2
+                    val rawDmg = (baseDmg * 0.9).toInt() + kotlin.random.Random.nextInt(5)
+                    var finalDmg = rawDmg
+                    if (isBlessed) finalDmg = (finalDmg * 1.25f).toInt()
+                    
+                    isCrit = kotlin.random.Random.nextInt(100) < critChance
+                    if (isCrit) finalDmg = (finalDmg * 1.5f).toInt()
 
-                    actionDescriptionEn = "You swung your weapon at ${activeNode.enemyNameEn}, dealing $computedDmg damage."
-                    actionDescriptionTr = "${activeNode.enemyNameTr} üzerine hücum edip silahınızla $computedDmg hasar verdiniz."
-                }
-                "SKILL" -> {
-                    val multiplier = if (profile.side != "NEUTRAL") 2.5f else 1.8f
-                    val rawDmg = (baseDmg * multiplier).toInt() + (0..10).random()
-                    computedDmg = (rawDmg * factionMod * statDamageMod * adrenalineMod * criticalMultiplier).toInt().coerceAtLeast(1)
-                    val actualEnemyHp = (currentEnemyHp - computedDmg).coerceAtLeast(0)
-                    _activeEnemyHp.value = actualEnemyHp
+                    damageDealt = finalDmg
+                    currentEnemyHp = (currentEnemyHp - damageDealt).coerceAtLeast(0)
+                    _activeEnemyHp.value = currentEnemyHp
 
-                    selfHpDmg = 10
-                    val skillNames = getSkillNameForClass(profile.chosenClass)
-
-                    actionDescriptionEn = "Unleashed Sınıf Yeteneği [${skillNames.first}], evoking $computedDmg cosmic damage (Fatigued: -$selfHpDmg HP)."
-                    actionDescriptionTr = "Sınıf Yeteneği [${skillNames.second}] fırlatarak $computedDmg kozmik hasar verdiniz (Yorgunluk: -$selfHpDmg HP)."
-                }
-                "POTION" -> {
-                    if (profile.gold >= 20) {
-                        val healedValue = 40
-                        val actualHp = (profile.currentHp + healedValue).coerceAtMost(profile.maxHp)
-                        val updated = profile.copy(
-                            gold = profile.gold - 20,
-                            currentHp = actualHp,
-                            lastUpdated = System.currentTimeMillis()
-                        )
-                        repository.savePlayerProfile(updated)
-
-                        actionDescriptionEn = "Swallowed a quick Sığınak Flask (-20 Gold), recovering +$healedValue HP."
-                        actionDescriptionTr = "Kesenizden -20 Altına Şifa İksiri içip +$healedValue Can kazandınız."
-                    } else {
-                        val healedValue = 10
-                        val actualHp = (profile.currentHp + healedValue).coerceAtMost(profile.maxHp)
-                        val updated = profile.copy(
-                            currentHp = actualHp,
-                            lastUpdated = System.currentTimeMillis()
-                        )
-                        repository.savePlayerProfile(updated)
-
-                        actionDescriptionEn = "No gold! Channeled focus to reconstruct +$healedValue HP vital cells."
-                        actionDescriptionTr = "Yeterli altınınız yok! Odaklanarak +$healedValue Can dokusunu onardınız."
-                    }
-                }
-            }
-
-            val newEnemyHp = _activeEnemyHp.value ?: 0
-            val logs = ArrayList<String>()
-            
-            // Log core action
-            if (_activeLanguage.value == "TR") {
-                logs.add("👤 $actionDescriptionTr")
-                if (isCrit && action != "POTION") {
-                    logs.add("💥 KRİTİK DOĞRUDAN DARBE! (%${critChance} şans ile x1.5 hasar!)")
-                }
-                if (alignmentModTr.isNotEmpty() && action != "POTION") {
-                    logs.add("🛡️ Faksiyon Mod: $alignmentModTr")
-                }
-                if (statModTr.isNotEmpty() && action != "POTION") {
-                    logs.add("🏋️ Stat Mod: $statModTr")
-                }
-            } else {
-                logs.add("👤 $actionDescriptionEn")
-                if (isCrit && action != "POTION") {
-                    logs.add("💥 CRITICAL DIRECT BURST! (Chance: $critChance%, dealt x1.5 damage!)")
-                }
-                if (alignmentModEn.isNotEmpty() && action != "POTION") {
-                    logs.add("🛡️ Faction Mod: $alignmentModEn")
-                }
-                if (statModEn.isNotEmpty() && action != "POTION") {
-                    logs.add("🏋️ Stat Mod: $statModEn")
-                }
-            }
-
-            var playerHp = (profile.currentHp - selfHpDmg).coerceAtLeast(0)
-
-            if (newEnemyHp <= 0) {
-                // Victory! Compute drops and EXP scaling via our brand new RewardGenerator
-                val rewards = RewardGenerator.generateRewards(
-                    player = profile.copy(currentHp = playerHp),
-                    isBoss = activeNode.type == NodeType.BOSS
-                )
-
-                _activeEnemyHp.value = null
-                
-                // Append drops to profile serialization
-                var currentItems = if (profile.itemsEncoded.isEmpty()) emptyList() else profile.itemsEncoded.split(",")
-                rewards.itemAwarded?.let { drop ->
-                    currentItems = currentItems + drop
-                }
-                val newItemsEncoded = currentItems.joinToString(",")
-
-                var currentTitles = if (profile.titlesEncoded.isEmpty()) emptyList() else profile.titlesEncoded.split(",")
-                rewards.titleAwarded?.let { drop ->
-                    currentTitles = currentTitles + drop
-                }
-                val newTitlesEncoded = currentTitles.joinToString(",")
-
-                val updatedProfile = profile.copy(
-                    currentHp = rewards.finalHp,
-                    maxHp = rewards.newMaxHp,
-                    level = rewards.newLevel,
-                    exp = rewards.newExp,
-                    maxExp = rewards.newMaxExp,
-                    gold = profile.gold + rewards.goldGained,
-                    itemsEncoded = newItemsEncoded,
-                    titlesEncoded = newTitlesEncoded,
-                    currentNodeCompleted = true,
-                    lastUpdated = System.currentTimeMillis()
-                )
-                repository.savePlayerProfile(updatedProfile)
-
-                if (_activeLanguage.value == "TR") {
-                    logs.add("🎉 ZAFER! Düşman katledildi. +${rewards.expGained} Deneyim, +${rewards.goldGained} Altın kazanıldı.")
-                    if (rewards.itemAwarded != null) logs.add("🎁 Hazine: [${rewards.itemAwarded}] toplandı teçhizat torbana konuldu!")
-                    if (rewards.titleAwarded != null) logs.add("👑 Yeni Unvan Kazandınız: [${rewards.titleAwarded}]!")
-                    if (rewards.didLevelUp) logs.add("⚡ SEVİYE ATLADINIZ! Seviye ${rewards.newLevel} oldunuz! Maksimum Canınız arttı.")
-                } else {
-                    logs.add("🎉 VICTORY! Enemy defeated. Won +${rewards.expGained} EXP, +${rewards.goldGained} Gold.")
-                    if (rewards.itemAwarded != null) logs.add("🎁 Loot Pick: [${rewards.itemAwarded}] added to inventory!")
-                    if (rewards.titleAwarded != null) logs.add("👑 Achieved Epic Title: [${rewards.titleAwarded}]!")
-                    if (rewards.didLevelUp) logs.add("⚡ LEVEL UP! Reached Level ${rewards.newLevel}! Max HP increased.")
-                }
-
-                // Insert into chronology db
-                val journalEntry = JournalEntry(
-                    floor = profile.currentFloor,
-                    actionTakenEs = "Defeated ${activeNode.enemyNameEn} in combat on Floor ${profile.currentFloor}.",
-                    actionTakenTr = "${profile.currentFloor}. Katta ${activeNode.enemyNameTr} karşısındaki düelloyu kazandınız.",
-                    sideAlignmentShift = "NEUTRAL",
-                    alignmentImpact = 0,
-                    nodeIndex = profile.currentNodeIndex
-                )
-                repository.insertJournalEntry(journalEntry)
-
-                _combatLog.value = _combatLog.value + logs
-                _lastActionMessageEn.value = "Defeated ${activeNode.enemyNameEn}!"
-                _lastActionMessageTr.value = "${activeNode.enemyNameTr} yok edildi!"
-            } else {
-                // Enemy retaliates
-                val enemyDmg = ((activeNode.enemyAtk * 0.85).toInt() + (0..4).random() * enemyRetaliationMod).toInt()
-                playerHp = (playerHp - enemyDmg).coerceAtLeast(0)
-
-                if (_activeLanguage.value == "TR") {
-                    logs.add("👿 Canavar saldırdı ve size $enemyDmg hasar verdi!")
-                } else {
-                    logs.add("👿 Enemy struck back, dealing $enemyDmg damage to you!")
-                }
-
-                if (playerHp <= 0) {
-                    triggerSpiritFracture(profile, profile.alignment, profile.gold, profile.gleam, profile.pyre, profile.side)
-                } else {
-                    val updatedProfile = profile.copy(
-                        currentHp = playerHp,
-                        lastUpdated = System.currentTimeMillis()
+                    logs.add(
+                        if (_activeLanguage.value == "TR") "⚔️ Hafif Vuruş yaptınız! Düşmana $damageDealt hasar verdiniz."
+                        else "⚔️ Light Strike! Dealt $damageDealt damage to the enemy."
                     )
+                }
+                "HEAVY_BLOW" -> {
+                    if (profile.aether < 15) {
+                        logs.add(
+                            if (_activeLanguage.value == "TR") "❌ Yetersiz Aether!"
+                            else "❌ Insufficient Aether!"
+                        )
+                        _combatLog.value = logs
+                        return@launch
+                    }
+                    val baseDmg = 25 + profile.level * 3
+                    val rawDmg = (baseDmg * 0.9).toInt() + kotlin.random.Random.nextInt(10)
+                    var finalDmg = rawDmg
+                    if (isBlessed) finalDmg = (finalDmg * 1.25f).toInt()
+
+                    isCrit = kotlin.random.Random.nextInt(100) < critChance
+                    if (isCrit) finalDmg = (finalDmg * 1.5f).toInt()
+
+                    damageDealt = finalDmg
+                    currentEnemyHp = (currentEnemyHp - damageDealt).coerceAtLeast(0)
+                    _activeEnemyHp.value = currentEnemyHp
+
+                    val newAether = (profile.aether - 15).coerceAtLeast(0)
+                    val updatedProfile = profile.copy(aether = newAether, lastUpdated = System.currentTimeMillis())
                     repository.savePlayerProfile(updatedProfile)
-                    _combatLog.value = _combatLog.value + logs
+
+                    logs.add(
+                        if (_activeLanguage.value == "TR") "🔥 Ağır Darbe! Düşmana $damageDealt hasar verdiniz. (-15 Aether)"
+                        else "🔥 Heavy Blow! Dealt $damageDealt damage to the enemy. (-15 Aether)"
+                    )
+                }
+                "BARRIER" -> {
+                    val healAmt = 20
+                    playerHp = (playerHp + healAmt).coerceAtMost(profile.maxHp)
+                    val existingShield = updatedPlayerStatuses.find { it.type == StatusType.SHIELDED }
+                    if (existingShield != null) {
+                        existingShield.durationTurns = 2
+                    } else {
+                        updatedPlayerStatuses.add(CombatStatus(StatusType.SHIELDED, 2))
+                    }
+                    val updatedProfile = profile.copy(currentHp = playerHp, lastUpdated = System.currentTimeMillis())
+                    repository.savePlayerProfile(updatedProfile)
+
+                    logs.add(
+                        if (_activeLanguage.value == "TR") "🛡️ Bariyer kullandınız! +$healAmt Can yenilendi ve 2 tur Kalkan kazandınız."
+                        else "🛡️ Activated Barrier! Recovered +$healAmt HP and gained Shielded status for 2 turns."
+                    )
+                }
+                "ESCAPE" -> {
+                    _activeEnemyHp.value = null
+                    _combatLog.value = emptyList()
+                    _playerStatuses.value = emptyList()
+                    _enemyStatuses.value = emptyList()
+                    _lastActionMessageEn.value = "🏃 Escaped from combat."
+                    _lastActionMessageTr.value = "🏃 Dövüşten kaçtınız."
+                    return@launch
                 }
             }
+
+            if (isCrit && action != "BARRIER") {
+                logs.add(if (_activeLanguage.value == "TR") "ğŸ’¥ Kritik VuruÅŸ!" else "ğŸ’¥ Critical Hit!")
+            }
+
+            if (currentEnemyHp <= 0) {
+                handleVictory(profile, node, playerHp, logs)
+                return@launch
+            }
+
+            if (node.type == NodeType.BOSS && currentEnemyHp < (maxEnemyHp / 2) && !hasTriggeredPhase2) {
+                hasTriggeredPhase2 = true
+                logs.add(
+                    if (_activeLanguage.value == "TR") "ğŸ˜¡ PATRON Ã–FKELENDÄ°! CanÄ± %50'nin altÄ±na indi, saldÄ±rÄ± gÃ¼cÃ¼ %50 arttÄ±!"
+                    else "ğŸ˜¡ BOSS ENRAGED! HP fell below 50%, attack power increased by 50%!"
+                )
+            }
+
+            decrementStatuses(updatedPlayerStatuses)
+            _playerStatuses.value = updatedPlayerStatuses.filter { it.durationTurns > 0 }
+
+            executeEnemyTurn(profile, playerHp, currentEnemyHp, node, updatedPlayerStatuses, updatedEnemyStatuses, logs)
         }
     }
 
+    private suspend fun executeEnemyTurn(
+        profile: PlayerProfile,
+        initialPlayerHp: Int,
+        enemyHp: Int,
+        node: AdventureNode,
+        playerStatuses: MutableList<CombatStatus>,
+        enemyStatuses: MutableList<CombatStatus>,
+        logs: MutableList<String>
+    ) {
+        var playerHp = initialPlayerHp
+        var currentEnemyHp = enemyHp
+
+        if (enemyStatuses.any { it.type == StatusType.POISONED }) {
+            currentEnemyHp = (currentEnemyHp - 5).coerceAtLeast(0)
+            _activeEnemyHp.value = currentEnemyHp
+            logs.add(if (_activeLanguage.value == "TR") "ğŸ§ª DÃ¼ÅŸman zehirden -5 hasar aldÄ±." else "ğŸ§ª Enemy took -5 Poison damage.")
+            if (currentEnemyHp <= 0) {
+                handleVictory(profile, node, playerHp, logs)
+                return
+            }
+        }
+
+        val enemyStunned = enemyStatuses.any { it.type == StatusType.STUNNED }
+        if (enemyStunned) {
+            logs.add(if (_activeLanguage.value == "TR") "ğŸŒ€ DÃ¼ÅŸman sersemledi ve sÄ±rasÄ±nÄ± geÃ§ti." else "ğŸŒ€ Enemy is stunned and skips turn.")
+            decrementStatuses(enemyStatuses)
+            _enemyStatuses.value = enemyStatuses.filter { it.durationTurns > 0 }
+            _combatLog.value = _combatLog.value + logs
+            return
+        }
+
+        var enemyAtk = (8 + profile.currentFloor * 1.5).toInt()
+        if (node.type == NodeType.BOSS && hasTriggeredPhase2) {
+            enemyAtk = (enemyAtk * 1.5f).toInt()
+        }
+
+        val enemyBlessed = enemyStatuses.any { it.type == StatusType.BLESSED }
+        if (enemyBlessed) {
+            enemyAtk = (enemyAtk * 1.25f).toInt()
+        }
+
+        val playerShielded = playerStatuses.any { it.type == StatusType.SHIELDED }
+
+        when (_currentEnemyIntent.value) {
+            EnemyIntent.ATTACK -> {
+                var dmg = enemyAtk + kotlin.random.Random.nextInt(4)
+                if (playerShielded) {
+                    dmg = (dmg * 0.5f).toInt()
+                    logs.add(if (_activeLanguage.value == "TR") "ğŸ›¡ï¸ KalkanÄ±nÄ±z sayesinde hasar yarÄ±ya indi!" else "ğŸ›¡ï¸ Shield reduced incoming damage by 50%!")
+                }
+                playerHp = (playerHp - dmg).coerceAtLeast(0)
+                logs.add(
+                    if (_activeLanguage.value == "TR") "ğŸ‘¹ DÃ¼ÅŸman saldÄ±rdÄ±! DÃ¼ÅŸmandan  hasar aldÄ±nÄ±z."
+                    else "ğŸ‘¹ Enemy attacked! Dealt  damage to you."
+                )
+            }
+            EnemyIntent.DEFEND -> {
+                val existingShield = enemyStatuses.find { it.type == StatusType.SHIELDED }
+                if (existingShield != null) {
+                    existingShield.durationTurns = 2
+                } else {
+                    enemyStatuses.add(CombatStatus(StatusType.SHIELDED, 2))
+                }
+                logs.add(
+                    if (_activeLanguage.value == "TR") "ğŸ›¡ï¸ DÃ¼ÅŸman savunmaya Ã§ekildi ve Kalkan kazandÄ±."
+                    else "ğŸ›¡ï¸ Enemy defends and gains Shielded."
+                )
+            }
+            EnemyIntent.DEBUFF -> {
+                val existingPoison = playerStatuses.find { it.type == StatusType.POISONED }
+                if (existingPoison != null) {
+                    existingPoison.durationTurns = 3
+                } else {
+                    playerStatuses.add(CombatStatus(StatusType.POISONED, 3))
+                }
+                logs.add(
+                    if (_activeLanguage.value == "TR") "ğŸ§ª DÃ¼ÅŸman sizi zehirledi! (3 tur zehir)"
+                    else "ğŸ§ª Enemy poisoned you! (Poisoned for 3 turns)"
+                )
+            }
+            EnemyIntent.BUFF -> {
+                val existingBless = enemyStatuses.find { it.type == StatusType.BLESSED }
+                if (existingBless != null) {
+                    existingBless.durationTurns = 3
+                } else {
+                    enemyStatuses.add(CombatStatus(StatusType.BLESSED, 3))
+                }
+                logs.add(
+                    if (_activeLanguage.value == "TR") "âœ¨ DÃ¼ÅŸman kendini kutsadÄ±! SaldÄ±rÄ± gÃ¼cÃ¼ arttÄ±."
+                    else "âœ¨ Enemy blessed themselves! Attack power increased."
+                )
+            }
+        }
+
+        decrementStatuses(enemyStatuses)
+        _enemyStatuses.value = enemyStatuses.filter { it.durationTurns > 0 }
+
+        _currentEnemyIntent.value = EnemyIntent.random()
+
+        if (playerHp <= 0) {
+            triggerSpiritFracture(profile, profile.momentum, profile.gold, profile.aether, profile.side)
+        } else {
+            val updatedProfile = profile.copy(currentHp = playerHp, lastUpdated = System.currentTimeMillis())
+            repository.savePlayerProfile(updatedProfile)
+            _combatLog.value = _combatLog.value + logs
+        }
+    }
+
+    private fun decrementStatuses(statuses: MutableList<CombatStatus>) {
+        statuses.forEach { it.durationTurns-- }
+    }
+
+    private suspend fun handleVictory(profile: PlayerProfile, activeNode: AdventureNode, playerHp: Int, logs: MutableList<String>) {
+        val rewards = RewardGenerator.generateRewards(
+            player = profile.copy(currentHp = playerHp),
+            isBoss = activeNode.type == NodeType.BOSS
+        )
+
+        _activeEnemyHp.value = null
+        _playerStatuses.value = emptyList()
+        _enemyStatuses.value = emptyList()
+        
+        var currentItems = if (profile.itemsEncoded.isEmpty()) emptyList() else profile.itemsEncoded.split(",")
+        rewards.itemAwarded?.let { drop ->
+            currentItems = currentItems + drop
+        }
+        val newItemsEncoded = currentItems.joinToString(",")
+
+        var currentTitles = if (profile.titlesEncoded.isEmpty()) emptyList() else profile.titlesEncoded.split(",")
+        rewards.titleAwarded?.let { drop ->
+            currentTitles = currentTitles + drop
+        }
+        val newTitlesEncoded = currentTitles.joinToString(",")
+
+        val updatedProfile = profile.copy(
+            currentHp = rewards.finalHp,
+            maxHp = rewards.newMaxHp,
+            level = rewards.newLevel,
+            exp = rewards.newExp,
+            maxExp = rewards.newMaxExp,
+            gold = profile.gold + rewards.goldGained,
+            itemsEncoded = newItemsEncoded,
+            titlesEncoded = newTitlesEncoded,
+            currentNodeCompleted = true,
+            lastUpdated = System.currentTimeMillis()
+        )
+        repository.savePlayerProfile(updatedProfile)
+
+        if (_activeLanguage.value == "TR") {
+            logs.add("ğŸ‰ ZAFER! DÃ¼ÅŸman katledildi. +$ Deneyim, +$ AltÄ±n kazanÄ±ldÄ±.")
+            if (rewards.itemAwarded != null) logs.add("ğŸ Hazine: [$] toplandÄ± teÃ§hizat torbana konuldu!")
+            if (rewards.titleAwarded != null) logs.add("ğŸ‘‘ Yeni Unvan KazandÄ±nÄ±z: [$]!")
+            if (rewards.didLevelUp) logs.add("âš¡ SEVÄ°YE ATLADINIZ! Seviye $ oldunuz! Maksimum CanÄ±nÄ±z arttÄ±.")
+        } else {
+            logs.add("ğŸ‰ VICTORY! Enemy defeated. Won +$ EXP, +$ Gold.")
+            if (rewards.itemAwarded != null) logs.add("ğŸ Loot Pick: [$] added to inventory!")
+            if (rewards.titleAwarded != null) logs.add("ğŸ‘‘ Achieved Epic Title: [$]!")
+            if (rewards.didLevelUp) logs.add("âš¡ LEVEL UP! Reached Level $! Max HP increased.")
+        }
+
+        val journalEntry = JournalEntry(
+            floor = profile.currentFloor,
+            actionTakenEs = "Defeated $ in combat on Floor $.",
+            actionTakenTr = "$. Katta $ karÅŸÄ±sÄ±ndaki dÃ¼elloyu kazandÄ±nÄ±z.",
+            sideAlignmentShift = "NEUTRAL",
+            alignmentImpact = 0,
+            nodeIndex = profile.currentNodeIndex
+        )
+        repository.insertJournalEntry(journalEntry)
+
+        _combatLog.value = _combatLog.value + logs
+        _lastActionMessageEn.value = "Defeated $!"
+        _lastActionMessageTr.value = "$ yok edildi!"
+    }
     private suspend fun triggerSpiritFracture(
         profile: PlayerProfile,
-        newAlignment: Int,
+        newMomentum: Int,
         newGold: Int,
-        newGleam: Int,
-        newPyre: Int,
+        newAether: Int,
         factionSide: String
     ) {
         val fractureCount = profile.totalFractures + 1
         val rollbackFloor = profile.savedFloorCheckpoint
 
         val updated = profile.copy(
-            alignment = newAlignment,
+            momentum = newMomentum,
             gold = newGold,
-            gleam = newGleam / 2,
-            pyre = newPyre / 2,
+            aether = newAether / 2,
             currentHp = profile.maxHp / 2, // Reincarnate with 50% HP
             currentFloor = rollbackFloor,
             currentNodeIndex = 0, // Reset progression to beginning of safety checkpoint
             currentNodeCompleted = false,
             totalFractures = fractureCount,
-            chosenClass = calculatePlayerClass(factionSide, newAlignment),
+            chosenClass = calculatePlayerClass(factionSide, newMomentum),
             rank = calculateRank(rollbackFloor),
             lastUpdated = System.currentTimeMillis()
         )
@@ -1232,8 +1271,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    private fun calculatePlayerClass(side: String, alignment: Int): String {
-        return getPlayerClassString(side, alignment)
+    private fun calculatePlayerClass(side: String, momentum: Int): String {
+        return getPlayerClassString(side, momentum)
     }
 
     private fun calculateRank(floor: Int): String {
@@ -1309,8 +1348,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             
             // Calculate base currency rewards
             val newGold = profile.gold + quest.rewardGold
-            val newGleam = profile.gleam + quest.rewardGleam
-            val newPyre = profile.pyre + quest.rewardPyre
+            val newAether = profile.aether + quest.rewardAether
             
             // Experience and levels
             var newExp = profile.exp + quest.rewardExp
@@ -1344,8 +1382,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             var updated = profile.copy(
                 completedQuestsEncoded = completedSet.joinToString(","),
                 gold = newGold,
-                gleam = newGleam,
-                pyre = newPyre,
+                aether = newAether,
                 level = newLevel,
                 exp = newExp,
                 maxExp = newMaxExp,
@@ -1431,13 +1468,13 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             var factionMod = 1.0f
 
             // Alignment / Side modifiers
-            val isSanctum = profile.side == "SANCTUM" || profile.alignment > 20
-            val isCovenant = profile.side == "COVENANT" || profile.alignment < -20
+            val isSanctum = profile.side == "SANCTUM" || profile.momentum > 70
+            val isCovenant = profile.side == "COVENANT" || profile.momentum < 30
 
             if (isSanctum) {
                 when (enemyFaction) {
                     EnemyFaction.VOID_CORRUPTION -> {
-                        val sanctumBonus = 0.20f + (profile.alignment / 400.0f).coerceIn(0.0f, 0.25f)
+                        val sanctumBonus = 0.20f + ((profile.momentum - 50) / 200.0f).coerceIn(0.0f, 0.25f)
                         factionMod += sanctumBonus
                         val pct = (sanctumBonus * 100).toInt()
                         alignmentModEn = "[✨ Radiant Resonance: +$pct% Holy Radiant Damage!]"
@@ -1450,19 +1487,19 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     }
                     else -> {}
                 }
-                if (profile.gleam > 0) {
-                    val gleamBonus = ((profile.gleam / 50) * 0.05f).coerceAtMost(0.15f)
-                    if (gleamBonus > 0f) {
-                        factionMod += gleamBonus
-                        val pct = (gleamBonus * 100).toInt()
-                        alignmentModEn = if (alignmentModEn.isEmpty()) "[✨ Gleam Amplification: +$pct%]" else alignmentModEn + " [✨ +$pct% Gleam]"
+                if (profile.aether > 0) {
+                    val AetherBonus = ((profile.aether / 50) * 0.05f).coerceAtMost(0.15f)
+                    if (AetherBonus > 0f) {
+                        factionMod += AetherBonus
+                        val pct = (AetherBonus * 100).toInt()
+                        alignmentModEn = if (alignmentModEn.isEmpty()) "[✨ Aether Amplification: +$pct%]" else alignmentModEn + " [✨ +$pct% Aether]"
                         alignmentModTr = if (alignmentModTr.isEmpty()) "[✨ Cevher Güçlendirmesi: +$pct%]" else alignmentModTr + " [✨ +$pct% Cevher]"
                     }
                 }
             } else if (isCovenant) {
                 when (enemyFaction) {
                     EnemyFaction.SANCTUM_WRATH -> {
-                        val voidBonus = 0.20f + (Math.abs(profile.alignment) / 400.0f).coerceIn(0.0f, 0.25f)
+                        val voidBonus = 0.20f + (Math.abs(profile.momentum - 50) / 200.0f).coerceIn(0.0f, 0.25f)
                         factionMod += voidBonus
                         val pct = (voidBonus * 100).toInt()
                         alignmentModEn = "[🔮 Ruinous Eclipse: +$pct% Chaos Abyss Damage!]"
@@ -1475,12 +1512,12 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     }
                     else -> {}
                 }
-                if (profile.pyre > 0) {
-                    val pyreBonus = ((profile.pyre / 50) * 0.05f).coerceAtMost(0.15f)
-                    if (pyreBonus > 0f) {
-                        factionMod += pyreBonus
-                        val pct = (pyreBonus * 100).toInt()
-                        alignmentModEn = if (alignmentModEn.isEmpty()) "[🔥 Pyre Immolation: +$pct%]" else alignmentModEn + " [🔥 +$pct% Pyre]"
+                if (profile.aether > 0) {
+                    val AetherBonus = ((profile.aether / 50) * 0.05f).coerceAtMost(0.15f)
+                    if (AetherBonus > 0f) {
+                        factionMod += AetherBonus
+                        val pct = (AetherBonus * 100).toInt()
+                        alignmentModEn = if (alignmentModEn.isEmpty()) "[🔥 Aether Immolation: +$pct%]" else alignmentModEn + " [🔥 +$pct% Aether]"
                         alignmentModTr = if (alignmentModTr.isEmpty()) "[🔥 Ateş Yıkımı: +$pct%]" else alignmentModTr + " [🔥 +$pct% Ateş]"
                     }
                 }
@@ -1623,8 +1660,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
                 val updated = profile.copy(
                     gold = (profile.gold + rewardGold),
-                    gleam = (profile.gleam + boss.rewardGleam),
-                    pyre = (profile.pyre + boss.rewardPyre),
+                    aether = (profile.aether + boss.rewardAether),
                     currentHp = playerHp.coerceAtMost(profile.maxHp),
                     itemsEncoded = newItemsEncoded,
                     lastUpdated = System.currentTimeMillis()
@@ -1673,8 +1709,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                         currentHp = 50,
                         currentFloor = rollbackFloor,
                         totalFractures = fractureCount,
-                        gleam = (profile.gleam / 2),
-                        pyre = (profile.pyre / 2),
+                        aether = (profile.aether / 2),
                         lastUpdated = System.currentTimeMillis()
                     )
                     repository.savePlayerProfile(updated)
@@ -1706,35 +1741,64 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+
     companion object {
-        fun getPlayerClassString(side: String, alignment: Int): String {
-            val isLightBand = alignment >= 15
-            val isDarkBand = alignment <= -15
-            val isNeutralBand = alignment in -14..14
+        fun getPlayerClassString(side: String, momentum: Int): String {
+            val isLightBand = momentum >= 65
+            val isDarkBand = momentum <= 35
+            
 
             return when (side) {
                 "SANCTUM" -> {
                     when {
-                        alignment >= 40 -> "Holy Aegis (Kutsal Siper)"
+                        momentum >= 90 -> "Holy Aegis (Kutsal Siper)"
                         isLightBand -> "Codifier (Kanon Büyücüsü)"
                         else -> "Iron Throne (Acımasız İnfazcı)"
                     }
                 }
                 "COVENANT" -> {
                     when {
-                        alignment <= -40 -> "Death Herald (Ölüm Habercisi)"
+                        momentum <= 10 -> "Death Herald (Ölüm Habercisi)"
                         isDarkBand -> "Wildhand (Kaotik Gölge Ustası)"
                         else -> "Tempest (Özgürlük Savaşçısı)"
                     }
                 }
                 else -> {
                     when {
-                        alignment >= 30 -> "Acolyte of Seal"
-                        alignment <= -30 -> "Abyss Renegade"
+                        momentum >= 80 -> "Acolyte of Seal"
+                        momentum <= 20 -> "Abyss Renegade"
                         else -> "Initiate (Yansıma Adayı)"
                     }
                 }
             }
+        }
+    }
+}
+
+
+
+enum class StatusType {
+    POISONED,
+    STUNNED,
+    BLESSED,
+    SHIELDED
+}
+
+data class CombatStatus(
+    val type: StatusType,
+    var durationTurns: Int
+)
+
+enum class EnemyIntent {
+    ATTACK,
+    DEFEND,
+    DEBUFF,
+    BUFF;
+
+    companion object {
+        fun random(random: kotlin.random.Random = kotlin.random.Random): EnemyIntent {
+            val values = values()
+            return values[random.nextInt(values.size)]
         }
     }
 }

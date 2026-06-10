@@ -13,7 +13,7 @@
     "label_gleam": "Semavi Işıltı",
     "label_pyre": "Kara Ateş",
     "label_rank": "Rütbe",
-    "label_alignment": "Hizalanma",
+    "label_alignment": "Momentum",
     "label_class": "Yansıma Sınıfı",
     "label_side": "Hizalanmış Cephe",
     "label_fractures": "Ruh Kırılmaları",
@@ -34,7 +34,7 @@
     "faction_covenant": "Void Covenant (Karanlık)",
     "alliance_oath": "YEMİNLİ BAĞLILIK ANDI",
     "alliance_details": "Bir cepheye katılmak, moral değerlerine bağlı olarak özel Yansıma Sınıfınızın kilidini açar.",
-    "alignment_spectrum": "HİZALANMA DURUMU",
+    "alignment_spectrum": "Momentum DURUMU",
     "hero_title": "KAHRAMAN UNVANI",
     "save_name": "Güncelle",
     "renounce_btn": "Bağlılıktan İhanet Et (Sürgün Ol)",
@@ -58,10 +58,8 @@
     "scout_desc": "Altın ödülü verir ama Musibetten ötürü Can kaybetme riski taşır.",
     "scout_btn": "Gözcü",
     "exchange_title": "KARABORSA TAKAS TEZGÂHI",
-    "buy_gleam_title": "Semavi Işıltı Satın Al",
-    "buy_gleam_desc": "50 Altın ödeyerek 15 Işıltı alırsınız.",
-    "buy_pyre_title": "Kara Ateş Satın Al",
-    "buy_pyre_desc": "50 Altın ödeyerek 15 Kara Ateş alırsınız.",
+    "buy_aether_title": "Aether Satın Al",
+    "buy_aether_desc": "50 Altın ödeyerek 15 Aether alırsınız.",
     "welcome_message": "Hoş geldin, kahraman. Yükselişin başlıyor.",
     "reset_message": "Zaman döngüsü sıfırlandı. Macera yeniden başlıyor."
   },
@@ -79,9 +77,9 @@
     "exarch_council": {
       "title": "Büyük Egzark Meclisi (Kat %d)",
       "description": "Bu katta bir Egzark taçlandırılıyor. Yüksek ekonomik ve askeri stratejiler burada tartışılır. Kule sektörlerini ele geçirmek için yerel savaşlar ilan ediliyor. Duruşunu belirlemelisin.",
-      "optA_text": "Semavi Filoyu Fonla ve Düzeni Sağla (+Gleam, -Gold)",
+      "optA_text": "Semavi Filoyu Fonla ve Düzeni Sağla (+Aether, -Gold)",
       "optA_journal": "Beyaz Kuleler filosunu %d. Katta fonlayarak katı Sanctum kurallarını dayattın.",
-      "optB_text": "Asilere Boşluk katkılı Silahlar Kaçır (+Pyre, -Gold)",
+      "optB_text": "Asilere Boşluk katkılı Silahlar Kaçır (+Aether, -Gold)",
       "optB_journal": "%d. Katta isyanı tetiklemek için yasaklanmış Boşluk mühimmatı kaçırdın.",
       "optC_text": "Muazzam Paralı Asker kârı için iki taraga da İstihbarat Sat (+Gold)",
       "optC_journal": "Gölgeler simsarı gibi %d. Katta iki tarafı da oynatarak temiz altın biriktirdin."
@@ -99,19 +97,19 @@
     "theme_0": {
       "title": "Musibetli Mahzenler - K%d",
       "description": "Ebedi Çürüme'nin kalın mor kökleri ufalanan taş sandıkları sarıyor. Gümüş zırhlı iskeletler dua ederken donup kalmış.",
-      "optA_text": "Kemikleri arındır ve huzura kavuştur (+Gleam)",
+      "optA_text": "Kemikleri arındır ve huzura kavuştur (+Aether)",
       "optA_journal": "%d. Katta Sanctum'un düşmüş askerlerini takdis ettin.",
-      "optB_text": "Kalan Musibet özünü içine çek (+Pyre)",
+      "optB_text": "Kalan Musibet özünü içine çek (+Aether)",
       "optB_journal": "%d. Katta Boşluk ritüellerini beslemek için yozlaşmış Musibet özlerini topladın.",
       "optC_text": "Donmuş kasalardaki altın sikkeleri yağmala (+Altın)",
       "optC_journal": "%d. Katta maddi altını ruhani meselelerin üstünde tuttun."
     },
     "theme_1": {
       "title": "Işıldayan Ayna - K%d",
-      "description": "Ağır, sıvı yıldız ışığından bir havuz gerçek hizalanmanı yansıtıyor. Gizli sınıf potansiyelini fısıldayarak ruhunu seçime çağırıyor.",
-      "optA_text": "Diz çök ve Beyaz Kuleler'e bağlılık sözü ver (+Gleam, -10 HP)",
+      "description": "Ağır, sıvı yıldız ışığından bir havuz gerçek Momentumnı yansıtıyor. Gizli sınıf potansiyelini fısıldayarak ruhunu seçime çağırıyor.",
+      "optA_text": "Diz çök ve Beyaz Kuleler'e bağlılık sözü ver (+Aether, -10 HP)",
       "optA_journal": "%d. Katta Beyaz Kuleler ayna havuzunun önünde diz çöktün.",
-      "optB_text": "Kozmik gölgeyi emmek için aynayı tuzla buz et (+Pyre, -10 HP)",
+      "optB_text": "Kozmik gölgeyi emmek için aynayı tuzla buz et (+Aether, -10 HP)",
       "optB_journal": "%d. Katta yansıtıcı havuzu kırarak parçalarından güç çektin.",
       "optC_text": "Fiziksel canlıliğini geri kazanmak için ondan iç (+20 HP)",
       "optC_journal": "%d. Katta kırık kabuğunu iyileştirmek için mistik suları içtin."
@@ -119,9 +117,9 @@
     "theme_2": {
       "title": "Yıkık Mühürleme Tapınağı - K%d",
       "description": "Yıkık bir sunak hâlâ havada süzülüyor ve titrek altın koruma büyüleri saçıyor. Musibet gölgelerinin baskısı altında yavaşça çöküyor.",
-      "optA_text": "Efsunu canlandırmak için kan feda et (-15 HP, +Gleam)",
+      "optA_text": "Efsunu canlandırmak için kan feda et (-15 HP, +Aether)",
       "optA_journal": "%d. Katta mühürleri yaşatmak için kanını feda ettin.",
-      "optB_text": "Pyre elde etmek için sunağı Boşluk özüyle enfekte et (+Pyre)",
+      "optB_text": "Pyre elde etmek için sunağı Boşluk özüyle enfekte et (+Aether)",
       "optB_journal": "%d. Katta karanlık ahitlerini beslemek için mühür sunağını kirlettin.",
       "optC_text": "Sütunlardan altın kaplama rünleri sök (+Altın)",
       "optC_journal": "%d. Katta antik duvarlardaki nadir rünleri söktün."
@@ -129,9 +127,9 @@
     "theme_3": {
       "title": "Kuleler Kervanı - K%d",
       "description": "Güvenli sektörlerde seyahat eden tarafsız göçebe tüccarlar eserler satıyor. Yakınlardaki şiddetli bir çatışmayı fısıldayıp takas yapmaya hazırlar.",
-      "optA_text": "Sanctum kutsal yadigarını satın al (-80 Altın, +Gleam)",
+      "optA_text": "Sanctum kutsal yadigarını satın al (-80 Altın, +Aether)",
       "optA_journal": "%d. Katta gezgin kervandan kutsal bir yadigar satın aldın.",
-      "optB_text": "Covenant yasaklı kara kitabını satın al (-80 Altın, +Pyre)",
+      "optB_text": "Covenant yasaklı kara kitabını satın al (-80 Altın, +Aether)",
       "optB_journal": "%d. Katta yasaklanmış bir Boşluk büyüleri el yazması edindin.",
       "optC_text": "Güvenlik eşyaları için eski ekipmanını sat (+Altın, +10 HP)",
       "optC_journal": "%d. Katta tüccarlarla takas yapıp yaralarını sardın."
@@ -139,9 +137,9 @@
     "theme_4": {
       "title": "Ağlayan Boşluk Karakolu - K%d",
       "description": "Void Covenant'ın bir öncü karakolu darmadağın olmuş. Ölmekte olan gözcüler, kendilerini avlayan Beyaz Kule arındırma ekiplerinden mırıldanıyor.",
-      "optA_text": "Gözcülere merhamet dolu acısız sonlar sun (+Gleam, Işık)",
+      "optA_text": "Gözcülere merhamet dolu acısız sonlar sun (+Aether, Işık)",
       "optA_journal": "%d. Katta ölmekte olan Boşluk sürgünlerine merhamet gösterdin.",
-      "optB_text": "Onları boşluk kölesi olarak diriltmek için can közlerini topla (+Pyre)",
+      "optB_text": "Onları boşluk kölesi olarak diriltmek için can közlerini topla (+Aether)",
       "optB_journal": "%d. Katta ölü gözcüleri akılsız Boşluk kölesi olarak canlandırdın.",
       "optC_text": "Unutulmuş erzak torbaları için çantalarını ara (+Altın)",
       "optC_journal": "%d. Katta savaş alanındaki terk edilmiş malzemeleri yağmaladın."
@@ -149,19 +147,19 @@
     "theme_5": {
       "title": "Fısıldayan Çeşme - K%d",
       "description": "Sıcak mineral suyuyla dolu doğal bir buhar gayzeri ışıldıyor. Hava kükürt kokuyor ve sisin içinde kadim Hükümdar'ın fısıltıları yankılanıyor.",
-      "optA_text": "Düzen temizleme ritüeli gerçekleştir (+Gleam, -10 HP)",
+      "optA_text": "Düzen temizleme ritüeli gerçekleştir (+Aether, -10 HP)",
       "optA_journal": "%d. Katta mineral kaplıcasını kutsadın.",
-      "optB_text": "Güç kilidini açmak için onu Musibet kanıyla aşıla (+Pyre, -10 HP)",
+      "optB_text": "Güç kilidini açmak için onu Musibet kanıyla aşıla (+Aether, -10 HP)",
       "optB_journal": "%d. Katta kaotik fısıltıları çağırmak için kaynağı kirlettin.",
       "optC_text": "Canlılık için sıcak mineral sularında yıkan (+30 HP, -20 Altın)",
       "optC_journal": "%d. Katta mineral kaynağında dinlenerek gücünü büyük ölçüde geri kazandın."
     },
     "theme_6": {
       "title": "Demir Eşik - K%d",
-      "description": "Ağır zırhlı kapılar tüneli kapatıyor. Kitabeler açılmak için hizalanma veya saf altın haraç talep ediyor.",
-      "optA_text": "Saf inanç kullanarak demir kapıları zorla (+Gleam, -15 HP)",
+      "description": "Ağır zırhlı kapılar tüneli kapatıyor. Kitabeler açılmak için Momentum veya saf altın haraç talep ediyor.",
+      "optA_text": "Saf inanç kullanarak demir kapıları zorla (+Aether, -15 HP)",
       "optA_journal": "%d. Katta Demir Eşiği Kutsal inanışla zorlayarak açtın.",
-      "optB_text": "Boşluk yıldırımıyla kilitleri fırlat (+Pyre, -15 HP)",
+      "optB_text": "Boşluk yıldırımıyla kilitleri fırlat (+Aether, -15 HP)",
       "optB_journal": "%d. Katta koruyucu kapıları Boşluk yıldırımıyla Boşluk yıldırımıyla açtın.",
       "optC_text": "Otomatik haraç mekanizmasına ödeme yap (-50 Altın)",
       "optC_journal": "%d. Katta kapıcının vergisini altınla ödeyip geçtin."

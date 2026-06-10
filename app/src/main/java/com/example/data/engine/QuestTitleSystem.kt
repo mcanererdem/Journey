@@ -61,8 +61,7 @@ data class QuestDef(
     val rewardExp: Int = 0,
     val rewardItem: String? = null,
     val rewardTitle: String? = null,
-    val rewardGleam: Int = 0,
-    val rewardPyre: Int = 0
+    val rewardAether: Int = 0
 )
 
 /**
@@ -78,10 +77,10 @@ object QuestTitleSystem {
             descEn = "You are driven by the pure, unyielding radiant beam of the Sanctum.",
             descTr = "Sizi ileri taşıyan güç Semavi'nin saf ve boyun eğmez kutsal radyasyonudur.",
             isHidden = false,
-            requirementDescEn = "Reach Level 3 & Alignment +20 minimum",
-            requirementDescTr = "Seviye 3'e ulaşın & En az +20 Hizalanma",
+            requirementDescEn = "Reach Level 3 & Momentum 70 minimum",
+            requirementDescTr = "Seviye 3'e ulaşın & En az 70 Momentum",
             hpBonus = 15,
-            meetsPreconditions = { it.level >= 3 && it.alignment >= 20 }
+            meetsPreconditions = { it.level >= 3 && it.momentum >= 70 }
         ),
         TitleDef(
             id = "void_reaper",
@@ -90,10 +89,10 @@ object QuestTitleSystem {
             descEn = "The shadows bend to your malicious gaze. A feared collector of corrupt essence.",
             descTr = "Gölgeler sizin karanlık bakışınız önünde eğiliyor. Çürümüş ruhların korkulan avcısı.",
             isHidden = false,
-            requirementDescEn = "Reach Level 5 & Alignment -35 or lower",
+            requirementDescEn = "Reach Level 5 & Momentum 15 or lower",
             requirementDescTr = "Seviye 5'e ulaşın & -35 veya daha az Hizalanma",
             hpBonus = 25,
-            meetsPreconditions = { it.level >= 5 && it.alignment <= -35 }
+            meetsPreconditions = { it.level >= 5 && it.momentum <= 15 }
         ),
         TitleDef(
             id = "cosmic_observer",
@@ -102,10 +101,10 @@ object QuestTitleSystem {
             descEn = "A silent watcher holding the scales of creation in perfect alignment.",
             descTr = "Yaradılışın kefelerini kusursuz dengede tutan sessiz ve tarafsız izleyici.",
             isHidden = true,
-            requirementDescEn = "Absolute Alignment Neutral (exactly 0) at Floor 10+",
+            requirementDescEn = "Absolute Momentum Neutral (exactly 50) at Floor 10+",
             requirementDescTr = "Kulede 10. Kat veya üzerinde Hizalanma değerinizin tam Sıfır (0) olması",
             hpBonus = 30,
-            meetsPreconditions = { it.currentFloor >= 10 && it.alignment == 0 }
+            meetsPreconditions = { it.currentFloor >= 10 && it.momentum == 50 }
         ),
         TitleDef(
             id = "immortal_phantom",
@@ -150,10 +149,10 @@ object QuestTitleSystem {
             descEn = "The embodiment of cosmic decay. You are the doomsday itself.",
             descTr = "Kozmik çürümenin ete kemiğe bürünmüş hali. Siz bizzat kıyametsiniz.",
             isHidden = true,
-            requirementDescEn = "Covenant Aligned with Level 15+ & Alignment -85 or lower",
-            requirementDescTr = "Kara Ahit yeminli, Seviye 15 ve üzeri & En az -85 Hizalanma",
+            requirementDescEn = "Covenant Aligned with Level 15+ & Momentum 15 or lower",
+            requirementDescTr = "Kara Ahit yeminli, Seviye 15 ve üzeri & En az 15 veya daha az Momentum",
             hpBonus = 60,
-            meetsPreconditions = { it.side == "COVENANT" && it.level >= 15 && it.alignment <= -85 }
+            meetsPreconditions = { it.side == "COVENANT" && it.level >= 15 && it.momentum <= 15 }
         ),
         TitleDef(
             id = "archon_sage",
@@ -162,10 +161,10 @@ object QuestTitleSystem {
             descEn = "Pure solar glory radiates from your actions. Spires bow to your presence.",
             descTr = "Eylemlerinizden saf güneş parlaklığı yayılıyor. Kuleler varlığınız önünde eğiliyor.",
             isHidden = false,
-            requirementDescEn = "Sanctum Aligned with Level 15+ & Alignment +85 or higher",
-            requirementDescTr = "Semavi yeminli, Seviye 15 ve üzeri & En az +85 Hizalanma",
+            requirementDescEn = "Sanctum Aligned with Level 15+ & Momentum 85 or higher",
+            requirementDescTr = "Semavi yeminli, Seviye 15 ve üzeri & En az 85 Momentum",
             hpBonus = 60,
-            meetsPreconditions = { it.side == "SANCTUM" && it.level >= 15 && it.alignment >= 85 }
+            meetsPreconditions = { it.side == "SANCTUM" && it.level >= 15 && it.momentum >= 85 }
         ),
         TitleDef(
             id = "plague_vanquisher",
@@ -305,12 +304,12 @@ object QuestTitleSystem {
             titleTr = "Semavi Saflık Andı",
             descEn = "Embrace the solar radiance. Prove your alignment with the divine Sanctum faction.",
             descTr = "Güneşin hararetini kucaklayın. Semavi birliğine olan bağlılığınızı kanıtlayın.",
-            requirementEn = "Become Sanctum Aligned (Alignment +15 or higher)",
+            requirementEn = "Become Sanctum Aligned (Momentum 65 or higher)",
             requirementTr = "Semavi Birliğine Katılın (En az +15 Hizalanma)",
-            checkProgress = { it.side == "SANCTUM" && it.alignment >= 15 },
+            checkProgress = { it.side == "SANCTUM" && it.momentum >= 65 },
             rewardExp = 250,
             rewardGold = 80,
-            rewardGleam = 60
+            rewardAether = 60
         ),
         QuestDef(
             id = "side_void_alliance",
@@ -319,12 +318,12 @@ object QuestTitleSystem {
             titleTr = "Derin Boşluk Anlaşması",
             descEn = "Whisper to the void, let the dark echo of the Covenant shape your shadows.",
             descTr = "Boşluğun sesini dinleyin, Kara Ahit'in karanlık tınısının gölgenizi şekillendirmesine izin verin.",
-            requirementEn = "Become Covenant Aligned (Alignment -15 or lower)",
+            requirementEn = "Become Covenant Aligned (Momentum 35 or lower)",
             requirementTr = "Kara Ahit Birliğine Katılın (En az -15 Hizalanma)",
-            checkProgress = { it.side == "COVENANT" && it.alignment <= -15 },
+            checkProgress = { it.side == "COVENANT" && it.momentum <= 35 },
             rewardExp = 250,
             rewardGold = 80,
-            rewardPyre = 60
+            rewardAether = 60
         ),
 
         // --- CHAIN QUESTS ---
@@ -395,9 +394,9 @@ object QuestTitleSystem {
             titleTr = "??? (Mutlak Denge)",
             descEn = "Walk the tightrope of destiny without leaning to heaven or hell up to Floor 15.",
             descTr = "Kader ipinde her iki tarafa da sapmadan 15. Kata kadar yürüyün.",
-            requirementEn = "Reach Floor 15 while maintaining EXACTLY 0 Alignment",
+            requirementEn = "Reach Floor 15 while maintaining EXACTLY 50 Momentum",
             requirementTr = "15. Kata vardığınızda Hizalanma (Alignment) değerinizi TAM SIFIR (0) tutun",
-            checkProgress = { it.currentFloor >= 15 && it.alignment == 0 },
+            checkProgress = { it.currentFloor >= 15 && it.momentum == 50 },
             rewardExp = 500,
             rewardGold = 250,
             rewardTitle = "Guardian of Cosmic Neutrality"
@@ -426,9 +425,9 @@ object QuestTitleSystem {
             titleTr = "İnanç Patikası",
             descEn = "Commit strongly to either the celestial sun rays or the depth of the void.",
             descTr = "Göksel güneş ışıklarına ya da boşluğun karanlık fısıltılarına güçlü bir bağlılık gösterin.",
-            requirementEn = "Alignment >= +45 (Celestial) or <= -45 (Void)",
+            requirementEn = "Momentum >= 75 (Celestial) or <= 25 (Void)",
             requirementTr = "Hizalanma >= +45 veya <= -45 olmalı",
-            checkProgress = { it.alignment >= 45 || it.alignment <= -45 },
+            checkProgress = { it.momentum >= 75 || it.momentum <= 25 },
             rewardGold = 150,
             rewardExp = 200,
             rewardItem = "Scroll of Conviction"
@@ -447,7 +446,7 @@ object QuestTitleSystem {
             checkProgress = { it.level >= 6 },
             rewardGold = 120,
             rewardExp = 150,
-            rewardGleam = 40
+            rewardAether = 40
         )
     )
 
@@ -534,19 +533,19 @@ data class QuestStatus(
                 if (player.side != "SANCTUM") {
                     Pair(if (isTr) "Semavi Değilsiniz" else "Not Sanctum Aligned", 0f)
                 } else {
-                    val curr = player.alignment
-                    val target = 15
-                    val label = if (isTr) "Hizalanma $curr / $target" else "Alignment $curr / $target"
-                    Pair(label, (curr.toFloat() / target).coerceIn(0f, 1f))
+                    val curr = player.momentum
+                    val target = 65
+                    val label = if (isTr) "Momentum $curr / $target" else "Momentum $curr / $target"
+                    Pair(label, ((curr - 50).toFloat() / 15f).coerceIn(0f, 1f))
                 }
             }
             "side_void_alliance" -> {
                 if (player.side != "COVENANT") {
                     Pair(if (isTr) "Kara Ahit Değilsiniz" else "Not Covenant Aligned", 0f)
                 } else {
-                    val curr = (player.alignment * -1).coerceAtLeast(0)
+                    val curr = (50 - player.momentum).coerceAtLeast(0)
                     val target = 15
-                    val label = if (isTr) "Karanlık Hizalanma $curr / $target" else "Void Alignment $curr / $target"
+                    val label = if (isTr) "Karanlık Momentum $curr / $target" else "Void Momentum $curr / $target"
                     Pair(label, (curr.toFloat() / target).coerceIn(0f, 1f))
                 }
             }
@@ -576,12 +575,13 @@ data class QuestStatus(
             }
             "hidden_perfect_balance" -> {
                 val currFl = player.currentFloor
-                val align = player.alignment
-                val isBalanced = align == 0
+                val align = player.momentum
+                val isBalanced = align == 50
                 if (!isUnlocked) {
                     Pair("???", 0f)
                 } else if (!isBalanced) {
-                    Pair(if (isTr) "Denge Bozuldu (Değer: $align)" else "Imbalanced (Alignment: $align)", 0f)
+                    val displayVal = align - 50
+                    Pair(if (isTr) "Denge Bozuldu (Değer: $displayVal)" else "Imbalanced (Alignment: $displayVal)", 0f)
                 } else {
                     val label = if (isTr) "Dengeli Kat $currFl / 15" else "Balanced Floor $currFl / 15"
                     Pair(label, (currFl.toFloat() / 15).coerceIn(0f, 1f))
@@ -609,10 +609,10 @@ data class QuestStatus(
                 Pair(label, (curr.toFloat() / target).coerceIn(0f, 1f))
             }
             "special_alignment_pioneer" -> {
-                val absAlign = Math.abs(player.alignment)
-                val target = 45
-                val label = if (isTr) "Hizalanma Derecesi $absAlign / $target" else "Alignment Solstice $absAlign / $target"
-                Pair(label, (absAlign.toFloat() / target).coerceIn(0f, 1f))
+                val dist = Math.abs(player.momentum - 50)
+                val target = 25
+                val label = if (isTr) "Momentum Farkı $dist / $target" else "Momentum Diff $dist / $target"
+                Pair(label, (dist.toFloat() / target).coerceIn(0f, 1f))
             }
             "event_solar_zenith" -> {
                 val curr = player.level
@@ -624,3 +624,4 @@ data class QuestStatus(
         }
     }
 }
+

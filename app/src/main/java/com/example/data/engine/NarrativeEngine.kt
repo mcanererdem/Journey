@@ -1,12 +1,11 @@
-package com.example.data.engine
+﻿package com.example.data.engine
 
 data class GameOption(
     val textEn: String,
     val textTr: String,
     val alignmentShift: Int, // Positive for Sanctum (+), Negative for Void (-)
     val goldChange: Int = 0,
-    val gleamChange: Int = 0,
-    val pyreChange: Int = 0,
+    val aetherChange: Int = 0,
     val hpChange: Int = 0,
     val journalEn: String,
     val journalTr: String
@@ -41,7 +40,7 @@ object NarrativeEngine {
                     textEn = "Annihilate with Light & Seal the Core (Triumph Ending)",
                     textTr = "Işık ile Yok Et ve Çekirdeği Mühürle (Zafer Sonu)",
                     alignmentShift = 40,
-                    gleamChange = 500,
+                    aetherChange = 500,
                     hpChange = -20,
                     journalEn = "You sealed the Core in blinding Light, achieving a glorious Triumph for the Sanctum.",
                     journalTr = "Çekirdeği göz alıcı bir Işıkla mühürledin, Sanctum için şanlı bir Zafer elde ettin."
@@ -50,7 +49,7 @@ object NarrativeEngine {
                     textEn = "Absorb the Void Core and Evolve (Hold Ending)",
                     textTr = "Boşluk Çekirdeğini Em ve Evril (Direnç Sonu)",
                     alignmentShift = -40,
-                    pyreChange = 500,
+                    aetherChange = 500,
                     hpChange = -20,
                     journalEn = "You absorbed the Blight into your Void Covenant, holding the dark tide by sheer evolutionary dominance.",
                     journalTr = "Musibeti Void Covenant'ına kattın, saf evrimsel üstünlükle karanlık dalgayı bastırdın."
@@ -75,20 +74,20 @@ object NarrativeEngine {
                     descriptionEn = "An Exarch is crowned on this floor. High economic and militaristic strategies are debated here. Factions are declaring localized wars to capture the tower sectors. You must declare your stance.",
                     descriptionTr = "Bu katta bir Egzark taçlandırılıyor. Yüksek ekonomik ve askeri stratejiler burada tartışılır. Kule sektörlerini ele geçirmek için yerel savaşlar ilan ediliyor. Duruşunu belirlemelisin.",
                     optionA = GameOption(
-                        textEn = "Fund the Celestial Fleet & Impose Order (+Gleam, -Gold)",
-                        textTr = "Semavi Filoyu Fonla ve Düzeni Sağla (+Gleam, -Gold)",
+                        textEn = "Fund the Celestial Fleet & Impose Order (+Aether, -Gold)",
+                        textTr = "Semavi Filoyu Fonla ve Düzeni Sağla (+Aether, -Gold)",
                         alignmentShift = 15,
                         goldChange = -100,
-                        gleamChange = 150,
+                        aetherChange = 150,
                         journalEn = "You funded the White Spires fleet on Floor $num to enforce strict Sanctum regulations.",
                         journalTr = "Beyaz Kuleler filosunu $num. Katta fonlayarak katı Sanctum kurallarını dayattın."
                     ),
                     optionB = GameOption(
-                        textEn = "Smuggle Void-infused Weapons to rebels (+Pyre, -Gold)",
-                        textTr = "Asilere Boşluk katkılı Silahlar Kaçır (+Pyre, -Gold)",
+                        textEn = "Smuggle Void-infused Weapons to rebels (+Aether, -Gold)",
+                        textTr = "Asilere Boşluk katkılı Silahlar Kaçır (+Aether, -Gold)",
                         alignmentShift = -15,
                         goldChange = -100,
-                        pyreChange = 150,
+                        aetherChange = 150,
                         journalEn = "You smuggled forbidden Void armaments on Floor $num to trigger a rebellion.",
                         journalTr = "$num. Katta isyanı tetiklemek için yasaklanmış Boşluk mühimmatı kaçırdın."
                     ),
@@ -115,7 +114,7 @@ object NarrativeEngine {
                         textEn = "Invoke the Pure Aegis to smite the Arbiter (-20 HP)",
                         textTr = "Hakemi çarpmak için Saf Aegis'i çağır (-20 HP)",
                         alignmentShift = 20,
-                        gleamChange = 100,
+                        aetherChange = 100,
                         hpChange = -20,
                         journalEn = "You battled through the Floor $num Arbiter trial with pure Celestial shield.",
                         journalTr = "Saf Semavi kalkan ile $num. Kat Hakem sınavını savaşarak aştın."
@@ -124,7 +123,7 @@ object NarrativeEngine {
                         textEn = "Offer a piece of your Soul to bypass the ward (-10 HP, Cruel)",
                         textTr = "Engeli aşmak için Ruhundan bir parça sun (-10 HP, Acımasız)",
                         alignmentShift = -20,
-                        pyreChange = 120,
+                        aetherChange = 120,
                         hpChange = -10,
                         journalEn = "You fed the Void Covenant's flame on Floor $num by sacrificing raw life force.",
                         journalTr = "Yaralı can enerjini feda ederek $num. Katta Boşluk Ahdi alevini besledin."
@@ -156,18 +155,18 @@ object NarrativeEngine {
                 descriptionEn = "Thick purple roots of the Eternal Blight wrap around crumbling stone chests. Skeletons dressed in silver armor lie frozen in prayer.",
                 descriptionTr = "Ebedi Çürüme'nin kalın mor kökleri ufalanan taş sandıkları sarıyor. Gümüş zırhlı iskeletler dua ederken donup kalmış.",
                 optionA = GameOption(
-                    textEn = "Purify the bones and lay them to rest (+Gleam)",
-                    textTr = "Kemikleri arındır ve huzura kavuştur (+Gleam)",
+                    textEn = "Purify the bones and lay them to rest (+Aether)",
+                    textTr = "Kemikleri arındır ve huzura kavuştur (+Aether)",
                     alignmentShift = 8,
-                    gleamChange = 25,
+                    aetherChange = 25,
                     journalEn = "On Floor $floor, you consecrated fallen soldiers of the Sanctum.",
                     journalTr = "$floor. Katta Sanctum'un düşmüş askerlerini takdis ettin."
                 ),
                 optionB = GameOption(
-                    textEn = "Drain the residual Blight essence (+Pyre)",
-                    textTr = "Kalan Musibet özünü içine çek (+Pyre)",
+                    textEn = "Drain the residual Blight essence (+Aether)",
+                    textTr = "Kalan Musibet özünü içine çek (+Aether)",
                     alignmentShift = -8,
-                    pyreChange = 30,
+                    aetherChange = 30,
                     journalEn = "On Floor $floor, you harvested corrupted Blight nodes to fuel Void rituals.",
                     journalTr = "$floor. Katta Boşluk ritüellerini beslemek için yozlaşmış Musibet özlerini topladın."
                 ),
@@ -187,19 +186,19 @@ object NarrativeEngine {
                 descriptionEn = "A pool of heavy liquid starlight reflects your true alignment. It whispers your secret class potential and beckons your soul to commit.",
                 descriptionTr = "Ağır, sıvı yıldız ışığından bir havuz gerçek hizalanmanı yansıtıyor. Gizli sınıf potansiyelini fısıldayarak ruhunu seçime çağırıyor.",
                 optionA = GameOption(
-                    textEn = "Kneel and pledge to the White Spires (+Gleam, -10 HP)",
-                    textTr = "Diz çök ve Beyaz Kuleler'e bağlılık sözü ver (+Gleam, -10 HP)",
+                    textEn = "Kneel and pledge to the White Spires (+Aether, -10 HP)",
+                    textTr = "Diz çök ve Beyaz Kuleler'e bağlılık sözü ver (+Aether, -10 HP)",
                     alignmentShift = 10,
-                    gleamChange = 40,
+                    aetherChange = 40,
                     hpChange = -10,
                     journalEn = "On Floor $floor, you knelt before the White Spires mirror pool.",
                     journalTr = "$floor. Katta Beyaz Kuleler ayna havuzunun önünde diz çöktün."
                 ),
                 optionB = GameOption(
-                    textEn = "Shatter the mirror to absorb the cosmic shadow (+Pyre, -10 HP)",
-                    textTr = "Kozmik gölgeyi emmek için aynayı tuzla buz et (+Pyre, -10 HP)",
+                    textEn = "Shatter the mirror to absorb the cosmic shadow (+Aether, -10 HP)",
+                    textTr = "Kozmik gölgeyi emmek için aynayı tuzla buz et (+Aether, -10 HP)",
                     alignmentShift = -10,
-                    pyreChange = 45,
+                    aetherChange = 45,
                     hpChange = -10,
                     journalEn = "On Floor $floor, you shattered the reflective pool, drawing power from its shards.",
                     journalTr = "$floor. Katta yansıtıcı havuzu kırarak parçalarından güç çektin."
@@ -220,19 +219,19 @@ object NarrativeEngine {
                 descriptionEn = "A broken altar still floats in mid-air, casting flickering golden protection spells. It is slowly collapsing under the pressure of the Blight shadows.",
                 descriptionTr = "Yıkık bir sunak hâlâ havada süzülüyor ve titrek altın koruma büyüleri saçıyor. Musibet gölgelerinin baskısı altında yavaşça çöküyor.",
                 optionA = GameOption(
-                    textEn = "Sacrifice blood to rejuvenate the ward (-15 HP, +Gleam)",
-                    textTr = "Efsunu canlandırmak için kan feda et (-15 HP, +Gleam)",
+                    textEn = "Sacrifice blood to rejuvenate the ward (-15 HP, +Aether)",
+                    textTr = "Efsunu canlandırmak için kan feda et (-15 HP, +Aether)",
                     alignmentShift = 12,
-                    gleamChange = 50,
+                    aetherChange = 50,
                     hpChange = -15,
                     journalEn = "On Floor $floor, you sacrificed blood to keep the ancient seals alive.",
                     journalTr = "$floor. Katta antik mühürleri yaşatmak için kanını feda ettin."
                 ),
                 optionB = GameOption(
-                    textEn = "Infect the altar with Void-essence to extract Pyre (+Pyre)",
-                    textTr = "Pyre elde etmek için sunağı Boşluk özüyle enfekte et (+Pyre)",
+                    textEn = "Infect the altar with Void-essence to extract Pyre (+Aether)",
+                    textTr = "Pyre elde etmek için sunağı Boşluk özüyle enfekte et (+Aether)",
                     alignmentShift = -12,
-                    pyreChange = 55,
+                    aetherChange = 55,
                     journalEn = "On Floor $floor, you desecrated the sealing altar to fuel your dark covenants.",
                     journalTr = "$floor. Katta karanlık ahitlerini beslemek için mühür sunağını kirlettin."
                 ),
@@ -252,20 +251,20 @@ object NarrativeEngine {
                 descriptionEn = "Neutral nomadic traders traveling along the safe sectors are selling artifacts. They whisper of a fierce skirmish nearby and are willing to barter or trade info.",
                 descriptionTr = "Güvenli sektörlerde seyahat eden tarafsız göçebe tüccarlar eserler satıyor. Yakınlardaki şiddetli bir çatışmayı fısıldayıp takas yapmaya hazırlar.",
                 optionA = GameOption(
-                    textEn = "Buy Sanctum holy holy relic (-80 Gold, +Gleam)",
-                    textTr = "Sanctum kutsal yadigarını satın al (-80 Altın, +Gleam)",
+                    textEn = "Buy Sanctum holy holy relic (-80 Gold, +Aether)",
+                    textTr = "Sanctum kutsal yadigarını satın al (-80 Altın, +Aether)",
                     alignmentShift = 10,
                     goldChange = -80,
-                    gleamChange = 80,
+                    aetherChange = 80,
                     journalEn = "On Floor $floor, you purchased a holy relic from the wandering caravan.",
                     journalTr = "$floor. Katta gezgin kervandan kutsal bir yadigar satın aldın."
                 ),
                 optionB = GameOption(
-                    textEn = "Buy Covenant forbidden forbidden grimoire (-80 Gold, +Pyre)",
-                    textTr = "Covenant yasaklı kara kitabını satın al (-80 Altın, +Pyre)",
+                    textEn = "Buy Covenant forbidden forbidden grimoire (-80 Gold, +Aether)",
+                    textTr = "Covenant yasaklı kara kitabını satın al (-80 Altın, +Aether)",
                     alignmentShift = -10,
                     goldChange = -80,
-                    pyreChange = 85,
+                    aetherChange = 85,
                     journalEn = "On Floor $floor, you acquired a forbidden codex of Void spells.",
                     journalTr = "$floor. Katta yasaklanmış bir Boşluk büyüleri el yazması edindin."
                 ),
@@ -286,18 +285,18 @@ object NarrativeEngine {
                 descriptionEn = "A vanguard outpost of the Void Covenant is in disarray. Dying scouts are muttering about the White Spires purifying squads hunting them down.",
                 descriptionTr = "Void Covenant'ın bir öncü karakolu darmadağın olmuş. Ölmekte olan gözcüler, kendilerini avlayan Beyaz Kule arındırma ekiplerinden mırıldanıyor.",
                 optionA = GameOption(
-                    textEn = "Deliver peaceful mercy-kills to scouts (+Gleam, Spirit alignment)",
-                    textTr = "Gözcülere merhamet dolu acısız sonlar sun (+Gleam, Işık)",
+                    textEn = "Deliver peaceful mercy-kills to scouts (+Aether, Spirit alignment)",
+                    textTr = "Gözcülere merhamet dolu acısız sonlar sun (+Aether, Işık)",
                     alignmentShift = 10,
-                    gleamChange = 40,
+                    aetherChange = 40,
                     journalEn = "On Floor $floor, you offered mercy to the dying Void outcasts.",
                     journalTr = "$floor. Katta ölmekte olan Boşluk sürgünlerine merhamet gösterdin."
                 ),
                 optionB = GameOption(
-                    textEn = "Harvest their life embers to resurrect them as void thralls (+Pyre)",
-                    textTr = "Onları boşluk kölesi olarak diriltmek için can közlerini topla (+Pyre)",
+                    textEn = "Harvest their life embers to resurrect them as void thralls (+Aether)",
+                    textTr = "Onları boşluk kölesi olarak diriltmek için can közlerini topla (+Aether)",
                     alignmentShift = -14,
-                    pyreChange = 60,
+                    aetherChange = 60,
                     journalEn = "On Floor $floor, you animated the dead scouts into mindless thralls of the Covenant.",
                     journalTr = "$floor. Katta ölü gözcüleri akılsız Boşluk kölesi olarak canlandırdın."
                 ),
@@ -317,19 +316,19 @@ object NarrativeEngine {
                 descriptionEn = "A natural steam geyser filled with hot mineral water is shimmering. The air smells of sulphur, and whispers of the ancient Sovereign echoes in the mist.",
                 descriptionTr = "Sıcak mineral suyuyla dolu doğal bir buhar gayzeri ışıldıyor. Hava kükürt kokuyor ve sisin içinde kadim Hükümdar'ın fısıltıları yankılanıyor.",
                 optionA = GameOption(
-                    textEn = "Perform an Order cleansing ritual (+Gleam, -10 HP)",
-                    textTr = "Düzen temizleme ritüeli gerçekleştir (+Gleam, -10 HP)",
+                    textEn = "Perform an Order cleansing ritual (+Aether, -10 HP)",
+                    textTr = "Düzen temizleme ritüeli gerçekleştir (+Aether, -10 HP)",
                     alignmentShift = 10,
-                    gleamChange = 50,
+                    aetherChange = 50,
                     hpChange = -10,
                     journalEn = "On Floor $floor, you sanctied the mineral hotspring.",
                     journalTr = "$floor. Katta mineral kaplıcasını kutsadın."
                 ),
                 optionB = GameOption(
-                    textEn = "Infuse it with Blight blood to unlock power (+Pyre, -10 HP)",
-                    textTr = "Güç kilidini açmak için onu Musibet kanıyla aşıla (+Pyre, -10 HP)",
+                    textEn = "Infuse it with Blight blood to unlock power (+Aether, -10 HP)",
+                    textTr = "Güç kilidini açmak için onu Musibet kanıyla aşıla (+Aether, -10 HP)",
                     alignmentShift = -10,
-                    pyreChange = 50,
+                    aetherChange = 50,
                     hpChange = -10,
                     journalEn = "On Floor $floor, you tainted the fount to summon chaotic whispers.",
                     journalTr = "$floor. Katta kaotik fısıltıları çağırmak için kaynağı kirlettin."
@@ -351,19 +350,19 @@ object NarrativeEngine {
                 descriptionEn = "Heavy blast doors block the tunnel. Inscriptions demand a tribute of alignment or pure gold to open.",
                 descriptionTr = "Ağır zırhlı kapılar tüneli kapatıyor. Kitabeler açılmak için hizalanma veya saf altın haraç talep ediyor.",
                 optionA = GameOption(
-                    textEn = "Force the iron doors using pure faith (+Gleam, -15 HP)",
-                    textTr = "Saf inanç kullanarak demir kapıları zorla (+Gleam, -15 HP)",
+                    textEn = "Force the iron doors using pure faith (+Aether, -15 HP)",
+                    textTr = "Saf inanç kullanarak demir kapıları zorla (+Aether, -15 HP)",
                     alignmentShift = 10,
-                    gleamChange = 40,
+                    aetherChange = 40,
                     hpChange = -15,
                     journalEn = "On Floor $floor, you forced the Iron Threshold with Holy zeal.",
                     journalTr = "$floor. Katta Demir Eşiği Kutsal inanışla zorlayarak açtın."
                 ),
                 optionB = GameOption(
-                    textEn = "Sunder the locks using Void lightning (+Pyre, -15 HP)",
-                    textTr = "Boşluk yıldırımıyla kilitleri fırlat (+Pyre, -15 HP)",
+                    textEn = "Sunder the locks using Void lightning (+Aether, -15 HP)",
+                    textTr = "Boşluk yıldırımıyla kilitleri fırlat (+Aether, -15 HP)",
                     alignmentShift = -10,
-                    pyreChange = 40,
+                    aetherChange = 40,
                     hpChange = -15,
                     journalEn = "On Floor $floor, you tore the blast doors down with Void lightning.",
                     journalTr = "$floor. Katta koruyucu kapıları Boşluk yıldırımıyla havaya uçurdun."
@@ -380,3 +379,4 @@ object NarrativeEngine {
         }
     }
 }
+

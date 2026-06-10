@@ -39,8 +39,7 @@ data class NodeChoice(
     val journalTr: String,
     val hpChange: Int = 0,
     val goldChange: Int = 0,
-    val gleamChange: Int = 0,
-    val pyreChange: Int = 0,
+    val aetherChange: Int = 0,
     val expChange: Int = 0,
     val alignmentShift: Int = 0,
     val willChange: Int = 0,
@@ -129,17 +128,17 @@ object AdventureEngine {
                 textTr = "Işık ile sporları arındır ve teçhizatı çıkar (+Eşya)",
                 journalEn = "On Floor $floor, you sanctified a corrupted cache to earn a [$itemReward].",
                 journalTr = "$floor. Katta lanetli sandığı arındırıp bir [$itemReward] çıkardın.",
-                gleamChange = 20,
+                aetherChange = 20,
                 expChange = 25,
                 rewardItem = itemReward,
                 alignmentShift = 5
             ),
             optionC = NodeChoice(
-                textEn = "Shatter the hinges with Void decay (+Pyre)",
-                textTr = "Boşluk çürümesiyle menteşeleri sök (+Pyre & -HP)",
+                textEn = "Shatter the hinges with Void decay (+Aether)",
+                textTr = "Boşluk çürümesiyle menteşeleri sök (+Aether & -HP)",
                 journalEn = "On Floor $floor, you used Abyssal force on a chest, reclaiming raw ash.",
                 journalTr = "$floor. Katta bir sandığı Boşluk gücüyle parçalayarak saf küllerini topladın.",
-                pyreChange = 30,
+                aetherChange = 30,
                 hpChange = -15,
                 expChange = 30,
                 alignmentShift = -5
@@ -169,7 +168,7 @@ object AdventureEngine {
                 textTr = "Sunağa kan akıtarak Boşluk özünü topla (+40 Kara Ateş)",
                 journalEn = "On Floor $floor, you offered your lifeforce to feed the dark abyss.",
                 journalTr = "$floor. Katta karanlık boşluğu beslemek için yaşam gücünü kurban ettin.",
-                pyreChange = 40,
+                aetherChange = 40,
                 hpChange = -15,
                 alignmentShift = -8
             ),
@@ -247,12 +246,11 @@ object AdventureEngine {
                 skipToBoss = true
             ),
             optionC = NodeChoice(
-                textEn = "Absorb radiation heat (+20 Pyre, +20 Gleam, +15 EXP)",
-                textTr = "Yarığın enerjisini emip güçlen (+20 Pyre, +20 Gleam, +15 EXP)",
+                textEn = "Absorb radiation heat (+20 Aether, +15 EXP)",
+                textTr = "Yarığın enerjisini emip güçlen (+20 Aether, +15 EXP)",
                 journalEn = "Absorbed raw spatial energy from the rift bounds.",
                 journalTr = "Yarıktan sızan ham kozmik ışınları emerek ruhunu güçlendirdin.",
-                pyreChange = 20,
-                gleamChange = 20,
+                aetherChange = 20,
                 expChange = 15
             )
         )
@@ -269,12 +267,12 @@ object AdventureEngine {
                 titleTr = "Yaralı Spires Şövalyesi",
                 descriptionTr = "Yaralı bir Sanctum şövalyesi obsidiyen duvara yaslanmış, karanlık çürümenin acısıyla inliyor.",
                 optionA = NodeChoice(
-                    textEn = "Cast Holy Purify using your life essence (-10 HP, +Gleam)",
-                    textTr = "Can özünü kullanarak kutsal arınma uygula (-10 HP, +Gleam)",
+                    textEn = "Cast Holy Purify using your life essence (-10 HP, +Aether)",
+                    textTr = "Can özünü kullanarak kutsal arınma uygula (-10 HP, +Aether)",
                     journalEn = "Healed the wounded knight of Spires, restoring Order.",
                     journalTr = "Yaralı şövalyeyi iyileştirerek ışık nizamını tazeledin.",
                     hpChange = -10,
-                    gleamChange = 40,
+                    aetherChange = 40,
                     alignmentShift = 6,
                     expChange = 25
                 ),
@@ -303,20 +301,20 @@ object AdventureEngine {
                 titleTr = "Kadim Arşiv Kitaplığı",
                 descriptionTr = "Kireçli kristalleşmiş raflarda sarmal kitaplar donakalmış. Holografik bir Hükümdar kutsal el yazması mırıldanıyor.",
                 optionA = NodeChoice(
-                    textEn = "Attune to Sanctum scripts to earn ancient knowledge (+Gleam)",
-                    textTr = "Antik bilgiyi edinmek için kutsal kayıtlara odaklan (+Gleam)",
+                    textEn = "Attune to Sanctum scripts to earn ancient knowledge (+Aether)",
+                    textTr = "Antik bilgiyi edinmek için kutsal kayıtlara odaklan (+Aether)",
                     journalEn = "On Floor $floor, read historical Spires lore of the Sovereign.",
                     journalTr = "$floor. Katta Hükümdarın kutsal Beyaz Kule tarihini okudun.",
-                    gleamChange = 30,
+                    aetherChange = 30,
                     expChange = 30,
                     alignmentShift = 5
                 ),
                 optionB = NodeChoice(
-                    textEn = "Corrupt database to extract Pyre embers (+Pyre, -HP)",
-                    textTr = "Ateş közlerini çıkarmak için veritabanını boz (+Pyre, -HP)",
+                    textEn = "Corrupt database to extract Pyre embers (+Aether, -HP)",
+                    textTr = "Ateş közlerini çıkarmak için veritabanını boz (+Aether, -HP)",
                     journalEn = "Hacked and drained the ancient monolith cores.",
                     journalTr = "Kadim obelisk çekirdeklerini hackleyip Void enerjisini emdin.",
-                    pyreChange = 40,
+                    aetherChange = 40,
                     hpChange = -10,
                     expChange = 30,
                     alignmentShift = -5
@@ -337,21 +335,21 @@ object AdventureEngine {
                 titleTr = "Işıldayan Yıldız Işığı Havuzu",
                 descriptionTr = "Yoğun gümüş renkli bir sıvı tavandan ışıldayan taş bir leğene damlıyor. Yumuşak kozmik tınılar fısıldıyor.",
                 optionA = NodeChoice(
-                    textEn = "Lubricate blade for Sanctum sharpness (+Gleam, +EXP)",
-                    textTr = "Sanctum keskinliği için kılıcını yağla (+Gleam, +EXP)",
+                    textEn = "Lubricate blade for Sanctum sharpness (+Aether, +EXP)",
+                    textTr = "Sanctum keskinliği için kılıcını yağla (+Aether, +EXP)",
                     journalEn = "Anointed your equipment in starlight fluid.",
                     journalTr = "Teçhizatınızı yıldız ışığı sıvısıyla takdis ettin.",
-                    gleamChange = 25,
+                    aetherChange = 25,
                     expChange = 20,
                     alignmentShift = 3
                 ),
                 optionB = NodeChoice(
-                    textEn = "Drink fluid to unlock Abyss vitality (+25 HP, +Pyre)",
-                    textTr = "Boşluk enerjisini açmak için sıvıyı iç (+25 HP, +Pyre)",
+                    textEn = "Drink fluid to unlock Abyss vitality (+25 HP, +Aether)",
+                    textTr = "Boşluk enerjisini açmak için sıvıyı iç (+25 HP, +Aether)",
                     journalEn = "Gulped raw liquid cosmic gas, expanding your muscles.",
                     journalTr = "Musculus dokularını genişletmek için ham sıvı kozmik gazı içtin.",
                     hpChange = 25,
-                    pyreChange = 20,
+                    aetherChange = 20,
                     alignmentShift = -3
                 ),
                 optionC = NodeChoice(
@@ -383,3 +381,4 @@ object AdventureEngine {
         return titles[random.nextInt(titles.size)]
     }
 }
+

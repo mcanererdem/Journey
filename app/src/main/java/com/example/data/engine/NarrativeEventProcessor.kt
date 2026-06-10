@@ -12,8 +12,7 @@ data class NarrativeBranchOption(
     val alignmentImpact: Int = 0,
     val goldChange: Int = 0,
     val expReward: Int = 0,
-    val gleamChange: Int = 0,
-    val pyreChange: Int = 0,
+    val aetherChange: Int = 0,
     val hpChange: Int = 0,
     val itemReward: String = "",
     val titleReward: String = "",
@@ -53,8 +52,7 @@ data class SecretBossEncounter(
     val unlockRequirementTr: String,
     val checkUnlock: (PlayerProfile) -> Boolean,
     val rewardGold: Int,
-    val rewardGleam: Int,
-    val rewardPyre: Int,
+    val rewardAether: Int,
     val rewardItem: String = ""
 )
 
@@ -67,26 +65,26 @@ object NarrativeEventProcessor {
             titleTr = "Şarkı Söyleyen Zaman Dikilitaşı",
             descriptionEn = "A pulsating obelisk of solid obsidian hums with alien spatial energy. It speaks in branching paths directly to your mind.",
             descriptionTr = "Katı obsidyenden yapılmış nabız gibi atan bir dikilitaş, yabancı boyutsal enerjiyle mırıldanıyor. Doğrudan zihninize ulaşan dallanıp budaklanan yollar fısıldıyor.",
-            preconditionDescEn = "Character Level >= 2 and Alignment is close to Neutral (-20 to +20)",
-            preconditionDescTr = "Karakter Seviyesi >= 2 ve Hizalanma Kararlı Nötr olmalı (-20 ile +20 arası)",
-            checkPreconditions = { it.level >= 2 && it.alignment in -20..20 },
+            preconditionDescEn = "Character Level >= 2 and Momentum is close to Neutral (30 to 70)",
+            preconditionDescTr = "Karakter Seviyesi >= 2 ve Momentum Kararlı Nötr olmalı (30 ile 70 arası)",
+            checkPreconditions = { it.level >= 2 && it.momentum in 30..70 },
             options = listOf(
                 NarrativeBranchOption(
                     id = "obelisk_opt_light",
-                    textEn = "Tune the frequency to the Holy Sunbeams (+15 Alignment, +30 Gleam)",
-                    textTr = "Frekansı Kutsal Güneş Işınlarına uyarla (+15 Yönelim, +30 Işıltı)",
+                    textEn = "Tune the frequency to the Holy Sunbeams (+15 Momentum, +30 Aether)",
+                    textTr = "Frekansı Kutsal Güneş Işınlarına uyarla (+15 Momentum, +30 Aether)",
                     alignmentImpact = 15,
-                    gleamChange = 30,
+                    aetherChange = 30,
                     expReward = 50,
                     outcomeEn = "The obelisk projects a warm blinding beam, purificating your physical aura.",
                     outcomeTr = "Dikilitaş sıcak, göz kamaştırıcı bir ışın yayarak fiziksel auranızı arındırıyor ve kutsuyor."
                 ),
                 NarrativeBranchOption(
                     id = "obelisk_opt_void",
-                    textEn = "Shatter the crystal to harness pure Void resonance (-15 Alignment, +30 Pyre)",
-                    textTr = "Kristali parçala ve saf Boşluk tınısını çek (-15 Yönelim, +30 Kara Ateş)",
+                    textEn = "Shatter the crystal to harness pure Void resonance (-15 Momentum, +30 Aether)",
+                    textTr = "Kristali parçala ve saf Boşluk tınısını çek (-15 Momentum, +30 Aether)",
                     alignmentImpact = -15,
-                    pyreChange = 30,
+                    aetherChange = 30,
                     hpChange = -5,
                     expReward = 55,
                     outcomeEn = "Sharp dark shards slice your palms, but the flowing chaotic feedback fuels your inner pyre.",
@@ -110,9 +108,9 @@ object NarrativeEventProcessor {
             titleTr = "Karanlık Gölgeler Pazarı",
             descriptionEn = "Deep inside structural chambers, a covert smuggler broker offers rare, illegal dimensional bypass seals.",
             descriptionTr = "Yapısal odaların derinliklerinde, gizli bir kaçakçı simsarı nadir bulunan, illegal çeper mühürleri satıyor.",
-            preconditionDescEn = "Gold >= 150 and Alignment <= -15 (Void leaning development)",
-            preconditionDescTr = "Altın >= 150 ve Hizalanma Boşluk yöneliminde olmalı (<= -15)",
-            checkPreconditions = { it.gold >= 150 && it.alignment <= -15 },
+            preconditionDescEn = "Gold >= 150 and Momentum <= 35 (Void leaning development)",
+            preconditionDescTr = "Altın >= 150 ve Momentum Boşluk yöneliminde olmalı (<= 35)",
+            checkPreconditions = { it.gold >= 150 && it.momentum <= 35 },
             options = listOf(
                 NarrativeBranchOption(
                     id = "bazaar_opt_buy",
@@ -126,10 +124,10 @@ object NarrativeEventProcessor {
                 ),
                 NarrativeBranchOption(
                     id = "bazaar_opt_betray",
-                    textEn = "Report him to Sanctum Templars (+20 Alignment, +40 Gleam)",
-                    textTr = "Onu Sanctum Tapınakçılarına bildir (+20 Yönelim, +40 Işıltı)",
+                    textEn = "Report him to Sanctum Templars (+20 Momentum, +40 Aether)",
+                    textTr = "Onu Sanctum Tapınakçılarına bildir (+20 Momentum, +40 Aether)",
                     alignmentImpact = 20,
-                    gleamChange = 40,
+                    aetherChange = 40,
                     expReward = 60,
                     outcomeEn = "Sanctum paladins raid the outpost. The broker retreats but leaves a reward purse behind.",
                     outcomeTr = "Sanctum şövalyeleri karakola baskın düzenledi. Simsar kaçtı ama ödül dolu bir keseyi geride bıraktı."
@@ -142,9 +140,9 @@ object NarrativeEventProcessor {
             titleTr = "Yüce Semavi Güneş Mihrabı",
             descriptionEn = "A holy beacon reflects stellar radiation. A voice demands a symbolic blood pact in exchange for eternal ascension.",
             descriptionTr = "Kutsal bir fener yıldız radyasyonunu yansıtıyor. Bir ses, ebedi yükseliş karşılığında sembolik bir kan anlaşması talep ediyor.",
-            preconditionDescEn = "Alignment >= +30 (Celestial leaning development) and Player Level >= 3",
-            preconditionDescTr = "Hizalanma Semavi nizamda (>= +30) ve Karakter Seviyesi >= 3 olmalı",
-            checkPreconditions = { it.alignment >= 30 && it.level >= 3 },
+            preconditionDescEn = "Momentum >= 80 (Celestial leaning development) and Player Level >= 3",
+            preconditionDescTr = "Momentum Semavi nizamda (>= 80) ve Karakter Seviyesi >= 3 olmalı",
+            checkPreconditions = { it.momentum >= 80 && it.level >= 3 },
             options = listOf(
                 NarrativeBranchOption(
                     id = "sun_opt_blood",
@@ -158,8 +156,8 @@ object NarrativeEventProcessor {
                 ),
                 NarrativeBranchOption(
                     id = "sun_opt_meditate",
-                    textEn = "Meditate near the heat waves (+10 Alignment, +3 Will)",
-                    textTr = "Isı dalgalarının yanında meditasyon yap (+10 Yönelim, +3 İrade)",
+                    textEn = "Meditate near the heat waves (+10 Momentum, +3 Will)",
+                    textTr = "Isı dalgalarının yanında meditasyon yap (+10 Momentum, +3 İrade)",
                     alignmentImpact = 10,
                     outcomeEn = "The cosmic heat purges physical toxins and restores mental focus.",
                     outcomeTr = "Kozmik sıcaklık fiziksel toksinlerinizi temizler ve zihinsel odağınızı geri kazandırır."
@@ -177,12 +175,11 @@ object NarrativeEventProcessor {
             atk = 32,
             descriptionEn = "A colossal nightmare bound by raw shadow. He claims souls fractured by excessive tower restarts and dark oaths.",
             descriptionTr = "Ham gölgeler arasından fırlayan devasa bir kabus. Çok sayıda zaman döngüsünde ruhları ufalanmış olan kurbanları yutmaya gelir.",
-            unlockRequirementEn = "Alignment <= -40 (Deep Void Affinity) and total Spirit Fractures >= 2",
-            unlockRequirementTr = "Hizalanma <= -40 (Derin Boşluk) ve Toplam Ruh Kırılması >= 2 olmalı",
-            checkUnlock = { it.alignment <= -40 && it.totalFractures >= 2 },
+            unlockRequirementEn = "Momentum <= 10 (Deep Void Affinity) and total Spirit Fractures >= 2",
+            unlockRequirementTr = "Momentum <= 10 (Derin Boşluk) ve Toplam Ruh Kırılması >= 2 olmalı",
+            checkUnlock = { it.momentum <= 10 && it.totalFractures >= 2 },
             rewardGold = 250,
-            rewardGleam = 0,
-            rewardPyre = 100,
+            rewardAether = 100,
             rewardItem = "Voidreaver Edge Plate"
         ),
         SecretBossEncounter(
@@ -193,12 +190,11 @@ object NarrativeEventProcessor {
             atk = 28,
             descriptionEn = "The absolute herald of white sunbeams. He descends to challenge the pure ones, examining if combat steel matches structural faith.",
             descriptionTr = "Beyaz güneş ışınlarının mutlak elçisi. Saf inanç sahiplerine meydan okumak için iner, çeliğin inançlarıyla eşleşip eşleşmediğini sınar.",
-            unlockRequirementEn = "Alignment >= +50 (Absolute Celestial Devotion) and Character Level >= 5",
-            unlockRequirementTr = "Hizalanma >= +50 (Mutlak Semavi Bağlılık) ve Seviye >= 5 olmalı",
-            checkUnlock = { it.alignment >= 50 && it.level >= 5 },
+            unlockRequirementEn = "Momentum >= 100 (Absolute Celestial Devotion) and Character Level >= 5",
+            unlockRequirementTr = "Momentum >= 100 (Mutlak Semavi Bağlılık) ve Seviye >= 5 olmalı",
+            checkUnlock = { it.momentum >= 100 && it.level >= 5 },
             rewardGold = 200,
-            rewardGleam = 100,
-            rewardPyre = 0,
+            rewardAether = 100,
             rewardItem = "Sunspire Crest Seal"
         ),
         SecretBossEncounter(
@@ -213,8 +209,7 @@ object NarrativeEventProcessor {
             unlockRequirementTr = "Karakter Altını >= 250 ve en az 2 adet tescilli ekipmana sahip olmalı",
             checkUnlock = { it.gold >= 250 && it.itemsEncoded.split(",").filter { i -> i.isNotBlank() }.size >= 2 },
             rewardGold = 400,
-            rewardGleam = 50,
-            rewardPyre = 50,
+            rewardAether = 100,
             rewardItem = "Chrono-Core Fragment"
         )
     )
@@ -237,10 +232,9 @@ object NarrativeEventProcessor {
      * Process selection choice inside a Narrative Branch and award immediate payouts.
      */
     fun processNarrativeChoice(player: PlayerProfile, choice: NarrativeBranchOption): PlayerProfile {
-        val newAlignment = (player.alignment + choice.alignmentImpact).coerceIn(-100, 100)
+        val newMomentum = (player.momentum + choice.alignmentImpact).coerceIn(0, 100)
         val newGold = (player.gold + choice.goldChange).coerceAtLeast(0)
-        val newGleam = (player.gleam + choice.gleamChange).coerceAtLeast(0)
-        val newPyre = (player.pyre + choice.pyreChange).coerceAtLeast(0)
+        val newAether = (player.aether + choice.aetherChange).coerceAtLeast(0)
         
         var newHp = player.currentHp + choice.hpChange
         if (newHp < 1 && choice.hpChange < 0) {
@@ -275,18 +269,17 @@ object NarrativeEventProcessor {
         }
 
         val activeFactionSide = if (player.side == "NEUTRAL" && choice.alignmentImpact != 0) {
-            if (choice.alignmentImpact > 0 && newAlignment > 20) "SANCTUM"
-            else if (choice.alignmentImpact < 0 && newAlignment < -20) "COVENANT"
+            if (choice.alignmentImpact > 0 && newMomentum > 70) "SANCTUM"
+            else if (choice.alignmentImpact < 0 && newMomentum < 30) "COVENANT"
             else "NEUTRAL"
         } else {
             player.side
         }
 
         return player.copy(
-            alignment = newAlignment,
+            momentum = newMomentum,
             gold = newGold,
-            gleam = newGleam,
-            pyre = newPyre,
+            aether = newAether,
             currentHp = newHp.coerceAtMost(newMaxHp),
             maxHp = newMaxHp,
             itemsEncoded = newItemsEncoded,
@@ -299,3 +292,4 @@ object NarrativeEventProcessor {
         )
     }
 }
+

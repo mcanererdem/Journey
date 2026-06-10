@@ -1,4 +1,4 @@
-package com.example.data.engine
+﻿package com.example.data.engine
 
 import android.content.Context
 import android.util.Log
@@ -112,7 +112,7 @@ object LocalizationManager {
             } ?: description
 
             // Build Options
-            fun buildOption(optId: String, alignmentShift: Int, goldChange: Int, gleamChange: Int, pyreChange: Int, hpChange: Int): GameOption {
+            fun buildOption(optId: String, alignmentShift: Int, goldChange: Int, aetherChange: Int, hpChange: Int): GameOption {
                 val trOptText = trJson?.getJSONObject("scenarios")?.getJSONObject(scenarioKey)?.optString("${optId}_text", "") ?: ""
                 val enOptText = enJson?.getJSONObject("scenarios")?.getJSONObject(scenarioKey)?.optString("${optId}_text", "") ?: ""
 
@@ -127,8 +127,7 @@ object LocalizationManager {
                     textTr = trOptText,
                     alignmentShift = alignmentShift,
                     goldChange = goldChange,
-                    gleamChange = gleamChange,
-                    pyreChange = pyreChange,
+                    aetherChange = aetherChange,
                     hpChange = hpChange,
                     journalEn = enJournal,
                     journalTr = trJournal
@@ -142,57 +141,57 @@ object LocalizationManager {
 
             when {
                 floor == 100 -> {
-                    optA = buildOption("optA", 40, 0, 500, 0, -20)
-                    optB = buildOption("optB", -40, 0, 0, 500, -20)
-                    optC = buildOption("optC", 0, 1000, 0, 0, -80)
+                    optA = buildOption("optA", 40, 0, 500, -20)
+                    optB = buildOption("optB", -40, 0, 500, -20)
+                    optC = buildOption("optC", 0, 1000, 0, -80)
                 }
                 floor % 25 == 0 -> {
-                    optA = buildOption("optA", 15, -100, 150, 0, 0)
-                    optB = buildOption("optB", -15, -100, 0, 150, 0)
-                    optC = buildOption("optC", 0, 300, 0, 0, 0)
+                    optA = buildOption("optA", 15, -100, 150, 0)
+                    optB = buildOption("optB", -15, -100, 150, 0)
+                    optC = buildOption("optC", 0, 300, 0, 0)
                 }
                 floor % 10 == 0 -> {
-                    optA = buildOption("optA", 20, 0, 100, 0, -20)
-                    optB = buildOption("optB", -20, 0, 0, 120, -10)
-                    optC = buildOption("optC", 0, -150, 0, 0, 0)
+                    optA = buildOption("optA", 20, 0, 100, -20)
+                    optB = buildOption("optB", -20, 0, 120, -10)
+                    optC = buildOption("optC", 0, -150, 0, 0)
                 }
                 else -> {
                     // Standard dynamic floors
                     when (floor % 7) {
                         0 -> {
-                            optA = buildOption("optA", 8, 0, 25, 0, 0)
-                            optB = buildOption("optB", -8, 0, 0, 30, 0)
-                            optC = buildOption("optC", 0, 50, 0, 0, 0)
+                            optA = buildOption("optA", 8, 0, 25, 0)
+                            optB = buildOption("optB", -8, 0, 30, 0)
+                            optC = buildOption("optC", 0, 50, 0, 0)
                         }
                         1 -> {
-                            optA = buildOption("optA", 10, 0, 40, 0, -10)
-                            optB = buildOption("optB", -10, 0, 0, 45, -10)
-                            optC = buildOption("optC", 0, 0, 0, 0, 20)
+                            optA = buildOption("optA", 10, 0, 40, -10)
+                            optB = buildOption("optB", -10, 0, 45, -10)
+                            optC = buildOption("optC", 0, 0, 0, 20)
                         }
                         2 -> {
-                            optA = buildOption("optA", 12, 0, 50, 0, -15)
-                            optB = buildOption("optB", -12, 0, 0, 55, 0)
-                            optC = buildOption("optC", 0, 60, 0, 0, 0)
+                            optA = buildOption("optA", 12, 0, 50, -15)
+                            optB = buildOption("optB", -12, 0, 55, 0)
+                            optC = buildOption("optC", 0, 60, 0, 0)
                         }
                         3 -> {
-                            optA = buildOption("optA", 10, -80, 80, 0, 0)
-                            optB = buildOption("optB", -10, -80, 0, 85, 0)
-                            optC = buildOption("optC", 0, 70, 0, 0, 10)
+                            optA = buildOption("optA", 10, -80, 80, 0)
+                            optB = buildOption("optB", -10, -80, 85, 0)
+                            optC = buildOption("optC", 0, 70, 0, 10)
                         }
                         4 -> {
-                            optA = buildOption("optA", 10, 0, 40, 0, 0)
-                            optB = buildOption("optB", -14, 0, 0, 60, 0)
-                            optC = buildOption("optC", 0, 80, 0, 0, 0)
+                            optA = buildOption("optA", 10, 0, 40, 0)
+                            optB = buildOption("optB", -14, 0, 60, 0)
+                            optC = buildOption("optC", 0, 80, 0, 0)
                         }
                         5 -> {
-                            optA = buildOption("optA", 10, 0, 50, 0, -10)
-                            optB = buildOption("optB", -10, 0, 0, 50, -10)
-                            optC = buildOption("optC", 0, -20, 0, 0, 30)
+                            optA = buildOption("optA", 10, 0, 50, -10)
+                            optB = buildOption("optB", -10, 0, 50, -10)
+                            optC = buildOption("optC", 0, -20, 0, 30)
                         }
                         else -> { // Theme 6
-                            optA = buildOption("optA", 10, 0, 40, 0, -15)
-                            optB = buildOption("optB", -10, 0, 0, 40, -15)
-                            optC = buildOption("optC", 0, -50, 0, 0, 0)
+                            optA = buildOption("optA", 10, 0, 40, -15)
+                            optB = buildOption("optB", -10, 0, 40, -15)
+                            optC = buildOption("optC", 0, -50, 0, 0)
                         }
                     }
                 }
