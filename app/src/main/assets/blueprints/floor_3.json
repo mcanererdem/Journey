@@ -1,0 +1,476 @@
+﻿{
+    "floor":  3,
+    "titleEn":  "The Shadowed Catacombs",
+    "titleTr":  "Gölgeli Dehlizler",
+    "descriptionEn":  "Cold, damp crypts of historical kings lie in ruin. Purple spectres and iron tombs decorate the shadowy catacombs.",
+    "descriptionTr":  "Tarihi kralların soğuk ve rutubetli mezarları harabe halinde uzanıyor. 20 karanlık dehliz aşaması her saniye gölgele doluyor.",
+    "introScenario":  {
+                          "titleEn":  "The Hollow Crypt",
+                          "titleTr":  "Boş Lahit",
+                          "descriptionEn":  "You stumble into an ancient sanctuary holding the ashes of lost crusaders. Shadow figures dance of bygone memories, offering paths.",
+                          "descriptionTr":  "Kayıp kutsal şövalyelerin küllerini barındıran kadim bir mabede giriyorsun. Gölgeler kayıp anıları fısıldayarak sana yol gösteriyor.",
+                          "optionA":  {
+                                          "textEn":  "Recite the Sanctum\u0027s Prayer of Sealing (+Aether, +Order)",
+                                          "textTr":  "Ak Sığınağın Mühür Dua\u0027sını oku (+Aether, +Düzen)",
+                                          "alignmentShift":  10,
+                                          "hpChange":  0,
+                                          "goldChange":  0,
+                                          "journalEn":  "recited sealing prayers on Floor 3.",
+                                          "journalTr":  "Dehlizlerin karanlığında mühür duaları fısıldayarak şövalye küllerini huzura erdirdiniz.",
+                                          "aetherChange":  50
+                                      },
+                          "optionB":  {
+                                          "textEn":  "Embrace the void spectres whispers (+Aether, +Void)",
+                                          "textTr":  "Boşluk hayaletlerinin fısıltılarını kucakla (+Aether, +Boşluk)",
+                                          "alignmentShift":  -10,
+                                          "hpChange":  0,
+                                          "goldChange":  0,
+                                          "journalEn":  "Sought power from void whispers on Floor 3.",
+                                          "journalTr":  "Duvarlardan sızan mor hayalet fısıltılarına odaklanıp Ahit yolunu seçtiniz.",
+                                          "aetherChange":  50
+                                      },
+                          "optionC":  {
+                                          "textEn":  "Melt down antique iron coffin handles for bullion (+Gold)",
+                                          "textTr":  "Külçe elde etmek için antika lahit halkalarını erit (+Altın)",
+                                          "alignmentShift":  0,
+                                          "hpChange":  0,
+                                          "goldChange":  100,
+                                          "journalEn":  "Prioritized valuable scrap plunder over divine elements.",
+                                          "journalTr":  "Eski lahit kollarını eritmek üzere sırt çantana doldurdun, altın kazandın.",
+                                          "aetherChange":  0
+                                      }
+                      },
+    "nodes":  [
+                  {
+                      "index":  0,
+                      "type":  "NARRATIVE",
+                      "title":  "Mausoleum Steps",
+                      "titleTr":  "Anıt Mezar Merdivenleri",
+                      "description":  "Heavy stone slabs block path, but your blade can pry open side cathedrals.",
+                      "descriptionTr":  "Ağır taş bloklar kapıyı kapatıyor ancak kılıcınla yan şapelleri zorlayabilirsin.",
+                      "optionA":  {
+                                      "textEn":  "Sacrifice blood to the iron lock mechanism (-15 HP, +2 Will)",
+                                      "textTr":  "Demir kilit çarkına kan canı feda et (-15 HP, +2 İrade)",
+                                      "journalEn":  "Opened the cathedrals with raw physical force.",
+                                      "journalTr":  "3. Katta anıt mezarı açmak için kan gücüyle döküm mekanizmasını çevirdiniz.",
+                                      "hpChange":  -15,
+                                      "willChange":  2
+                                  },
+                      "optionB":  {
+                                      "textEn":  "Pry rocks slowly (-1 Will, +15 EXP)",
+                                      "textTr":  "Kayaları yavaşça arala (-1 İrade, +15 EXP)",
+                                      "journalEn":  "Pried heavy catacomb seals manually.",
+                                      "journalTr":  "Güvenli yolla vakit kaybederek ağır blokları kas gücüyle araladınız.",
+                                      "willChange":  -1,
+                                      "expChange":  15
+                                  },
+                      "willCost":  0
+                  },
+                  {
+                      "index":  1,
+                      "type":  "COMBAT",
+                      "title":  "Undead Soldier Knight",
+                      "titleTr":  "Ölümsüz Muhafız Şövalye",
+                      "description":  "A skeletal legionnaire clanking rusty chainmail and sword challenges you.",
+                      "descriptionTr":  "Paslı zincir zırhlar içinde eski krallığı koruyan iskelet lejyoner yolunu kapatıyor.",
+                      "enemyNameEn":  "Skeletal Legionnaire Guard",
+                      "enemyNameTr":  "İskelet Muhafız Asker",
+                      "enemyHp":  96,
+                      "enemyMaxHp":  96,
+                      "enemyAtk":  13,
+                      "willCost":  1
+                  },
+                  {
+                      "index":  2,
+                      "type":  "CHEST",
+                      "title":  "Ancestor\u0027s Sarcophagus",
+                      "titleTr":  "Ata Lahiti",
+                      "description":  "A glowing sarcophagus wrapped in heavy chains inscribed with runic binding.",
+                      "descriptionTr":  "Rün kaplı kalın zincirlerle sarılı parıldayan mermer lahit.",
+                      "optionA":  {
+                                      "textEn":  "Sunder bindings carefully (+Ancient Steel Wardplate)",
+                                      "textTr":  "Zincir bağlarını parçala (+Ancient Steel Wardplate)",
+                                      "journalEn":  "Looted Ancient Steel Wardplate from crypt sarcophagus on Floor 3.",
+                                      "journalTr":  "Rün zincirlerini kırarak ata lahitinden Antik Çelik Plaka Zırh çıkardınız.",
+                                      "rewardItem":  "Ancient Steel Wardplate"
+                                  },
+                      "optionB":  {
+                                      "textEn":  "Purify tomb with high Aether (-20 Aether, +Vesper\u0027s Cloak)",
+                                      "textTr":  "Mezarı Semavi Işıkla kutsayıp aç (-20 Aether, +Vesper\u0027s Cloak)",
+                                      "journalEn":  "Sanctified tomb to claim the Vesper\u0027s Cloak on Floor 3.",
+                                      "journalTr":  "Eski mezarı Işıkla takdis ederek paha biçilmez Gece Örtüsü aldınız.",
+                                      "rewardItem":  "Vesper\u0027s Cloak",
+                                      "aetherChange":  -20
+                                  },
+                      "willCost":  1
+                  },
+                  {
+                      "index":  3,
+                      "type":  "COMBAT",
+                      "title":  "Swirling Shadow Specter",
+                      "titleTr":  "Girdap Gölge Hortlağı",
+                      "description":  "Cold air condenses as a weeping shade swoops down from the catacomb cavern roof.",
+                      "descriptionTr":  "Soğuk hava aniden donuyor ve ağlayan karanlık bir hortlak kubbeden süzülerek saldırıyor.",
+                      "enemyNameEn":  "Abyssal Weeping Wraith",
+                      "enemyNameTr":  "Derinliğin Feryat Eden Hortlağı",
+                      "enemyHp":  105,
+                      "enemyMaxHp":  105,
+                      "enemyAtk":  14,
+                      "willCost":  1
+                  },
+                  {
+                      "index":  4,
+                      "type":  "NARRATIVE",
+                      "title":  "Whispers of the Tombs",
+                      "titleTr":  "Mezarların Fısıltısı",
+                      "description":  "Shadow eyes open on dark brick walls. They whisper ancient incantations that can strengthen dark fusions.",
+                      "descriptionTr":  "Tuğla duvarlarda gölge gözler açılıyor. Sırları canına aşılamak için fısıldıyorlar.",
+                      "optionA":  {
+                                      "textEn":  "Banish shadow entities (+15 Alignment, +30 Aether)",
+                                      "textTr":  "Gölgeleri kovala ve alanı temizle (+15 Hizalanma, +30 Aether)",
+                                      "journalEn":  "Cast deep cleansing solar seals, banishing shadow spectres firmly on Floor 3.",
+                                      "journalTr":  "Ak mühürler dökerek sızan gölgeleri kovaladınız, Işık parlaması kazandınız.",
+                                      "alignmentShift":  15,
+                                      "aetherChange":  30
+                                  },
+                      "optionB":  {
+                                      "textEn":  "Devour dark fusions (+45 Aether, -15 Alignment)",
+                                      "textTr":  "Karanlığı içine çek (+45 Aether, -15 Hizalanma)",
+                                      "journalEn":  "Absorbed dark weeping incantations to fuel void core directly.",
+                                      "journalTr":  "Gölge gözlerin fısıltılarını ruhuna çekerek devasa Pyre gücü kazandınız.",
+                                      "alignmentShift":  -15,
+                                      "aetherChange":  45
+                                  },
+                      "willCost":  0
+                  },
+                  {
+                      "index":  5,
+                      "type":  "SHRINE",
+                      "title":  "Altar of Dark Covenant",
+                      "titleTr":  "Kara Ahit Sunağı",
+                      "description":  "An obsidian basin filled with a dark violet flame smelling of sulfur and ether.",
+                      "descriptionTr":  "Kükürt kokan mor alevlerin çıtırdadığı koyu sarnıçlı Kara Ahit sunağı.",
+                      "optionA":  {
+                                      "textEn":  "Pray to Void for shadow resilience (-15 HP, +35 Aether)",
+                                      "textTr":  "Boşluğa can kurban et (-15 HP, +35 Aether)",
+                                      "journalEn":  "Shed blood into Void basin, feeding shadow aura with enormous fuel values.",
+                                      "journalTr":  "Karanlık sarnıca can kanı feda edip mor kıvılcım gücü kazandınız.",
+                                      "hpChange":  -15,
+                                      "aetherChange":  35
+                                  },
+                      "optionB":  {
+                                      "textEn":  "Plunder sacred urns in temple (+60 Gold, -5 Alignment)",
+                                      "textTr":  "Kutsal testileri yağmala (+60 Altın, -5 Hizalanma)",
+                                      "journalEn":  "Looted valuable gold ashes from tomb sacred urns on Floor 3.",
+                                      "journalTr":  "Sunağın küllerini dökerek altından testileri yağmaladınız.",
+                                      "goldChange":  60,
+                                      "alignmentShift":  -5
+                                  },
+                      "willCost":  1
+                  },
+                  {
+                      "index":  6,
+                      "type":  "MERCHANT",
+                      "title":  "Skeletal Undertaker",
+                      "titleTr":  "İskelet Levazımatçı",
+                      "description":  "An ancient bone-scavenging skeleton offers weapons of dead guardians.",
+                      "descriptionTr":  "Düşmüş kutsal şövalyelerin zırhlarını takas eden iskelet levazımatçı.",
+                      "optionA":  {
+                                      "textEn":  "Buy Bone Shield (-60 Gold, +Aegis Bone Shield)",
+                                      "textTr":  "Kemik Kalkan al (-60 Altın, +Aegis Bone Shield)",
+                                      "journalEn":  "Purchased an Aegis Bone Shield artifact from bone-scavenger trader on Floor 3.",
+                                      "journalTr":  "İskelet tüccardan mühürlü bir Kemik Kalkan satın aldınız.",
+                                      "goldChange":  -60,
+                                      "rewardItem":  "Aegis Bone Shield"
+                                  },
+                      "optionB":  {
+                                      "textEn":  "Sell loose teeth scraps (+25 Gold)",
+                                      "textTr":  "Hurdaları kemik tozu karşılığı sat (+25 Altın)",
+                                      "journalEn":  "Traded scrap items for solid metal coins.",
+                                      "journalTr":  "Gereksiz döküntüleri takas edip altın sikkeler kazandınız.",
+                                      "goldChange":  25
+                                  },
+                      "optionC":  {
+                                      "textEn":  "Leave his presence",
+                                      "textTr":  "Huzurundan ayrıl",
+                                      "journalEn":  "Walked away from Skeletal undertaker without purchases.",
+                                      "journalTr":  "İskelet tüccara hoşçakal deyip dehliz karanlığında ilerlediniz."
+                                  },
+                      "willCost":  1
+                  },
+                  {
+                      "index":  7,
+                      "type":  "COMBAT",
+                      "title":  "Ghoul Tomb Ravager",
+                      "titleTr":  "Gulyabani Yağmacı",
+                      "description":  "A savage flesh-eater with long glowing iron razor-sharp claws strikes!",
+                      "descriptionTr":  "Puslu tırnaklarıyla can çeken gözü dönmüş vahşi bir mezarlık yağmacısı kükrüyor!",
+                      "enemyNameEn":  "Bone-Eating Crypt Ghoul",
+                      "enemyNameTr":  "Dehliz Kemik Yiyicisi",
+                      "enemyHp":  110,
+                      "enemyMaxHp":  110,
+                      "enemyAtk":  14,
+                      "willCost":  1
+                  },
+                  {
+                      "index":  8,
+                      "type":  "CHEST",
+                      "title":  "Runed Relic Box",
+                      "titleTr":  "Rünlü Emanet Kutusu",
+                      "description":  "A crypt safe protected by cold icy locks and protective wardings.",
+                      "descriptionTr":  "Karanlık buz rünleriyle sarılmış, kilitli dökme demir sandık.",
+                      "optionA":  {
+                                      "textEn":  "Break frozen lock safely (-10 HP, +Shadow Core Ring)",
+                                      "textTr":  "Buzlu kilidi can pahasına kır (-10 HP, +Shadow Core Ring)",
+                                      "journalEn":  "Suffered minor frostbite damage while breaking crypt chest lock, but retrieved Shadow Core Ring.",
+                                      "journalTr":  "Buzlu mührü kırarken elinizi dondurdunuz ama Gölgeli Çekirdek Yüzüğü aldınız.",
+                                      "hpChange":  -10,
+                                      "rewardItem":  "Shadow Core Ring"
+                                  },
+                      "optionB":  {
+                                      "textEn":  "Vanish shadow lock with Aether fuel (-15 Aether, +75 EXP)",
+                                      "textTr":  "Boşluk rünlerini yak (-15 Aether, +75 EXP)",
+                                      "journalEn":  "Melted icy locks using dark pyre fuel, mastering shadow compression physics.",
+                                      "journalTr":  "Mührü gölge ateşiyle eriterek faksiyon tecrübesi topladınız.",
+                                      "expChange":  75,
+                                      "aetherChange":  -15
+                                  },
+                      "willCost":  1
+                  },
+                  {
+                      "index":  9,
+                      "type":  "SHRINE",
+                      "title":  "Fountain of Rebirth",
+                      "titleTr":  "Yeniden Doğuş Çeşmesi",
+                      "description":  "An oasis basin throwing clean silver restoration spring mist.",
+                      "descriptionTr":  "Dehlizin ortasında gümüş sular fışkırtan can yenileyici kutsal çeşme.",
+                      "optionA":  {
+                                      "textEn":  "Bathe and heal fully (+60 HP)",
+                                      "textTr":  "Banyo yapıp canı tam doldur (+60 HP)",
+                                      "journalEn":  "Fully restored health inside the Fountain of Rebirth on Floor 3.",
+                                      "journalTr":  "Çeşme mistinde yıkanıp tüm yara ve hasarları tamamen sıfırladınız.",
+                                      "hpChange":  60
+                                  },
+                      "optionB":  {
+                                      "textEn":  "Acquire resurrection scrolls (-50 Gold, +Scroll of Resurrection)",
+                                      "textTr":  "Diriliş rulosu satın al (-50 Altın, +Scroll of Resurrection)",
+                                      "journalEn":  "Purchased a legendary protective Scroll of Resurrection from fountain keepers.",
+                                      "journalTr":  "Zorlu anlarda can koruyacak bir Diriliş Rulosu tedarik ettiniz.",
+                                      "goldChange":  -50,
+                                      "rewardItem":  "Scroll of Resurrection"
+                                  },
+                      "willCost":  1
+                  },
+                  {
+                      "index":  10,
+                      "type":  "NARRATIVE",
+                      "title":  "Secret Library Chamber",
+                      "titleTr":  "Gizli Kütüphane Odası",
+                      "description":  "Loose brick blocks swing open to reveal historical records of the shadow generals.",
+                      "descriptionTr":  "Gizli bir taş kapak dönerek şövalye generallerinin kadim günlüğünü önünüze koyuyor.",
+                      "optionA":  {
+                                      "textEn":  "Study skeleton combat files (+75 EXP, +Generals Tomb Map)",
+                                      "textTr":  "Generallerin harp tünellerini çöz (+75 EXP, +Generals Tomb Map)",
+                                      "journalEn":  "Deciphered battle maps of skeleton military tactics, acquiring Generals Tomb Map.",
+                                      "journalTr":  "Harp planlarını inceleyip iskelet generallerin saklandığı gizli mezar haritasını aldınız.",
+                                      "expChange":  75,
+                                      "rewardItem":  "Generals Tomb Map"
+                                  },
+                      "optionB":  {
+                                      "textEn":  "Ransack valuable stellar scrap (+40 Gold)",
+                                      "textTr":  "Maddi kitap kaplamalarını yağmala (+40 Altın)",
+                                      "journalEn":  "Looted golden bindings of the heavy libraries books.",
+                                      "journalTr":  "Kıymetli varaklı kitap süslerini söküp çantanıza attınız.",
+                                      "goldChange":  40
+                                  },
+                      "willCost":  0
+                  },
+                  {
+                      "index":  11,
+                      "type":  "COMBAT",
+                      "title":  "Crying Tomb Banshee",
+                      "titleTr":  "Mezar Ölüm Perisi",
+                      "description":  "A weeping silver phantom charging with sonic scream spikes to freeze blood.",
+                      "descriptionTr":  "Zihni donduran bir nida fırlatarak havada süzülen gümüş renkli ölüm perisi.",
+                      "enemyNameEn":  "Screaming Crypt Banshee",
+                      "enemyNameTr":  "Dehlizin Feryat Eden Perisi",
+                      "enemyHp":  115,
+                      "enemyMaxHp":  115,
+                      "enemyAtk":  15,
+                      "willCost":  1
+                  },
+                  {
+                      "index":  12,
+                      "type":  "CHEST",
+                      "title":  "Iron Pharaoh\u0027s Coffer",
+                      "titleTr":  "Demir Firavun Sandığı",
+                      "description":  "A massive heavy sarcophag coffer smelling of copper and decay.",
+                      "descriptionTr":  "Eski hanedanların bakır ve mumya mumları kokan devasa dökme sandığı.",
+                      "optionA":  {
+                                      "textEn":  "Break seal with willpower (-2 Will, +Aegis Pharaoh Armor)",
+                                      "textTr":  "Mührü iradeyle kır (-2 İrade, +Aegis Pharaoh Armor)",
+                                      "journalEn":  "Collapsed Pharaoh tomb wards manually to retrieve Aegis Pharaoh Armor.",
+                                      "journalTr":  "İrade gücüyle antik büyüyü kırıp sandıktan efsanevi Firavun Zırhı aldınız.",
+                                      "willChange":  -2,
+                                      "rewardItem":  "Aegis Pharaoh Armor"
+                                  },
+                      "optionB":  {
+                                      "textEn":  "Siphon residual gold values (+50 Gold)",
+                                      "textTr":  "Sandığın altın damarını sömür (+50 Altın)",
+                                      "journalEn":  "Harvested ancient coin residues directly from sarcophag chambers.",
+                                      "journalTr":  "Büyüyü pas geçip sandık yarıklarından antik paralar çektiniz.",
+                                      "goldChange":  50
+                                  },
+                      "willCost":  1
+                  },
+                  {
+                      "index":  13,
+                      "type":  "SHRINE",
+                      "title":  "Obsidian Obelisk",
+                      "titleTr":  "Obsidyen Dikilitaş",
+                      "description":  "A floating dark crystalline pillar singing with heavy cosmic resonance.",
+                      "descriptionTr":  "Havada dönerek karanlık kozmik vızıltılar çıkaran göksel obsidyen dikilitaş.",
+                      "optionA":  {
+                                      "textEn":  "Touch and channel Void power (+45 Aether, -12 HP)",
+                                      "textTr":  "Dikilitaşa dokunup karanlığı kanalize et (+45 Aether, -12 HP)",
+                                      "journalEn":  "Channeled Void frequencies from obelisk, charging soul with limitless darkness.",
+                                      "journalTr":  "Dikilitaşın dalgalarını ruhuna çekip can bedeliyle mor alevleri parlattınız.",
+                                      "hpChange":  -12,
+                                      "aetherChange":  45
+                                  },
+                      "optionB":  {
+                                      "textEn":  "Carve off moon minerals (+25 EXP, +35 Gold)",
+                                      "textTr":  "Mineral taş parçaları kaz (+25 EXP, +35 Altın)",
+                                      "journalEn":  "Chiseled rare crystals off obelisk base for trade and research.",
+                                      "journalTr":  "Dikilitaşın gövdesinden yonttuğun obsidyenleri para karşılığı çantaya istiflediniz.",
+                                      "expChange":  25,
+                                      "goldChange":  35
+                                  },
+                      "willCost":  1
+                  },
+                  {
+                      "index":  14,
+                      "type":  "COMBAT",
+                      "title":  "⚡ SECRET BOSS: Skeletal Lich General",
+                      "titleTr":  "⚡ GİZLİ LİDER: İskelet Ölüm Şövalyesi Xylar",
+                      "description":  "The undead general Xylar rising from iron tombs! Extremely high danger optional challenge!",
+                      "descriptionTr":  "Demir lahitten kılıcıyla yükselen antik iskelet general Xylar! Son derece yüksek tehlike fırtınası, opsiyonel!",
+                      "enemyNameEn":  "Death Knight General Xylar",
+                      "enemyNameTr":  "Ölüm Şövalyesi General Xylar",
+                      "enemyHp":  185,
+                      "enemyMaxHp":  185,
+                      "enemyAtk":  18,
+                      "willCost":  2
+                  },
+                  {
+                      "index":  15,
+                      "type":  "NARRATIVE",
+                      "title":  "Soul Altar Verdict",
+                      "titleTr":  "Ruh Sunağı Kararı",
+                      "description":  "The crucible judges your spiritual path. A specter demands your alignment legacy.",
+                      "descriptionTr":  "Ruh potası çıktığın yolu tartıyor. Bir hayalet senden inanç andının bedelini istiyor.",
+                      "optionA":  {
+                                      "textEn":  "Vow ultimate fidelity to the Spires (+20 Alignment, +40 Aether)",
+                                      "textTr":  "Kulelere nihai sadakat yemini et (+20 Hizalanma, +40 Aether)",
+                                      "journalEn":  "Ascended to the highest solar commitment levels, receiving pristine light focus.",
+                                      "journalTr":  "Sığınağın mühür potasında en yüksek kademe Ak Kule andını tazelediniz.",
+                                      "alignmentShift":  20,
+                                      "aetherChange":  40
+                                  },
+                      "optionB":  {
+                                      "textEn":  "Surrender fully to the Void\u0027s embrace (+50 Aether, -20 Alignment)",
+                                      "textTr":  "Karanlık Boşluğun bağrına teslim ol (+50 Aether, -20 Hizalanma)",
+                                      "journalEn":  "Secured absolute cosmic alignment neutral-collapsed void mastery status.",
+                                      "journalTr":  "Kuyulardan yükselen fısıltılarla faksiyonu tamamen Kara Ahit karanlığına taşıdınız.",
+                                      "alignmentShift":  -20,
+                                      "aetherChange":  50
+                                  },
+                      "willCost":  0
+                  },
+                  {
+                      "index":  16,
+                      "type":  "MERCHANT",
+                      "title":  "Dark Magic Broker",
+                      "titleTr":  "Karanlık Büyü Tellalı",
+                      "description":  "A hooded wizard who trades dark artifacts and cosmic scrolls.",
+                      "descriptionTr":  "Gölgelerin arkasından parlayan gözleriyle yasaklı rünler satan büyü simyacısı.",
+                      "optionA":  {
+                                      "textEn":  "Buy Dark Core Gem (-55 Gold, +Dark Abyss core)",
+                                      "textTr":  "Kara Öz Mücevheri Al (-55 Altın, +Dark Abyss core)",
+                                      "journalEn":  "Bought Dark Abyss core from suspicious hooded wizard.",
+                                      "journalTr":  "Büyü tellalından gizemli Kara Boşluk Çekirdeği mücevheri satın aldınız.",
+                                      "goldChange":  -55,
+                                      "rewardItem":  "Dark Abyss core"
+                                  },
+                      "optionB":  {
+                                      "textEn":  "Buy Necromancy Scroll (-40 Gold, +Shadow Siphon Code)",
+                                      "textTr":  "Can Sömürü Parşömeni al (-40 Altın, +Shadow Siphon Code)",
+                                      "journalEn":  "Acquired a powerful shadow siphon code scrap scroll.",
+                                      "journalTr":  "Tüccardan savaşta can sömüren gölge parşömeni aldınız.",
+                                      "goldChange":  -40,
+                                      "rewardItem":  "Shadow Siphon Code"
+                                  },
+                      "optionC":  {
+                                      "textEn":  "Decline magic purchases",
+                                      "textTr":  "Büyü pazarlığını reddet",
+                                      "journalEn":  "Bypassed occult wizard options safely.",
+                                      "journalTr":  "Karanlık büyücüyü geride bırakıp kutsal mezar tünellerine saptınız."
+                                  },
+                      "willCost":  1
+                  },
+                  {
+                      "index":  17,
+                      "type":  "COMBAT",
+                      "title":  "Mezar Çukuru Pusucusu",
+                      "titleTr":  "Dehliz Pusucusu",
+                      "description":  "A dark clawed skeleton with ancient black plate armor leaps from shadows!",
+                      "descriptionTr":  "Antik kara zırhlar içinde pençeleriyle boğazlayan iskelet pusudan çıkıp atlıyor!",
+                      "enemyNameEn":  "Crypt Sentry Assassin",
+                      "enemyNameTr":  "Dehliz Nöbetçi Suikastçısı",
+                      "enemyHp":  118,
+                      "enemyMaxHp":  118,
+                      "enemyAtk":  15,
+                      "willCost":  1
+                  },
+                  {
+                      "index":  18,
+                      "type":  "SHRINE",
+                      "title":  "Void Sacrament Basin",
+                      "titleTr":  "Boşluk Mukaddesat Haznesi",
+                      "description":  "A stone basin where light gets sucked completely, leaving only whispers.",
+                      "descriptionTr":  "İçine ışığın saniyede emilip yok olduğu sessizlik saçan mermer taş hazne.",
+                      "optionA":  {
+                                      "textEn":  "Sacrifice gold to read void secrets (-30 Gold, +60 EXP, +10 Aether)",
+                                      "textTr":  "Sırları çözmek için altın sun (-30 Altın, +60 EXP, +10 Aether)",
+                                      "journalEn":  "Exchanged coins at the void basin to unlock ancient historical secrets of the catacombs.",
+                                      "journalTr":  "Hazneye altın kurban ederek dehlizlerin kadim tarih sırlarındaki tecrübeyi emdiniz.",
+                                      "goldChange":  -30,
+                                      "expChange":  60,
+                                      "aetherChange":  10
+                                  },
+                      "optionB":  {
+                                      "textEn":  "Purify with Spires fire code (+30 Aether, +10 Alignment)",
+                                      "textTr":  "Ak Kule ateşi rünüyle arındır (+30 Aether, +10 Hizalanma)",
+                                      "journalEn":  "Sealed and purified the void basin using solar fire codes.",
+                                      "journalTr":  "Ak rünleriyle hazneyi arındırıp Ak Kule klanıyla bağınızı güçlendirdiniz.",
+                                      "alignmentShift":  10,
+                                      "aetherChange":  30
+                                  },
+                      "willCost":  1
+                  },
+                  {
+                      "index":  19,
+                      "type":  "BOSS",
+                      "title":  "Oracle of Shadow Crypt",
+                      "titleTr":  "Gölge Mahzen Kahini",
+                      "description":  "Malakar, the Necromancer Oracle, levitates atop a vortex of bone ash and void lightning. Conquer all 20 sectors to unlock Floor 4 procedural tracks!",
+                      "descriptionTr":  "Kemik külleri ve yıldırımlar üstünde süzülen Kahin Malakar kükrüyor! 4. Katın kapılarını açmak için onu yık!",
+                      "enemyNameEn":  "Necromancer Oracle Malakar",
+                      "enemyNameTr":  "Gölge Kahini Malakar",
+                      "enemyHp":  260,
+                      "enemyMaxHp":  260,
+                      "enemyAtk":  17,
+                      "willCost":  2
+                  }
+              ]
+}

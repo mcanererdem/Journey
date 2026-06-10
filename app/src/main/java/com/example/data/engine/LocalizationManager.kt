@@ -1,4 +1,4 @@
-﻿package com.example.data.engine
+package com.example.data.engine
 
 import android.content.Context
 import android.util.Log
@@ -10,21 +10,22 @@ object LocalizationManager {
     private const val TAG = "LocalizationManager"
     private var enJson: JSONObject? = null
     private var trJson: JSONObject? = null
-    private var floorsBlueprintJson: JSONObject? = null
+    private var appContext: Context? = null
 
     fun init(context: Context) {
+        appContext = context.applicationContext
         if (enJson == null) {
             enJson = loadJsonFromAsset(context, "locales/en.json")
         }
         if (trJson == null) {
             trJson = loadJsonFromAsset(context, "locales/tr.json")
         }
-        if (floorsBlueprintJson == null) {
-            floorsBlueprintJson = loadJsonFromAsset(context, "locales/floors_blueprint.json")
-        }
     }
 
-    fun getFloorsBlueprintJson(): JSONObject? = floorsBlueprintJson
+    fun loadFloorBlueprint(floor: Int): JSONObject? {
+        val ctx = appContext ?: return null
+        return loadJsonFromAsset(ctx, "blueprints/floor_$floor.json")
+    }
 
     private fun loadJsonFromAsset(context: Context, fileName: String): JSONObject? {
         return try {

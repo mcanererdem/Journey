@@ -19,6 +19,8 @@ data class AdventureNode(
     val description: String,
     val titleTr: String,
     val descriptionTr: String,
+    val depth: Int = 0,
+    val column: Int = 0,
     // Enemy particulars (if COMBAT or BOSS)
     val enemyNameEn: String = "",
     val enemyNameTr: String = "",
@@ -45,6 +47,8 @@ data class NodeChoice(
     val willChange: Int = 0,
     val rewardItem: String = "",
     val rewardTitle: String = "",
+    val requiredStoryFlag: String = "",
+    val addStoryFlag: String = "",
     val skipToBoss: Boolean = false,
     val skipToNextFloor: Boolean = false
 )

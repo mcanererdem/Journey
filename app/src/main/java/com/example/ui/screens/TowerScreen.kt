@@ -94,7 +94,7 @@ fun TowerClimbTab(
     onScoutClick: () -> Unit,
     onLockedClicked: (String, String) -> Unit,
     onChoiceSelected: (NodeChoice) -> Unit,
-    onNextNodeClick: () -> Unit,
+    onNextNodeClick: (Int, Int) -> Unit,
     onAscendFloorClick: () -> Unit,
     onCombatAction: (String) -> Unit,
     onResetClick: () -> Unit
@@ -130,7 +130,8 @@ fun TowerClimbTab(
                 journal = journal,
                 scoutedNodeIndices = scoutedNodeIndices,
                 onScoutClick = onScoutClick,
-                onLockedClicked = onLockedClicked
+                onLockedClicked = onLockedClicked,
+                onNextNodeClick = onNextNodeClick
             )
         }
 
@@ -312,17 +313,20 @@ fun TowerClimbTab(
                                         )
                                     }
                                 } else {
-                                    // Move to next node
+                                    // Prompt to select node on map
                                     Button(
-                                        onClick = onNextNodeClick,
+                                        onClick = {},
+                                        enabled = false,
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .height(50.dp)
-                                            .testTag("btn_next_node"),
-                                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                                            .height(50.dp),
+                                        colors = ButtonDefaults.buttonColors(
+                                            disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                            disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                                        )
                                     ) {
                                         Text(
-                                            text = LocalizationManager.getString(activeLang, "btn_next_node"),
+                                            text = if (activeLang == "TR") "İlerlemek için haritadan bir sektör seçin" else "Select a sector on map to advance",
                                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
                                         )
                                     }
@@ -768,38 +772,47 @@ fun TowerClimbTab(
 
                     // Choices
                     activeNode.optionA?.let { choice ->
-                        item {
-                            NodeChoiceButton(
-                                choice = choice,
-                                activeLang = activeLang,
-                                highlightColor = SanctumGold,
-                                testTagValue = "choice_a_btn",
-                                onClick = { onChoiceSelected(choice) }
-                            )
+                        val hasFlag = choice.requiredStoryFlag.isEmpty() || player.storyFlagsEncoded.split(",").contains(choice.requiredStoryFlag)
+                        if (hasFlag) {
+                            item {
+                                NodeChoiceButton(
+                                    choice = choice,
+                                    activeLang = activeLang,
+                                    highlightColor = SanctumGold,
+                                    testTagValue = "choice_a_btn",
+                                    onClick = { onChoiceSelected(choice) }
+                                )
+                            }
                         }
                     }
 
                     activeNode.optionB?.let { choice ->
-                        item {
-                            NodeChoiceButton(
-                                choice = choice,
-                                activeLang = activeLang,
-                                highlightColor = VoidNeonPurple,
-                                testTagValue = "choice_b_btn",
-                                onClick = { onChoiceSelected(choice) }
-                            )
+                        val hasFlag = choice.requiredStoryFlag.isEmpty() || player.storyFlagsEncoded.split(",").contains(choice.requiredStoryFlag)
+                        if (hasFlag) {
+                            item {
+                                NodeChoiceButton(
+                                    choice = choice,
+                                    activeLang = activeLang,
+                                    highlightColor = VoidNeonPurple,
+                                    testTagValue = "choice_b_btn",
+                                    onClick = { onChoiceSelected(choice) }
+                                )
+                            }
                         }
                     }
 
                     activeNode.optionC?.let { choice ->
-                        item {
-                            NodeChoiceButton(
-                                choice = choice,
-                                activeLang = activeLang,
-                                highlightColor = SlateBronze,
-                                testTagValue = "choice_c_btn",
-                                onClick = { onChoiceSelected(choice) }
-                            )
+                        val hasFlag = choice.requiredStoryFlag.isEmpty() || player.storyFlagsEncoded.split(",").contains(choice.requiredStoryFlag)
+                        if (hasFlag) {
+                            item {
+                                NodeChoiceButton(
+                                    choice = choice,
+                                    activeLang = activeLang,
+                                    highlightColor = SlateBronze,
+                                    testTagValue = "choice_c_btn",
+                                    onClick = { onChoiceSelected(choice) }
+                                )
+                            }
                         }
                     }
                 }
@@ -918,16 +931,22 @@ fun FloorProgressCartographyMap(
     journal: List<JournalEntry>,
     scoutedNodeIndices: Set<Int>,
     onScoutClick: () -> Unit,
-    onLockedClicked: (String, String) -> Unit
+    onLockedClicked: (String, String) -> Unit,
+    onNextNodeClick: (Int, Int) -> Unit
 ) {
     val isTr = activeLang == "TR"
     
     // Always focus exclusively on the current active floor
     val selectedFloor = player.currentFloor
-    val defaultNodeIdx = player.currentNodeIndex.coerceIn(0, 19)
+    val defaultNodeIdx = player.currentNodeIndex.coerceIn(0, 37)
     
     var selectedNodeIdx by remember(player.currentFloor, player.currentNodeIndex) { mutableStateOf(defaultNodeIdx) }
     var activeModalNode by remember { mutableStateOf<AdventureNode?>(null) }
+
+    // Load blueprint for currently selected floor
+    val blueprint = com.example.data.engine.FloorBlueprintSystem.getBlueprintForFloor(selectedFloor, player)
+    val nodes = blueprint.nodes
+    val currentDepth = nodes.find { it.index == player.currentNodeIndex }?.depth ?: 0
 
     Card(
         modifier = Modifier
@@ -981,22 +1000,9 @@ fun FloorProgressCartographyMap(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Load blueprint for currently selected floor
-            val blueprint = com.example.data.engine.FloorBlueprintSystem.getBlueprintForFloor(selectedFloor, player)
-            val nodes = blueprint.nodes
-            val nodesCount = nodes.size
-
-            // Compact Horizontally Scrollable Road Path of 20 nodes
+            // Compact Horizontally Scrollable Road Path
             val scrollState = rememberScrollState()
             
-            // Auto scroll to current position on first mount or when returning to active floor
-            LaunchedEffect(selectedFloor, player.currentNodeIndex) {
-                if (selectedFloor == player.currentFloor) {
-                    val targetDelta = (player.currentNodeIndex * 46 - 100).coerceAtLeast(0)
-                    scrollState.animateScrollTo((targetDelta * 2.2f).toInt())
-                }
-            }
-
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -1007,117 +1013,144 @@ fun FloorProgressCartographyMap(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .horizontalScroll(scrollState),
+                        .horizontalScroll(scrollState)
+                        .padding(vertical = 12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    for (idx in 0 until nodesCount) {
-                        val node = nodes.getOrNull(idx)
-                        val isCurrent = player.currentFloor == selectedFloor && player.currentNodeIndex == idx
-                        val isCleared = player.currentFloor > selectedFloor || 
-                                (player.currentFloor == selectedFloor && (player.currentNodeIndex > idx || (player.currentNodeIndex == idx && player.currentNodeCompleted)))
-                        val isSelected = selectedNodeIdx == idx
-
-                        // Path access logic
-                        val isAccessible = idx == 0 || idx <= player.currentNodeIndex || (idx == player.currentNodeIndex + 1 && player.currentNodeCompleted)
-                        val isScouted = scoutedNodeIndices.contains(idx)
-                        val isTypeHidden = !isCleared && !isCurrent && !(player.currentNodeCompleted && idx == player.currentNodeIndex + 1) && !isScouted
-
-                        val circleBorderColor = when {
-                            isSelected -> SanctumGold
-                            isCurrent -> MaterialTheme.colorScheme.primary
-                            isCleared -> SpiritHealColor
-                            isAccessible -> MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
-                            else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.25f)
-                        }
-
-                        val circleBgColor = when {
-                            isCurrent -> MaterialTheme.colorScheme.primaryContainer
-                            isCleared -> SpiritHealColor.copy(alpha = 0.08f)
-                            isSelected -> SanctumGold.copy(alpha = 0.08f)
-                            isAccessible -> MaterialTheme.colorScheme.primary.copy(alpha = 0.04f)
-                            else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
-                        }
-
-                        Box(
-                            modifier = Modifier
-                                .size(30.dp)
-                                .clip(CircleShape)
-                                .background(circleBgColor)
-                                .border(
-                                    width = if (isSelected) 2.dp else if (isCurrent) 1.5.dp else 1.dp,
-                                    color = circleBorderColor,
-                                    shape = CircleShape
-                                )
-                                .clickable {
-                                    selectedNodeIdx = idx
-                                    if (!isAccessible) {
-                                        onLockedClicked(
-                                            "🔒 Sector Locked! Must complete previous sector first.",
-                                            "🔒 Sektör Kilitli! Öncelikle bir önceki sektörü tamamlamalısınız."
-                                        )
-                                    } else {
-                                        if (node != null) {
-                                            activeModalNode = node
-                                        }
-                                    }
-                                },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            if (node != null) {
-                                if (isCleared && !isCurrent) {
-                                    Text("✓", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = SpiritHealColor)
-                                } else if (isTypeHidden) {
-                                    Text("❓", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f))
-                                } else {
-                                    Text(
-                                        text = when (node.type) {
-                                            NodeType.COMBAT -> "⚔️"
-                                            NodeType.BOSS -> "💀"
-                                            NodeType.CHEST -> "💎"
-                                            NodeType.SHRINE -> "🔮"
-                                            NodeType.MERCHANT -> "🔮"
-                                            NodeType.NARRATIVE -> "📜"
-                                        },
-                                        fontSize = 11.sp,
-                                        color = if (isCleared || isCurrent) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                    for (d in 0..19) {
+                        val nodesAtDepth = nodes.filter { it.depth == d }
+                        if (nodesAtDepth.isNotEmpty()) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center,
+                                modifier = Modifier.width(60.dp)
+                            ) {
+                                if (d == 0 || d == 19) {
+                                    val node = nodesAtDepth[0]
+                                    val isSelected = selectedNodeIdx == node.index
+                                    val isCurrent = player.currentFloor == selectedFloor && node.index == player.currentNodeIndex
+                                    val isCleared = player.currentFloor > selectedFloor || (player.currentFloor == selectedFloor && (node.depth < currentDepth || (node.index == player.currentNodeIndex && player.currentNodeCompleted)))
+                                    val isAccessible = player.currentFloor == selectedFloor && (
+                                        (node.index == player.currentNodeIndex) ||
+                                        (player.currentNodeCompleted && node.depth == currentDepth + 1)
                                     )
+                                    val isScouted = scoutedNodeIndices.contains(node.index)
+                                    val isTypeHidden = !isCurrent && !isCleared && !isAccessible && !isScouted
+
+                                    Spacer(modifier = Modifier.height(30.dp))
+                                    NodeCircle(
+                                        node = node,
+                                        isCurrent = isCurrent,
+                                        isCleared = isCleared,
+                                        isAccessible = isAccessible,
+                                        isTypeHidden = isTypeHidden,
+                                        isSelected = isSelected,
+                                        onClick = {
+                                            selectedNodeIdx = node.index
+                                            if (!isAccessible) {
+                                                onLockedClicked(
+                                                    "🔒 Sector Locked! Must complete previous sector first.",
+                                                    "🔒 Sektör Kilitli! Öncelikle bir önceki sektörü tamamlamalısınız."
+                                                )
+                                            } else {
+                                                activeModalNode = node
+                                            }
+                                        }
+                                    )
+                                    Spacer(modifier = Modifier.height(30.dp))
+                                } else {
+                                    val topNode = nodesAtDepth.find { it.column == 0 }
+                                    val bottomNode = nodesAtDepth.find { it.column == 1 }
+
+                                    if (topNode != null) {
+                                        val isSelected = selectedNodeIdx == topNode.index
+                                        val isCurrent = player.currentFloor == selectedFloor && topNode.index == player.currentNodeIndex
+                                        val isCleared = player.currentFloor > selectedFloor || (player.currentFloor == selectedFloor && (topNode.depth < currentDepth || (topNode.index == player.currentNodeIndex && player.currentNodeCompleted)))
+                                        val isAccessible = player.currentFloor == selectedFloor && (
+                                            (topNode.index == player.currentNodeIndex) ||
+                                            (player.currentNodeCompleted && topNode.depth == currentDepth + 1)
+                                        )
+                                        val isScouted = scoutedNodeIndices.contains(topNode.index)
+                                        val isTypeHidden = !isCurrent && !isCleared && !isAccessible && !isScouted
+
+                                        NodeCircle(
+                                            node = topNode,
+                                            isCurrent = isCurrent,
+                                            isCleared = isCleared,
+                                            isAccessible = isAccessible,
+                                            isTypeHidden = isTypeHidden,
+                                            isSelected = isSelected,
+                                            onClick = {
+                                                selectedNodeIdx = topNode.index
+                                                if (!isAccessible) {
+                                                    onLockedClicked(
+                                                        "🔒 Sector Locked! Must complete previous sector first.",
+                                                        "🔒 Sektör Kilitli! Öncelikle bir önceki sektörü tamamlamalısınız."
+                                                    )
+                                                } else {
+                                                    activeModalNode = topNode
+                                                }
+                                            }
+                                        )
+                                    }
+
+                                    Spacer(modifier = Modifier.height(24.dp))
+
+                                    if (bottomNode != null) {
+                                        val isSelected = selectedNodeIdx == bottomNode.index
+                                        val isCurrent = player.currentFloor == selectedFloor && bottomNode.index == player.currentNodeIndex
+                                        val isCleared = player.currentFloor > selectedFloor || (player.currentFloor == selectedFloor && (bottomNode.depth < currentDepth || (bottomNode.index == player.currentNodeIndex && player.currentNodeCompleted)))
+                                        val isAccessible = player.currentFloor == selectedFloor && (
+                                            (bottomNode.index == player.currentNodeIndex) ||
+                                            (player.currentNodeCompleted && bottomNode.depth == currentDepth + 1)
+                                        )
+                                        val isScouted = scoutedNodeIndices.contains(bottomNode.index)
+                                        val isTypeHidden = !isCurrent && !isCleared && !isAccessible && !isScouted
+
+                                        NodeCircle(
+                                            node = bottomNode,
+                                            isCurrent = isCurrent,
+                                            isCleared = isCleared,
+                                            isAccessible = isAccessible,
+                                            isTypeHidden = isTypeHidden,
+                                            isSelected = isSelected,
+                                            onClick = {
+                                                selectedNodeIdx = bottomNode.index
+                                                if (!isAccessible) {
+                                                    onLockedClicked(
+                                                        "🔒 Sector Locked! Must complete previous sector first.",
+                                                        "🔒 Sektör Kilitli! Öncelikle bir önceki sektörü tamamlamalısınız."
+                                                    )
+                                                } else {
+                                                    activeModalNode = bottomNode
+                                                }
+                                            }
+                                        )
+                                    }
                                 }
-                            } else {
-                                Text("?", fontSize = 11.sp)
                             }
                         }
 
-                        // Compact Connecting Path Segment with pulsing glowing overlays
-                        if (idx < nodesCount - 1) {
-                            val pathCleared = player.currentFloor > selectedFloor || 
-                                    (player.currentFloor == selectedFloor && player.currentNodeIndex > idx)
+                        if (d < 19) {
+                            val pathCleared = player.currentFloor > selectedFloor || (player.currentFloor == selectedFloor && d < currentDepth)
+                            val pathColor = if (pathCleared) SpiritHealColor else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.15f)
+                            val pathHeight = if (pathCleared) 2.dp else 1.dp
                             
-                            val isActivePathSegment = (player.currentFloor == selectedFloor && idx == player.currentNodeIndex && player.currentNodeCompleted)
-
-                            if (isActivePathSegment) {
-                                val infiniteTransition = rememberInfiniteTransition(label = "pulse")
-                                val pulseAlpha by infiniteTransition.animateFloat(
-                                    initialValue = 0.35f,
-                                    targetValue = 1.0f,
-                                    animationSpec = infiniteRepeatable(
-                                        animation = tween(1200, easing = LinearEasing),
-                                        repeatMode = RepeatMode.Reverse
-                                    ),
-                                    label = "active_pulse"
-                                )
-                                HorizontalDivider(
-                                    modifier = Modifier.width(14.dp),
-                                    thickness = 3.dp,
-                                    color = SanctumGold.copy(alpha = pulseAlpha)
-                                )
-                            } else {
-                                val pathColor = if (pathCleared) SpiritHealColor else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.12f)
-                                val pathHeight = if (pathCleared) 2.dp else 1.dp
-                                HorizontalDivider(
-                                    modifier = Modifier.width(14.dp),
-                                    thickness = pathHeight,
-                                    color = pathColor
-                                )
+                            Column(
+                                modifier = Modifier.width(20.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Box(
+                                    modifier = Modifier.height(90.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    HorizontalDivider(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        thickness = pathHeight,
+                                        color = pathColor
+                                    )
+                                }
                             }
                         }
                     }
@@ -1168,11 +1201,11 @@ fun FloorProgressCartographyMap(
 
                 val inspectIsCurrent = player.currentFloor == selectedFloor && player.currentNodeIndex == selectedNodeIdx
                 val inspectIsCleared = player.currentFloor > selectedFloor || 
-                        (player.currentFloor == selectedFloor && (player.currentNodeIndex > selectedNodeIdx || (player.currentNodeIndex == selectedNodeIdx && player.currentNodeCompleted)))
-                val inspectIsAccessible = selectedNodeIdx == 0 || selectedNodeIdx <= player.currentNodeIndex || (selectedNodeIdx == player.currentNodeIndex + 1 && player.currentNodeCompleted)
+                        (player.currentFloor == selectedFloor && (inspectNode.depth < currentDepth || (player.currentNodeIndex == selectedNodeIdx && player.currentNodeCompleted)))
+                val inspectIsAccessible = selectedNodeIdx == 0 || inspectIsCurrent || (inspectNode.depth == currentDepth + 1 && player.currentNodeCompleted)
 
                 val isSelectScouted = scoutedNodeIndices.contains(selectedNodeIdx)
-                val isSelectTypeHidden = !inspectIsCurrent && !inspectIsCleared && !(player.currentNodeCompleted && selectedNodeIdx == player.currentNodeIndex + 1) && !isSelectScouted
+                val isSelectTypeHidden = !inspectIsCurrent && !inspectIsCleared && !inspectIsAccessible && !isSelectScouted
 
                 // Threat or danger tooltip
                 val dangerLevelEn = when {
@@ -1183,7 +1216,7 @@ fun FloorProgressCartographyMap(
                     else -> "🟢 SECURE VAULT COMPARTMENT (Safe)"
                 }
                 val dangerLevelTr = when {
-                    isSelectTypeHidden -> "❓ BİLİNMEYOR (Maliyet 1 İrade Gözleme kullanın)"
+                    isSelectTypeHidden -> "❓ BİLİNMEYEN SEKTÖR (Gözlem yeteneği kullanın)"
                     inspectNode.type == NodeType.BOSS -> "☠️ ZİRVE CANAVARI TEHLİKE DÜZEYİ"
                     inspectNode.type == NodeType.COMBAT -> "🔴 AKTİF DÜŞMAN (Yüksek Risk)"
                     inspectNode.type == NodeType.NARRATIVE -> "🟡 KARAR SEKTÖRÜ (Normal Tehdit)"
@@ -1251,7 +1284,7 @@ fun FloorProgressCartographyMap(
                             Spacer(modifier = Modifier.width(6.dp))
 
                             // Status Tag
-                            val statusText = when {
+                            val statusTagText = when {
                                 inspectIsCurrent -> if (isTr) "📍 AKTİF" else "📍 ACTIVE"
                                 inspectIsCleared -> if (isTr) "✓ GEÇİLDİ" else "✓ CLEARED"
                                 else -> if (isTr) "🔒 KİLİTLİ" else "🔒 LOCKED"
@@ -1273,7 +1306,7 @@ fun FloorProgressCartographyMap(
                                     .padding(horizontal = 5.dp, vertical = 2.dp)
                             ) {
                                 Text(
-                                    text = statusText,
+                                    text = statusTagText,
                                     style = MaterialTheme.typography.labelSmall.copy(
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 8.sp,
@@ -1330,16 +1363,19 @@ fun FloorProgressCartographyMap(
     activeModalNode?.let { n ->
         val nodeIsCurrent = player.currentFloor == selectedFloor && player.currentNodeIndex == n.index
         val nodeIsCleared = player.currentFloor > selectedFloor || 
-                (player.currentFloor == selectedFloor && (player.currentNodeIndex > n.index || (player.currentNodeIndex == n.index && player.currentNodeCompleted)))
+                (player.currentFloor == selectedFloor && (n.depth < currentDepth || (player.currentNodeIndex == n.index && player.currentNodeCompleted)))
+        val nodeIsAccessible = n.index == player.currentNodeIndex || (player.currentNodeCompleted && n.depth == currentDepth + 1)
         
         NodeDetailModal(
             node = n,
             floor = selectedFloor,
             isCurrent = nodeIsCurrent,
             isCleared = nodeIsCleared,
+            isAccessible = nodeIsAccessible,
             activeLang = activeLang,
             journal = journal,
-            onDismiss = { activeModalNode = null }
+            onDismiss = { activeModalNode = null },
+            onEnterNode = onNextNodeClick
         )
     }
 }
@@ -1350,9 +1386,11 @@ fun NodeDetailModal(
     floor: Int,
     isCurrent: Boolean,
     isCleared: Boolean,
+    isAccessible: Boolean,
     activeLang: String,
     journal: List<JournalEntry>,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    onEnterNode: (Int, Int) -> Unit
 ) {
     val isTr = activeLang == "TR"
     val nodeName = if (isTr) node.titleTr else node.title
@@ -1465,14 +1503,41 @@ fun NodeDetailModal(
             }
         },
         confirmButton = {
-            Button(
-                onClick = onDismiss,
-                colors = ButtonDefaults.buttonColors(containerColor = primaryColor)
-            ) {
-                Text(
-                    text = if (isTr) "Kapat" else "Dismiss",
-                    style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold)
-                )
+            if (isAccessible && !isCleared && !isCurrent) {
+                Button(
+                    onClick = {
+                        onEnterNode(node.depth, node.column)
+                        onDismiss()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = primaryColor)
+                ) {
+                    Text(
+                        text = if (isTr) "Yola Çık ⚡" else "Explore ⚡",
+                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold)
+                    )
+                }
+            } else {
+                Button(
+                    onClick = onDismiss,
+                    colors = ButtonDefaults.buttonColors(containerColor = primaryColor)
+                ) {
+                    Text(
+                        text = if (isTr) "Kapat" else "Dismiss",
+                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold)
+                    )
+                }
+            }
+        },
+        dismissButton = {
+            if (isAccessible && !isCleared && !isCurrent) {
+                OutlinedButton(
+                    onClick = onDismiss
+                ) {
+                    Text(
+                        text = if (isTr) "Kapat" else "Dismiss",
+                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold)
+                    )
+                }
             }
         }
     )
@@ -1771,6 +1836,66 @@ fun SecretBossCombatView(
                     Text(if (activeLang == "TR") "KAÇIŞ 🏃" else "ESCAPE 🏃", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun NodeCircle(
+    node: AdventureNode,
+    isCurrent: Boolean,
+    isCleared: Boolean,
+    isAccessible: Boolean,
+    isTypeHidden: Boolean,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    val circleBorderColor = when {
+        isSelected -> SanctumGold
+        isCurrent -> MaterialTheme.colorScheme.primary
+        isCleared -> SpiritHealColor
+        isAccessible -> MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+        else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.25f)
+    }
+
+    val circleBgColor = when {
+        isCurrent -> MaterialTheme.colorScheme.primaryContainer
+        isCleared -> SpiritHealColor.copy(alpha = 0.08f)
+        isSelected -> SanctumGold.copy(alpha = 0.08f)
+        isAccessible -> MaterialTheme.colorScheme.primary.copy(alpha = 0.04f)
+        else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+    }
+
+    Box(
+        modifier = Modifier
+            .size(30.dp)
+            .clip(CircleShape)
+            .background(circleBgColor)
+            .border(
+                width = if (isSelected) 2.dp else if (isCurrent) 1.5.dp else 1.dp,
+                color = circleBorderColor,
+                shape = CircleShape
+            )
+            .clickable { onClick() },
+        contentAlignment = Alignment.Center
+    ) {
+        if (isCleared && !isCurrent) {
+            Text("✓", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = SpiritHealColor)
+        } else if (isTypeHidden) {
+            Text("❓", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f))
+        } else {
+            Text(
+                text = when (node.type) {
+                    NodeType.COMBAT -> "⚔️"
+                    NodeType.BOSS -> "💀"
+                    NodeType.CHEST -> "💎"
+                    NodeType.SHRINE -> "🔮"
+                    NodeType.MERCHANT -> "🔮"
+                    NodeType.NARRATIVE -> "📜"
+                },
+                fontSize = 11.sp,
+                color = if (isCleared || isCurrent) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+            )
         }
     }
 }

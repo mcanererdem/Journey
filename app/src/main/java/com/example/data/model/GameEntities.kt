@@ -54,7 +54,9 @@ data class PlayerProfile(
     val equippedTitle: String = "", // Currently active title equipped by user
     val completedQuestsEncoded: String = "", // Comma separated quest IDs that are finished
     val currentNodeIndex: Int = 0,
+    val currentNodeColumn: Int = 0,
     val currentNodeCompleted: Boolean = false,
+    val storyFlagsEncoded: String = "",
     val lastUpdated: Long = System.currentTimeMillis()
 )
 

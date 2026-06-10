@@ -496,6 +496,13 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             }
             val newItemsEncoded = currentItems.joinToString(",")
 
+            // Build story flags list
+            var currentFlags = if (profile.storyFlagsEncoded.isEmpty()) emptyList() else profile.storyFlagsEncoded.split(",")
+            if (choice.addStoryFlag.isNotEmpty() && !currentFlags.contains(choice.addStoryFlag)) {
+                currentFlags = currentFlags + choice.addStoryFlag
+            }
+            val newStoryFlagsEncoded = currentFlags.joinToString(",")
+
             // Build titles catalog list
             var currentTitles = if (profile.titlesEncoded.isEmpty()) emptyList() else profile.titlesEncoded.split(",")
             if (choice.rewardTitle.isNotEmpty()) {
@@ -598,6 +605,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 val updated = profile.copy(
                     currentFloor = targetFloor,
                     currentNodeIndex = targetNodeIndex,
+                    currentNodeColumn = if (choice.skipToNextFloor) 0 else profile.currentNodeColumn,
                     currentNodeCompleted = completedState,
                     savedFloorCheckpoint = targetCheckpoint,
                     rank = targetRank,
@@ -612,6 +620,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     maxExp = newMaxExp,
                     itemsEncoded = newItemsEncoded,
                     titlesEncoded = newTitlesEncoded,
+                    storyFlagsEncoded = newStoryFlagsEncoded,
                     chosenClass = calculatePlayerClass(activeFactionSide, newMomentum),
                     lastUpdated = System.currentTimeMillis()
                 )
@@ -620,48 +629,48 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun advanceToNextNode() {
+    fun selectNodeAt(depth: Int, column: Int) {
         viewModelScope.launch {
             val profile = repository.getPlayerProfileDirect() ?: return@launch
             val nodes = _currentFloorNodes.value
             
+            // Find the node at the selected depth and column
+            val nextNode = nodes.find { it.depth == depth && it.column == column } ?: return@launch
+            
             val hasPass = profile.itemsEncoded.split(",").any { it.trim() == "Seasonal Sovereign Pass" }
 
-            // Sinking into a new node in sequence costs 1 Will
+            // Validate Willpower
             if (!hasPass && profile.currentWill < 1) {
                 _lastActionMessageEn.value = "❌ No Willpower! Spend 50 Gold at Outer Haven sığınağı to restore life and Will."
                 _lastActionMessageTr.value = "❌ İrade Tükendi! İradenizi yenilemek için Dış Sığınak Kaplıcasında 50 Altına dinlenin."
                 return@launch
             }
 
-            val nextIndex = profile.currentNodeIndex + 1
-            if (nextIndex in nodes.indices) {
-                val nextNode = nodes[nextIndex]
-                if (nextNode.type == NodeType.COMBAT || nextNode.type == NodeType.BOSS) {
-                    _activeEnemyHp.value = nextNode.enemyHp
-                    _playerStatuses.value = emptyList()
-                    _enemyStatuses.value = emptyList()
-                    _currentEnemyIntent.value = EnemyIntent.random()
-                    hasTriggeredPhase2 = false
-                    _combatLog.value = listOf(
-                        "TR" to "⚔️ ${nextNode.enemyNameTr} ile kule yolunda savaşa girdiniz! Can: ${nextNode.enemyHp}",
-                        "EN" to "⚔️ Engaged in battle with ${nextNode.enemyNameEn}! HP: ${nextNode.enemyHp}"
-                    ).map { if (_activeLanguage.value == "TR") it.first else it.second }
-                } else {
-                    _activeEnemyHp.value = null
-                    _combatLog.value = emptyList()
-                }
-
-                val updated = profile.copy(
-                    currentNodeIndex = nextIndex,
-                    currentNodeCompleted = false,
-                    currentWill = if (hasPass) profile.currentWill else profile.currentWill - 1, // Deduct Will
-                    lastUpdated = System.currentTimeMillis()
-                )
-                repository.savePlayerProfile(updated)
-                _lastActionMessageEn.value = "Advanced deeper into Floor ${profile.currentFloor}. Sektor: ${nextNode.title}."
-                _lastActionMessageTr.value = "${profile.currentFloor}. Katta yeni bir sektöre adım attınız: ${nextNode.titleTr}."
+            if (nextNode.type == NodeType.COMBAT || nextNode.type == NodeType.BOSS) {
+                _activeEnemyHp.value = nextNode.enemyHp
+                _playerStatuses.value = emptyList()
+                _enemyStatuses.value = emptyList()
+                _currentEnemyIntent.value = EnemyIntent.random()
+                hasTriggeredPhase2 = false
+                _combatLog.value = listOf(
+                    "TR" to "⚔️ ${nextNode.enemyNameTr} ile kule yolunda savaşa girdiniz! Can: ${nextNode.enemyHp}",
+                    "EN" to "⚔️ Engaged in battle with ${nextNode.enemyNameEn}! HP: ${nextNode.enemyHp}"
+                ).map { if (_activeLanguage.value == "TR") it.first else it.second }
+            } else {
+                _activeEnemyHp.value = null
+                _combatLog.value = emptyList()
             }
+
+            val updated = profile.copy(
+                currentNodeIndex = nextNode.index,
+                currentNodeColumn = column,
+                currentNodeCompleted = false,
+                currentWill = if (hasPass) profile.currentWill else profile.currentWill - 1, // Deduct Will
+                lastUpdated = System.currentTimeMillis()
+            )
+            repository.savePlayerProfile(updated)
+            _lastActionMessageEn.value = "Advanced deeper into Floor ${profile.currentFloor}. Sector: ${nextNode.title}."
+            _lastActionMessageTr.value = "${profile.currentFloor}. Katta yeni bir sektöre adım attınız: ${nextNode.titleTr}."
         }
     }
 
@@ -1072,13 +1081,34 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
         val newTitlesEncoded = currentTitles.joinToString(",")
 
+        // Scale rewards if on elite path (column == 1)
+        val isElite = activeNode.column == 1
+        val goldGained = if (isElite) (rewards.goldGained * 1.5).toInt() else rewards.goldGained
+        val expGained = if (isElite) (rewards.expGained * 1.5).toInt() else rewards.expGained
+
+        // Recalculate leveling with scaled EXP
+        var totalExp = profile.exp + expGained
+        var totalLevel = profile.level
+        var totalMaxExp = profile.maxExp
+        var totalMaxHp = profile.maxHp
+        var newHp = rewards.finalHp
+        var didLevelUp = false
+        while (totalExp >= totalMaxExp && totalLevel < 100) {
+            totalExp -= totalMaxExp
+            totalLevel++
+            totalMaxExp = totalLevel * 100
+            totalMaxHp += 20
+            newHp = totalMaxHp
+            didLevelUp = true
+        }
+
         val updatedProfile = profile.copy(
-            currentHp = rewards.finalHp,
-            maxHp = rewards.newMaxHp,
-            level = rewards.newLevel,
-            exp = rewards.newExp,
-            maxExp = rewards.newMaxExp,
-            gold = profile.gold + rewards.goldGained,
+            currentHp = newHp,
+            maxHp = totalMaxHp,
+            level = totalLevel,
+            exp = totalExp,
+            maxExp = totalMaxExp,
+            gold = profile.gold + goldGained,
             itemsEncoded = newItemsEncoded,
             titlesEncoded = newTitlesEncoded,
             currentNodeCompleted = true,
@@ -1087,15 +1117,15 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         repository.savePlayerProfile(updatedProfile)
 
         if (_activeLanguage.value == "TR") {
-            logs.add("ğŸ‰ ZAFER! DÃ¼ÅŸman katledildi. +$ Deneyim, +$ AltÄ±n kazanÄ±ldÄ±.")
-            if (rewards.itemAwarded != null) logs.add("ğŸ Hazine: [$] toplandÄ± teÃ§hizat torbana konuldu!")
-            if (rewards.titleAwarded != null) logs.add("ğŸ‘‘ Yeni Unvan KazandÄ±nÄ±z: [$]!")
-            if (rewards.didLevelUp) logs.add("âš¡ SEVÄ°YE ATLADINIZ! Seviye $ oldunuz! Maksimum CanÄ±nÄ±z arttÄ±.")
+            logs.add("🎉 ZAFER! Düşman katledildi. +$expGained Deneyim, +$goldGained Altın kazanıldı.")
+            if (rewards.itemAwarded != null) logs.add("🎁 Hazine: [${rewards.itemAwarded}] toplandı teçhizat torbana konuldu!")
+            if (rewards.titleAwarded != null) logs.add("👑 Yeni Unvan Kazandınız: [${rewards.titleAwarded}]!")
+            if (didLevelUp) logs.add("⚡ SEVİYE ATLADINIZ! Seviye $totalLevel oldunuz! Maksimum Canınız arttı.")
         } else {
-            logs.add("ğŸ‰ VICTORY! Enemy defeated. Won +$ EXP, +$ Gold.")
-            if (rewards.itemAwarded != null) logs.add("ğŸ Loot Pick: [$] added to inventory!")
-            if (rewards.titleAwarded != null) logs.add("ğŸ‘‘ Achieved Epic Title: [$]!")
-            if (rewards.didLevelUp) logs.add("âš¡ LEVEL UP! Reached Level $! Max HP increased.")
+            logs.add("🎉 VICTORY! Enemy defeated. Won +$expGained EXP, +$goldGained Gold.")
+            if (rewards.itemAwarded != null) logs.add("🎁 Loot Pick: [${rewards.itemAwarded}] added to inventory!")
+            if (rewards.titleAwarded != null) logs.add("👑 Achieved Epic Title: [${rewards.titleAwarded}]!")
+            if (didLevelUp) logs.add("⚡ LEVEL UP! Reached Level $totalLevel! Max HP increased.")
         }
 
         val journalEntry = JournalEntry(

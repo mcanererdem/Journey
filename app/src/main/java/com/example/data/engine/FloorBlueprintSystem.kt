@@ -29,6 +29,67 @@ object FloorBlueprintSystem {
         if (floor in 1..3) {
             val jsonBlueprint = loadBlueprintFromJson(floor)
             if (jsonBlueprint != null) {
+                if (jsonBlueprint.nodes.size == 20) {
+                    val expandedNodes = ArrayList<AdventureNode>()
+                    val originalNodes = jsonBlueprint.nodes
+                    for (d in 0..19) {
+                        if (d == 0) {
+                            expandedNodes.add(originalNodes[0].copy(index = 0, depth = 0, column = 0))
+                        } else if (d == 19) {
+                            expandedNodes.add(originalNodes[19].copy(index = 37, depth = 19, column = 0))
+                        } else {
+                            val originalNode = originalNodes[d]
+                            // Left Column (column 0)
+                            expandedNodes.add(originalNode.copy(index = 2 * d - 1, depth = d, column = 0))
+                            // Right Column (column 1) - scale rewards and difficulty
+                            val statsScaledNode = if (originalNode.type == NodeType.COMBAT) {
+                                originalNode.copy(
+                                    index = 2 * d,
+                                    depth = d,
+                                    column = 1,
+                                    title = "Elite " + originalNode.title,
+                                    titleTr = "Seçkin " + originalNode.titleTr,
+                                    enemyHp = (originalNode.enemyHp * 1.3f).toInt(),
+                                    enemyMaxHp = (originalNode.enemyMaxHp * 1.3f).toInt(),
+                                    enemyAtk = (originalNode.enemyAtk * 1.3f).toInt(),
+                                    enemyNameEn = "Elite " + originalNode.enemyNameEn,
+                                    enemyNameTr = "Seçkin " + originalNode.enemyNameTr
+                                )
+                            } else {
+                                val optA = originalNode.optionA?.copy(
+                                    goldChange = (originalNode.optionA.goldChange * 1.5).toInt(),
+                                    aetherChange = (originalNode.optionA.aetherChange * 1.5).toInt(),
+                                    hpChange = (originalNode.optionA.hpChange * 1.5).toInt(),
+                                    willChange = (originalNode.optionA.willChange * 1.5).toInt()
+                                )
+                                val optB = originalNode.optionB?.copy(
+                                    goldChange = (originalNode.optionB.goldChange * 1.5).toInt(),
+                                    aetherChange = (originalNode.optionB.aetherChange * 1.5).toInt(),
+                                    hpChange = (originalNode.optionB.hpChange * 1.5).toInt(),
+                                    willChange = (originalNode.optionB.willChange * 1.5).toInt()
+                                )
+                                val optC = originalNode.optionC?.copy(
+                                    goldChange = (originalNode.optionC.goldChange * 1.5).toInt(),
+                                    aetherChange = (originalNode.optionC.aetherChange * 1.5).toInt(),
+                                    hpChange = (originalNode.optionC.hpChange * 1.5).toInt(),
+                                    willChange = (originalNode.optionC.willChange * 1.5).toInt()
+                                )
+                                originalNode.copy(
+                                    index = 2 * d,
+                                    depth = d,
+                                    column = 1,
+                                    title = originalNode.title + " (Covenant Route)",
+                                    titleTr = originalNode.titleTr + " (Ahit Rotası)",
+                                    optionA = optA,
+                                    optionB = optB,
+                                    optionC = optC
+                                )
+                            }
+                            expandedNodes.add(statsScaledNode)
+                        }
+                    }
+                    return jsonBlueprint.copy(nodes = expandedNodes)
+                }
                 return jsonBlueprint
             }
         }
@@ -545,19 +606,19 @@ object FloorBlueprintSystem {
         val scenario = buildNormalScenario(floor, themeIndex)
 
         // Construct nodes List dynamically based on deterministic distribution
-        val totalNodes = 20 + random.nextInt(3) // Ensure at least 20 targeted (20..22)
+        val totalDepths = 20
         val nodes = ArrayList<AdventureNode>()
 
-        val innerCount = totalNodes - 2
-        var combatCount = (innerCount * 0.40).toInt().coerceAtLeast(4)
-        var merchantCount = (innerCount * 0.10).toInt().coerceAtLeast(2)
-        var chestCount = (innerCount * 0.10).toInt().coerceAtLeast(2)
-        var shrineCount = (innerCount * 0.10).toInt().coerceAtLeast(1)
+        val innerCount = 36 // 18 depths * 2 columns
+        var combatCount = (innerCount * 0.40).toInt().coerceAtLeast(8)
+        var merchantCount = (innerCount * 0.10).toInt().coerceAtLeast(4)
+        var chestCount = (innerCount * 0.10).toInt().coerceAtLeast(4)
+        var shrineCount = (innerCount * 0.10).toInt().coerceAtLeast(2)
         var narrativeCount = innerCount - combatCount - merchantCount - chestCount - shrineCount
 
-        if (narrativeCount < 3) {
-            narrativeCount = 3
-            combatCount = (innerCount - merchantCount - chestCount - shrineCount - narrativeCount).coerceAtLeast(3)
+        if (narrativeCount < 6) {
+            narrativeCount = 6
+            combatCount = (innerCount - merchantCount - chestCount - shrineCount - narrativeCount).coerceAtLeast(6)
         }
 
         val pool = ArrayList<NodeType>()
@@ -568,67 +629,73 @@ object FloorBlueprintSystem {
         repeat(narrativeCount) { pool.add(NodeType.NARRATIVE) }
         val shuffledPool = pool.shuffled(random)
 
-        for (i in 0 until totalNodes) {
-            when {
-                i == 0 -> {
-                    nodes.add(
-                        AdventureNode(
-                            index = i,
-                            type = NodeType.NARRATIVE,
-                            title = "Floor $floor Nexus Vestibule",
-                            description = "Your heavy boots echo inside the cold gateway of Floor $floor.",
-                            titleTr = "${floor}. Kat Karşılama Geçidi",
-                            descriptionTr = "${floor}. Katın soğuk ana geçidinde adımlarınız yankılanıyor.",
-                            optionA = NodeChoice(
-                                textEn = "Focus mind to scan layout (+1 Will, +10 EXP)",
-                                textTr = "Kule planını taramak için odaklan (+1 İrade, +10 EXP)",
-                                journalEn = "Entered Floor $floor entryway, preparing spatial path plans.",
-                                journalTr = "$floor. Kat kapısına giriş yaptınız, güzergahı zihninizde planladınız.",
-                                willChange = 1,
-                                expChange = 10
-                            ),
-                            optionB = NodeChoice(
-                                textEn = "Sanctify physical energy (+15 HP)",
-                                textTr = "Bedensel enerjiyi canlandır (+15 HP)",
-                                journalEn = "Rested for a brief moment in the entryway, channeling safe light.",
-                                journalTr = "Kat girişinde kısa bir an soluklanarak saf ışığı canınıza yüklediniz.",
-                                hpChange = 15
-                            ),
-                            optionC = NodeChoice(
-                                textEn = "Forge ahead confidently",
-                                textTr = "Kendinden emin şekilde ileri atıl",
-                                journalEn = "Stepped into the wild chambers of Floor $floor.",
-                                journalTr = "$floor. Katın tehlikeli odalarına doğru kararlıca ilerlediniz."
-                            ),
-                            willCost = 0
-                        )
-                    )
-                }
-                i == totalNodes - 1 -> {
-                    val bossInfo = getBossForFloor(floor, random)
-                    nodes.add(
-                        AdventureNode(
-                            index = i,
-                            type = NodeType.BOSS,
-                            title = "Floor $floor Overlord: ${bossInfo.nameEn}",
-                            description = "Guarding the cosmic seal is the Warden of Blight: ${bossInfo.nameEn}.",
-                            titleTr = "${floor}. Kat Derebeyi: ${bossInfo.nameTr}",
-                            descriptionTr = "Geçit mührünü koruyan azametli Musibet Gardiyanı ${bossInfo.nameTr} karşınızda kükrüyor.",
-                            enemyNameEn = bossInfo.nameEn,
-                            enemyNameTr = bossInfo.nameTr,
-                            enemyHp = bossInfo.hp,
-                            enemyMaxHp = bossInfo.hp,
-                            enemyAtk = bossInfo.atk,
-                            willCost = 2
-                        )
-                    )
-                }
-                else -> {
-                    val nType = shuffledPool[i - 1]
-                    nodes.add(generateProceduralNode(floor, i, nType, random))
-                }
-            }
+        // Depth 0
+        nodes.add(
+            AdventureNode(
+                index = 0,
+                type = NodeType.NARRATIVE,
+                title = "Floor $floor Nexus Vestibule",
+                description = "Your heavy boots echo inside the cold gateway of Floor $floor.",
+                titleTr = "${floor}. Kat Karşılama Geçidi",
+                descriptionTr = "${floor}. Katın soğuk ana geçidinde adımlarınız yankılanıyor.",
+                depth = 0,
+                column = 0,
+                optionA = NodeChoice(
+                    textEn = "Focus mind to scan layout (+1 Will, +10 EXP)",
+                    textTr = "Kule planını taramak için odaklan (+1 İrade, +10 EXP)",
+                    journalEn = "Entered Floor $floor entryway, preparing spatial path plans.",
+                    journalTr = "$floor. Kat kapısına giriş yaptınız, güzergahı zihninizde planladınız.",
+                    willChange = 1,
+                    expChange = 10
+                ),
+                optionB = NodeChoice(
+                    textEn = "Sanctify physical energy (+15 HP)",
+                    textTr = "Bedensel enerjiyi canlandır (+15 HP)",
+                    journalEn = "Rested for a brief moment in the entryway, channeling safe light.",
+                    journalTr = "Kat girişinde kısa bir an soluklanarak saf ışığı canınıza yüklediniz.",
+                    hpChange = 15
+                ),
+                optionC = NodeChoice(
+                    textEn = "Forge ahead confidently",
+                    textTr = "Kendinden emin şekilde ileri atıl",
+                    journalEn = "Stepped into the wild chambers of Floor $floor.",
+                    journalTr = "$floor. Katın tehlikeli odalarına doğru kararlıca ilerlediniz."
+                ),
+                willCost = 0
+            )
+        )
+
+        // Depths 1 to 18
+        for (d in 1..18) {
+            val type0 = shuffledPool[(d - 1) * 2]
+            val type1 = shuffledPool[(d - 1) * 2 + 1]
+            
+            // Left Column (Column 0)
+            nodes.add(generateProceduralNode(floor, 2 * d - 1, type0, random, d, 0))
+            // Right Column (Column 1)
+            nodes.add(generateProceduralNode(floor, 2 * d, type1, random, d, 1))
         }
+
+        // Depth 19 (Boss)
+        val bossInfo = getBossForFloor(floor, random)
+        nodes.add(
+            AdventureNode(
+                index = 37,
+                type = NodeType.BOSS,
+                title = "Floor $floor Overlord: ${bossInfo.nameEn}",
+                description = "Guarding the cosmic seal is the Warden of Blight: ${bossInfo.nameEn}.",
+                titleTr = "${floor}. Kat Derebeyi: ${bossInfo.nameTr}",
+                descriptionTr = "Geçit mührünü koruyan azametli Musibet Gardiyanı ${bossInfo.nameTr} karşınızda kükrüyor.",
+                depth = 19,
+                column = 0,
+                enemyNameEn = bossInfo.nameEn,
+                enemyNameTr = bossInfo.nameTr,
+                enemyHp = bossInfo.hp,
+                enemyMaxHp = bossInfo.hp,
+                enemyAtk = bossInfo.atk,
+                willCost = 2
+            )
+        )
 
         // Apply secret content triggers exactly as done historically
         injectProceduralSecretContent(floor, nodes, player, random)
@@ -636,133 +703,171 @@ object FloorBlueprintSystem {
         return FloorBlueprint(floor, titleEn, titleTr, descEn, descTr, scenario, nodes)
     }
 
-    private fun generateProceduralNode(floor: Int, index: Int, type: NodeType, random: Random): AdventureNode {
+    private fun generateProceduralNode(floor: Int, index: Int, type: NodeType, random: Random, depth: Int, column: Int): AdventureNode {
+        val isHard = column == 1
         return when (type) {
             NodeType.COMBAT -> {
                 val stats = getEnemyForFloor(floor, random)
+                val hp = if (isHard) (stats.hp * 1.3f).toInt() else stats.hp
+                val atk = if (isHard) (stats.atk * 1.3f).toInt() else stats.atk
                 AdventureNode(
                     index = index,
                     type = NodeType.COMBAT,
-                    title = "Skirmish sector",
-                    titleTr = "Çatışma Sektörü",
-                    description = "An aggressive threat steps in from the shadows to drain your lifeforce.",
-                    descriptionTr = "Gölgelerden sıyrılan agresif bir tehdit can enerjini sömürmek için saldırıyor.",
-                    enemyNameEn = stats.nameEn,
-                    enemyNameTr = stats.nameTr,
-                    enemyHp = stats.hp,
-                    enemyMaxHp = stats.hp,
-                    enemyAtk = stats.atk,
+                    title = if (isHard) "Elite skirmish sector" else "Skirmish sector",
+                    titleTr = if (isHard) "Seçkin Çatışma Sektörü" else "Çatışma Sektörü",
+                    description = if (isHard) "A dangerous elite threat stands in your way. High risk, high reward!" else "An aggressive threat steps in from the shadows to drain your lifeforce.",
+                    descriptionTr = if (isHard) "Yolunuzu kesen son derece tehlikeli seçkin bir düşman! Yüksek risk, yüksek ödül!" else "Gölgelerden sıyrılan agresif bir tehdit can enerjini sömürmek için saldırıyor.",
+                    depth = depth,
+                    column = column,
+                    enemyNameEn = if (isHard) "Elite ${stats.nameEn}" else stats.nameEn,
+                    enemyNameTr = if (isHard) "Seçkin ${stats.nameTr}" else stats.nameTr,
+                    enemyHp = hp,
+                    enemyMaxHp = hp,
+                    enemyAtk = atk,
                     willCost = 1
                 )
             }
             NodeType.CHEST -> {
+                val multiplier = if (isHard) 1.5f else 1.0f
                 AdventureNode(
                     index = index,
                     type = NodeType.CHEST,
-                    title = "Blighted Relic Urn",
-                    titleTr = "Musibetli Kalıntı Lahiti",
-                    description = "A sealed decorative chest humming with celestial or dark currents.",
-                    descriptionTr = "Semavi veya karanlık dalgalarla mırıldayan kilitli kutsal bir mahfaza.",
+                    title = if (isHard) "Elite Blighted Relic Urn" else "Blighted Relic Urn",
+                    titleTr = if (isHard) "Seçkin Musibetli Kalıntı Lahiti" else "Musibetli Kalıntı Lahiti",
+                    description = if (isHard) "A heavily warded chest. Greater rewards, but higher costs." else "A sealed decorative chest humming with celestial or dark currents.",
+                    descriptionTr = if (isHard) "Ağır mühürlerle korunan kadim bir sandık. Daha büyük ödüller, fakat yüksek bedeller." else "Semavi veya karanlık dalgalarla mırıldayan kilitli kutsal bir mahfaza.",
+                    depth = depth,
+                    column = column,
                     optionA = NodeChoice(
-                        textEn = "Unlock using light keys (+20 Aether, -10 HP)",
-                        textTr = "Işık gücüyle aç (+20 Aether, -10 HP)",
+                        textEn = "Unlock using light keys (+${(20 * multiplier).toInt()} Aether, -${(10 * multiplier).toInt()} HP)",
+                        textTr = "Işık gücüyle aç (+${(20 * multiplier).toInt()} Aether, -${(10 * multiplier).toInt()} HP)",
                         journalEn = "Purified a sealed relic chest.",
                         journalTr = "Sıkışmış mühürlü sandığı can enerjisiyle temizleyip açtınız.",
-                        hpChange = -10,
-                        aetherChange = 20
+                        hpChange = -(10 * multiplier).toInt(),
+                        aetherChange = (20 * multiplier).toInt()
                     ),
                     optionB = NodeChoice(
-                        textEn = "Break open roughly (+30 Gold, -15 HP)",
-                        textTr = "Zorla parçala (+30 Altın, -15 HP)",
+                        textEn = "Break open roughly (+${(30 * multiplier).toInt()} Gold, -${(15 * multiplier).toInt()} HP)",
+                        textTr = "Zorla parçala (+${(30 * multiplier).toInt()} Altın, -${(15 * multiplier).toInt()} HP)",
                         journalEn = "Smashed lock mechanisms for direct currency scrap loot.",
                         journalTr = "Zula kutusunu sertçe parçalayarak altını torbaya aktardınız.",
-                        hpChange = -15,
-                        goldChange = 30
+                        hpChange = -(15 * multiplier).toInt(),
+                        goldChange = (30 * multiplier).toInt()
                     ),
                     willCost = 1
                 )
             }
             NodeType.SHRINE -> {
+                val multiplier = if (isHard) 1.5f else 1.0f
                 AdventureNode(
                     index = index,
                     type = NodeType.SHRINE,
-                    title = "Aether Resonance obelisk",
-                    titleTr = "Eter Rezonans Sütunu",
-                    description = "A towering stone block radiating warm protective energy currents.",
+                    title = if (isHard) "Overcharged Obelisk" else "Aether Resonance obelisk",
+                    titleTr = if (isHard) "Aşırı Yüklü Güç Dikilitaşı" else "Eter Rezonans Sütunu",
+                    description = "A stone block radiating warm protective energy currents.",
                     descriptionTr = "Sıcak koruyucu enerji dalgaları saçan devasa yükselmiş dikilitaş.",
+                    depth = depth,
+                    column = column,
                     optionA = NodeChoice(
-                        textEn = "Touch and channel focus (+30 HP)",
-                        textTr = "Dokun ve odaklan (+30 HP)",
+                        textEn = "Touch and channel focus (+${(30 * multiplier).toInt()} HP)",
+                        textTr = "Dokun ve odaklan (+${(30 * multiplier).toInt()} HP)",
                         journalEn = "Restored cells at the Resonance Obelisk.",
                         journalTr = "Rezonans dikilitaşının can enerjisiyle dokuları yenilediniz.",
-                        hpChange = 30
+                        hpChange = (30 * multiplier).toInt()
                     ),
                     optionB = NodeChoice(
-                        textEn = "Carve unaligned runes (+15 EXP, +20 Gold)",
-                        textTr = "Hizalanmamış rün kaz (+15 EXP, +20 Altın)",
-                        journalEn = "Scabbed runes from the obelisk carvings.",
-                        journalTr = "Dikilitaş yüzeyinden rün toplayıp tecrübe ve altın kazandınız.",
-                        expChange = 15,
-                        goldChange = 20
+                        textEn = "Sacrifice willpower to harness Aether (-${(2 * multiplier).toInt()} Will, +${(40 * multiplier).toInt()} Aether)",
+                        textTr = "Işıltı çekmek için iradeni feda et (-${(2 * multiplier).toInt()} İrade, +${(40 * multiplier).toInt()} Aether)",
+                        journalEn = "Sacrificed willpower to channel spatial Aether.",
+                        journalTr = "Eter rezonansını zorlamak için iradenizden feragat ettiniz.",
+                        willChange = -(2 * multiplier).toInt(),
+                        aetherChange = (40 * multiplier).toInt()
                     ),
                     willCost = 1
                 )
             }
             NodeType.MERCHANT -> {
+                val multiplier = if (isHard) 1.5f else 1.0f
                 AdventureNode(
                     index = index,
                     type = NodeType.MERCHANT,
-                    title = "Wandering Broker",
-                    titleTr = "Gezgin Komisyoncu",
-                    description = "A hooded trader bartering high floor gear and celestial resources.",
-                    descriptionTr = "Gizemli pelerininin altından yüksek kat eşyaları satan bir göçebe tüccar.",
+                    title = if (isHard) "Elite Dark Peddler" else "Wandering merchant",
+                    titleTr = if (isHard) "Seçkin Gezgin Tüccar" else "Gezgin Tüccar",
+                    description = "A mysterious vendor offering rare dimensional wares.",
+                    descriptionTr = "Boyutsal teçhizatlar satan esrarengiz bir tüccar.",
+                    depth = depth,
+                    column = column,
                     optionA = NodeChoice(
-                        textEn = "Buy Light Crest Charm (-40 Gold, +Order Emblem Shield)",
-                        textTr = "Işık Broşu al (-40 Altın, +Order Emblem Shield)",
-                        journalEn = "Acquired Order Emblem Shield reward on higher floor.",
-                        journalTr = "Gezgin komisyoncudan nişanlı Şovalye Kalkanı satın aldınız.",
-                        goldChange = -40,
-                        rewardItem = "Order Emblem Shield"
+                        textEn = "Buy health elixir (-${(25 * multiplier).toInt()} Gold, +30 HP)",
+                        textTr = "Can iksiri satın al (-${(25 * multiplier).toInt()} Altın, +30 HP)",
+                        journalEn = "Bought health elixir from wandering merchant.",
+                        journalTr = "Gezgin satıcıdan hayat iksiri satın alıp yaralarınızı sardınız.",
+                        goldChange = -(25 * multiplier).toInt(),
+                        hpChange = 30
                     ),
                     optionB = NodeChoice(
-                        textEn = "Sell old scrap metal (+30 Gold)",
-                        textTr = "Eski maden hurdalarını sat (+30 Altın)",
-                        journalEn = "Exchanged equipment scraps for gold coins.",
-                        journalTr = "Eski zırh parçalarını ve döküntüleri takas edip altın biriktirdiniz.",
-                        goldChange = 30
+                        textEn = "Trade spare metals for Aether (+${(15 * multiplier).toInt()} Aether, -${(40 * multiplier).toInt()} Gold)",
+                        textTr = "Metal parçalarını Aether ile takas et (+${(15 * multiplier).toInt()} Aether, -${(40 * multiplier).toInt()} Altın)",
+                        journalEn = "Traded gold coin reserves for cosmic Aether fragments.",
+                        journalTr = "Gezgin tüccardan altın karşılığı Aether parçacıkları edindiniz.",
+                        goldChange = -(40 * multiplier).toInt(),
+                        aetherChange = (15 * multiplier).toInt()
                     ),
                     optionC = NodeChoice(
-                        textEn = "Ignore",
-                        textTr = "Boş Ver",
-                        journalEn = "Passed the vendor silently.",
-                        journalTr = "Tüccarın yanından sessizce geçip gittiniz."
+                        textEn = "Decline trade",
+                        textTr = "Ticareti reddet",
+                        journalEn = "Passed by the merchant without trading.",
+                        journalTr = "Gezgin satıcının tekliflerini pas geçip ilerlemeyi seçtiniz."
                     ),
                     willCost = 1
                 )
             }
-            else -> {
+            NodeType.NARRATIVE -> {
                 AdventureNode(
                     index = index,
                     type = NodeType.NARRATIVE,
-                    title = "Echo Corridor",
-                    titleTr = "Yankı Dehlizi",
-                    description = "Whispers in the mist echo of previous adventurers who perished here.",
-                    descriptionTr = "Sisin içinden yükselen fısıltılar burada can veren eski kahramanları yankılıyor.",
+                    title = "Uncharted Ruins",
+                    titleTr = "Keşfedilmemiş Harabeler",
+                    description = "Eerie runes glow on a cracked pillar. A quiet voice promises power in exchange for your faith.",
+                    descriptionTr = "Çatlamış bir sütunda tekinsiz rünler parlıyor. Sessiz bir ses inancına karşılık güç vaat ediyor.",
+                    depth = depth,
+                    column = column,
                     optionA = NodeChoice(
-                        textEn = "Meditate on the warnings (+20 EXP)",
-                        textTr = "Uyarılara odaklanarak meditasyon yap (+20 EXP)",
-                        journalEn = "Meditated on past events to avoid traps.",
-                        journalTr = "Önceki kayıp ruhların fermanlarını inceleyip derin tecrübe edindiniz.",
+                        textEn = "Reject the voice (+10 Momentum, +20 EXP)",
+                        textTr = "Sesi reddet (+10 Momentum, +20 EXP)",
+                        journalEn = "Purified a whispering chaotic wall.",
+                        journalTr = "Fısıldayan kaotik bir duvarı arındırıp Ak Kule yoluna yaklaştınız.",
+                        alignmentShift = 10,
                         expChange = 20
                     ),
                     optionB = NodeChoice(
-                        textEn = "Search ruins (+15 Gold)",
-                        textTr = "Harabeleri ara (+15 Altın)",
-                        journalEn = "Scourged side corners for lost coin tokens.",
-                        journalTr = "Kül yığınlarını karıştırarak gümüş ve altın sikkeler topladınız.",
-                        goldChange = 15
+                        textEn = "Embrace the shadows (+15 Aether, -10 Momentum)",
+                        textTr = "Gölgeleri kucakla (+15 Aether, -10 Momentum)",
+                        journalEn = "Whispered secrets to the dark wall, feeding the void soul.",
+                        journalTr = "Karanlık duvara sırlar fısıldayarak boşluk ruhunu beslediniz.",
+                        alignmentShift = -10,
+                        aetherChange = 15
                     ),
-                    willCost = 1
+                    willCost = 0
+                )
+            }
+            NodeType.BOSS -> {
+                val stats = getEnemyForFloor(floor, random)
+                AdventureNode(
+                    index = index,
+                    type = NodeType.BOSS,
+                    title = "Apex Boss Sanctum",
+                    titleTr = "Kozmik Zirve Mihrabı",
+                    description = "The floor keeper blocks the portal to the higher floor. Prepare yourself!",
+                    descriptionTr = "Kat muhafızı portalı kapatıyor. Kendini hazırla!",
+                    depth = depth,
+                    column = column,
+                    enemyNameEn = stats.nameEn,
+                    enemyNameTr = stats.nameTr,
+                    enemyHp = stats.hp * 2,
+                    enemyMaxHp = stats.hp * 2,
+                    enemyAtk = (stats.atk * 1.5).toInt(),
+                    willCost = 2
                 )
             }
         }
@@ -771,6 +876,9 @@ object FloorBlueprintSystem {
     private fun injectProceduralSecretContent(floor: Int, nodes: ArrayList<AdventureNode>, player: PlayerProfile?, random: Random) {
         if (player == null) return
         val targetIndex = (nodes.size * 0.6).toInt()
+        val originalNode = nodes.getOrNull(targetIndex) ?: return
+        val originalDepth = originalNode.depth
+        val originalColumn = originalNode.column
 
         // 1. Secret Mimic Node
         if (player.gold > 200 && random.nextInt(100) < 30) {
@@ -781,6 +889,8 @@ object FloorBlueprintSystem {
                 titleTr = "⚡ GİZLİ: Altın Dişli Taklitçi Chest ⚡",
                 description = "Your sheer accumulation of gold has drawn a gluttonous creature disguised as a majestic chest. Kill it to seize massive loot!",
                 descriptionTr = "Kesenizdeki yüksek altın miktarı, sandık kılığındaki obur bir açgözlü paraziti cezbetti! Onu öldürerek yüklü miktarda ganimet toplayın!",
+                depth = originalDepth,
+                column = originalColumn,
                 enemyNameEn = "Gilded Vault Mimic",
                 enemyNameTr = "Altın Kasalı Taklitçi canavar",
                 enemyHp = 100 + (floor * 8),
@@ -798,6 +908,8 @@ object FloorBlueprintSystem {
                 titleTr = "⚡ GİZLİ: Musibetin Çürük Hermiti ⚡",
                 description = "Recognizing your dark eclipse alignment, an outcast Void Hermit approaches holding forbidden scrolls.",
                 descriptionTr = "Ruhundaki karanlık parıltıyı fark eden dışlanmış bir Boşluk Hermiti, yasaklanmış rün yazmaları tutarak sana doğru yanaşıyor.",
+                depth = originalDepth,
+                column = originalColumn,
                 optionA = NodeChoice(
                     textEn = "Receive shadow knowledge (+45 EXP, +20 Aether, -5 alignment)",
                     textTr = "Kara ilmi sahiplen (+45 EXP, +20 Aether, -5 faksiyon)",
@@ -884,105 +996,103 @@ object FloorBlueprintSystem {
 
     private fun loadBlueprintFromJson(floorNum: Int): FloorBlueprint? {
         try {
-            val root = LocalizationManager.getFloorsBlueprintJson() ?: return null
-            val floorsArr = root.optJSONArray("floors") ?: return null
-            for (i in 0 until floorsArr.length()) {
-                val floorObj = floorsArr.getJSONObject(i)
-                val f = floorObj.optInt("floor", 0)
-                if (f == floorNum) {
-                    // Title and Description
-                    val titleEn = floorObj.optString("titleEn", "")
-                    val titleTr = floorObj.optString("titleTr", "")
-                    val descriptionEn = floorObj.optString("descriptionEn", "")
-                    val descriptionTr = floorObj.optString("descriptionTr", "")
+            val floorObj = LocalizationManager.loadFloorBlueprint(floorNum) ?: return null
+            // Title and Description
+            val titleEn = floorObj.optString("titleEn", "")
+            val titleTr = floorObj.optString("titleTr", "")
+            val descriptionEn = floorObj.optString("descriptionEn", "")
+            val descriptionTr = floorObj.optString("descriptionTr", "")
 
-                    // Intro Scenario
-                    val introScenarioObj = floorObj.optJSONObject("introScenario") ?: return null
-                    val scenarioTitleEn = introScenarioObj.optString("titleEn", "")
-                    val scenarioTitleTr = introScenarioObj.optString("titleTr", "")
-                    val scenarioDescEn = introScenarioObj.optString("descriptionEn", "")
-                    val scenarioDescTr = introScenarioObj.optString("descriptionTr", "")
+            // Intro Scenario
+            val introScenarioObj = floorObj.optJSONObject("introScenario") ?: return null
+            val scenarioTitleEn = introScenarioObj.optString("titleEn", "")
+            val scenarioTitleTr = introScenarioObj.optString("titleTr", "")
+            val scenarioDescEn = introScenarioObj.optString("descriptionEn", "")
+            val scenarioDescTr = introScenarioObj.optString("descriptionTr", "")
 
-                    val optionAObj = introScenarioObj.optJSONObject("optionA") ?: return null
-                    val optionBObj = introScenarioObj.optJSONObject("optionB") ?: return null
-                    val optionCObj = introScenarioObj.optJSONObject("optionC") ?: return null
+            val optionAObj = introScenarioObj.optJSONObject("optionA") ?: return null
+            val optionBObj = introScenarioObj.optJSONObject("optionB") ?: return null
+            val optionCObj = introScenarioObj.optJSONObject("optionC") ?: return null
 
-                    val optA = parseGameOption(optionAObj)
-                    val optB = parseGameOption(optionBObj)
-                    val optC = parseGameOption(optionCObj)
+            val optA = parseGameOption(optionAObj)
+            val optB = parseGameOption(optionBObj)
+            val optC = parseGameOption(optionCObj)
 
-                    val introScenario = FloorScenario(
-                        floor = floorNum,
-                        titleEn = scenarioTitleEn,
-                        titleTr = scenarioTitleTr,
-                        descriptionEn = scenarioDescEn,
-                        descriptionTr = scenarioDescTr,
-                        optionA = optA,
-                        optionB = optB,
-                        optionC = optC
-                    )
+            val introScenario = FloorScenario(
+                floor = floorNum,
+                titleEn = scenarioTitleEn,
+                titleTr = scenarioTitleTr,
+                descriptionEn = scenarioDescEn,
+                descriptionTr = scenarioDescTr,
+                optionA = optA,
+                optionB = optB,
+                optionC = optC
+            )
 
-                    // Nodes
-                    val nodesArr = floorObj.optJSONArray("nodes") ?: return null
-                    val nodesList = ArrayList<AdventureNode>()
-                    for (j in 0 until nodesArr.length()) {
-                        val nodeObj = nodesArr.getJSONObject(j)
-                        val idx = nodeObj.optInt("index", 0)
-                        val typeStr = nodeObj.optString("type", "NARRATIVE")
-                        val type = try { NodeType.valueOf(typeStr) } catch(e: Exception) { NodeType.NARRATIVE }
-                        val title = nodeObj.optString("title", "")
-                        val titleTr = nodeObj.optString("titleTr", "")
-                        val description = nodeObj.optString("description", "")
-                        val descriptionTr = nodeObj.optString("descriptionTr", "")
+            // Nodes
+            val nodesArr = floorObj.optJSONArray("nodes") ?: return null
+            val nodesList = ArrayList<AdventureNode>()
+            for (j in 0 until nodesArr.length()) {
+                val nodeObj = nodesArr.getJSONObject(j)
+                val idx = nodeObj.optInt("index", 0)
+                val typeStr = nodeObj.optString("type", "NARRATIVE")
+                val type = try { NodeType.valueOf(typeStr) } catch(e: Exception) { NodeType.NARRATIVE }
+                val title = nodeObj.optString("title", "")
+                val titleTr = nodeObj.optString("titleTr", "")
+                val description = nodeObj.optString("description", "")
+                val descriptionTr = nodeObj.optString("descriptionTr", "")
 
-                        val enemyNameEn = nodeObj.optString("enemyNameEn", "")
-                        val enemyNameTr = nodeObj.optString("enemyNameTr", "")
-                        val enemyHp = nodeObj.optInt("enemyHp", 0)
-                        val enemyMaxHp = nodeObj.optInt("enemyMaxHp", 0)
-                        val enemyAtk = nodeObj.optInt("enemyAtk", 0)
+                val depth = nodeObj.optInt("depth", idx)
+                val column = nodeObj.optInt("column", 0)
 
-                        val nodeOptAObj = nodeObj.optJSONObject("optionA")
-                        val nodeOptBObj = nodeObj.optJSONObject("optionB")
-                        val nodeOptCObj = nodeObj.optJSONObject("optionC")
+                val enemyNameEn = nodeObj.optString("enemyNameEn", "")
+                val enemyNameTr = nodeObj.optString("enemyNameTr", "")
+                val enemyHp = nodeObj.optInt("enemyHp", 0)
+                val enemyMaxHp = nodeObj.optInt("enemyMaxHp", 0)
+                val enemyAtk = nodeObj.optInt("enemyAtk", 0)
 
-                        val nodeOptA = if (nodeOptAObj != null) parseNodeChoice(nodeOptAObj) else null
-                        val nodeOptB = if (nodeOptBObj != null) parseNodeChoice(nodeOptBObj) else null
-                        val nodeOptC = if (nodeOptCObj != null) parseNodeChoice(nodeOptCObj) else null
+                val nodeOptAObj = nodeObj.optJSONObject("optionA")
+                val nodeOptBObj = nodeObj.optJSONObject("optionB")
+                val nodeOptCObj = nodeObj.optJSONObject("optionC")
 
-                        val willCost = nodeObj.optInt("willCost", 0)
+                val nodeOptA = if (nodeOptAObj != null) parseNodeChoice(nodeOptAObj) else null
+                val nodeOptB = if (nodeOptBObj != null) parseNodeChoice(nodeOptBObj) else null
+                val nodeOptC = if (nodeOptCObj != null) parseNodeChoice(nodeOptCObj) else null
 
-                        nodesList.add(
-                            AdventureNode(
-                                index = idx,
-                                type = type,
-                                title = title,
-                                description = description,
-                                titleTr = titleTr,
-                                descriptionTr = descriptionTr,
-                                enemyNameEn = enemyNameEn,
-                                enemyNameTr = enemyNameTr,
-                                enemyHp = enemyHp,
-                                enemyMaxHp = enemyMaxHp,
-                                enemyAtk = enemyAtk,
-                                optionA = nodeOptA,
-                                optionB = nodeOptB,
-                                optionC = nodeOptC,
-                                willCost = willCost
-                            )
-                        )
-                    }
+                val willCost = nodeObj.optInt("willCost", 0)
 
-                    return FloorBlueprint(
-                        floor = floorNum,
-                        titleEn = titleEn,
+                nodesList.add(
+                    AdventureNode(
+                        index = idx,
+                        type = type,
+                        title = title,
+                        description = description,
                         titleTr = titleTr,
-                        descriptionEn = descriptionEn,
                         descriptionTr = descriptionTr,
-                        introScenario = introScenario,
-                        nodes = nodesList
+                        depth = depth,
+                        column = column,
+                        enemyNameEn = enemyNameEn,
+                        enemyNameTr = enemyNameTr,
+                        enemyHp = enemyHp,
+                        enemyMaxHp = enemyMaxHp,
+                        enemyAtk = enemyAtk,
+                        optionA = nodeOptA,
+                        optionB = nodeOptB,
+                        optionC = nodeOptC,
+                        willCost = willCost
                     )
-                }
+                )
             }
+
+            return FloorBlueprint(
+                floor = floorNum,
+                titleEn = titleEn,
+                titleTr = titleTr,
+                descriptionEn = descriptionEn,
+                descriptionTr = descriptionTr,
+                introScenario = introScenario,
+                nodes = nodesList
+            )
         } catch (e: Exception) {
             android.util.Log.e("FloorBlueprintSystem", "Error parsing floor JSON blueprint $floorNum", e)
         }
@@ -1016,6 +1126,8 @@ object FloorBlueprintSystem {
             willChange = obj.optInt("willChange", 0),
             rewardItem = obj.optString("rewardItem", ""),
             rewardTitle = obj.optString("rewardTitle", ""),
+            requiredStoryFlag = obj.optString("requiredStoryFlag", ""),
+            addStoryFlag = obj.optString("addStoryFlag", ""),
             skipToBoss = obj.optBoolean("skipToBoss", false),
             skipToNextFloor = obj.optBoolean("skipToNextFloor", false)
         )

@@ -1,0 +1,474 @@
+﻿{
+    "floor":  1,
+    "titleEn":  "The Blighted Foothills",
+    "titleTr":  "Musibetli Etekler",
+    "descriptionEn":  "Your climb begins at the root. The atmosphere is damp, thick with blight spores and the skittering of infected creatures. 20 sectors lay ahead.",
+    "descriptionTr":  "Kule tırmanışın en dipten başlıyor. Nemli, musibet sporlarıyla ağırlaşmış havada 20 farklı sektör seni bekliyor.",
+    "introScenario":  {
+                          "titleEn":  "Gateway to Ascendance",
+                          "titleTr":  "Yükseliş Geçidi",
+                          "descriptionEn":  "You stand before the massive iron seal of Floor 1. Cold mist swirls as the wind from the tower corridors whispers secrets.",
+                          "descriptionTr":  "1. Katın devasa demir mührü önündesin. Koridorlardan esen soğuk rüzgarlar zihnine sırlar fısıldarken pus girdap gibi dönüyor.",
+                          "optionA":  {
+                                          "textEn":  "Pledge your blade to the Spires (+Aether, +Order)",
+                                          "textTr":  "Kılıcını Ak Kuleler\u0027e ada (+Aether, +Düzen)",
+                                          "alignmentShift":  10,
+                                          "hpChange":  0,
+                                          "goldChange":  0,
+                                          "journalEn":  "Pledged alignment to the Sanctum at the base gateway.",
+                                          "journalTr":  "Giriş geçidinde Ak Kuleler idealine sadakat yemini ettiniz.",
+                                          "aetherChange":  30
+                                      },
+                          "optionB":  {
+                                          "textEn":  "Absorb the mold to harden your willpower (+Aether, +Void)",
+                                          "textTr":  "İradeni çelikleştirmek için küfü içine çek (+Aether, +Boşluk)",
+                                          "alignmentShift":  -10,
+                                          "hpChange":  0,
+                                          "goldChange":  0,
+                                          "journalEn":  "Absorbed decay energy to strengthen the dark soul.",
+                                          "journalTr":  "Karanlık ruhu beslemek için odağı yozlaşma enerjisine çevirdiniz.",
+                                          "aetherChange":  30
+                                      },
+                          "optionC":  {
+                                          "textEn":  "Loot fallen scouts for equipment tokens (+Gold)",
+                                          "textTr":  "Ekipman almak için düşmüş gözcüleri yağmala (+Altın)",
+                                          "alignmentShift":  0,
+                                          "hpChange":  0,
+                                          "goldChange":  60,
+                                          "journalEn":  "Prioritized survival equipment tokens over spiritual alignments.",
+                                          "journalTr":  "Maddi varlığı ve hayatta kalma teçhizatını ruhani yönelime tercih ettiniz.",
+                                          "aetherChange":  0
+                                      }
+                      },
+    "nodes":  [
+                  {
+                      "index":  0,
+                      "type":  "NARRATIVE",
+                      "title":  "Entrance Bastion",
+                      "titleTr":  "Giriş Kalesi",
+                      "description":  "Golden light leaks from broken wall cracks. You feel the pulse of the Core.",
+                      "descriptionTr":  "Yarık duvar çatlaklarından altın bir ışık sızıyor. Çekirdeğin nabzını hisset.",
+                      "optionA":  {
+                                      "textEn":  "Recite a short purification mantra (+10 EXP)",
+                                      "textTr":  "Küçük bir arınma mantrası oku (+10 EXP)",
+                                      "journalEn":  "Began the climb on Floor 1 with focus and cleansing rituals.",
+                                      "journalTr":  "1. Kat tırmanışına zihni arındırarak adım ettiniz.",
+                                      "expChange":  10
+                                  },
+                      "optionB":  {
+                                      "textEn":  "Smash decorative statues for gold scraps (+20 Gold)",
+                                      "textTr":  "Altın parçaları için heykelleri parçala (+20 Altın)",
+                                      "journalEn":  "Smashed temple icons for quick currency values.",
+                                      "journalTr":  "Sunağın süslemelerini kırarak altın hurdası topladınız.",
+                                      "goldChange":  20
+                                  },
+                      "willCost":  0
+                  },
+                  {
+                      "index":  1,
+                      "type":  "COMBAT",
+                      "title":  "The Skittering Rat",
+                      "titleTr":  "Tıkırdayan Lağım Faresi",
+                      "description":  "A mutant rodent swathed in purple rot blocks the hallway.",
+                      "descriptionTr":  "Mor çürüklere bürünmüş dev bir mutasyonlu kemirgen koridoru kapatıyor.",
+                      "enemyNameEn":  "Infested Rat Scout",
+                      "enemyNameTr":  "Yozlaşmış Lağım Faresi Gözcüsü",
+                      "enemyHp":  42,
+                      "enemyMaxHp":  42,
+                      "enemyAtk":  4,
+                      "willCost":  1
+                  },
+                  {
+                      "index":  2,
+                      "type":  "CHEST",
+                      "title":  "Fallen Soldier\u0027s Cache",
+                      "titleTr":  "Düşmüş Askerin Zulası",
+                      "description":  "An old iron box covered in blight moss.",
+                      "descriptionTr":  "Musibet yosunlarıyla kaplanmış eski bir demir kutu.",
+                      "optionA":  {
+                                      "textEn":  "Open carefully (-1 Will, +Adventurer\u0027s Ring)",
+                                      "textTr":  "Dikkatlice aç (-1 İrade, +Maceracı Yüzüğü)",
+                                      "journalEn":  "Discovered an Adventurer\u0027s Ring in Flatlands cache on Floor 1.",
+                                      "journalTr":  "1. Katta düşmüş askerin kutusundan bir Maceracı Yüzüğü çıkardınız.",
+                                      "willChange":  -1,
+                                      "rewardItem":  "Adventurer\u0027s Ring"
+                                  },
+                      "optionB":  {
+                                      "textEn":  "Pry it open using gold picks (-15 Gold, +Scout Dagger)",
+                                      "textTr":  "Altın maymuncukla zorla (-15 Altın, +Gözcü Hançeri)",
+                                      "journalEn":  "Acquired a Scout Dagger by picking locks.",
+                                      "journalTr":  "Maymuncuk marifetiyle demir zula kutusundan Gözcü Hançeri aldınız.",
+                                      "goldChange":  -15,
+                                      "rewardItem":  "Scout Dagger"
+                                  },
+                      "willCost":  1
+                  },
+                  {
+                      "index":  3,
+                      "type":  "SHRINE",
+                      "title":  "Altar of the Wild Hearth",
+                      "titleTr":  "Yabani Ocak Sunağı",
+                      "description":  "Warm warmth emanates from a brick fireplace glowing with holy flame.",
+                      "descriptionTr":  "Kutsal alevle parıldayan tuğla ocaktan sıcak bir ürperti yayılıyor.",
+                      "optionA":  {
+                                      "textEn":  "Pray for vitality (+25 HP)",
+                                      "textTr":  "Canlılık için dua et (+25 HP)",
+                                      "journalEn":  "Healed deep wounds at the Wild Hearth on Floor 1.",
+                                      "journalTr":  "Yabani Ocak alevinde yaralarınızı sarıp can kazandınız.",
+                                      "hpChange":  25
+                                  },
+                      "optionB":  {
+                                      "textEn":  "Sacrifice blood to receive power (-10 HP, +15 Aether)",
+                                      "textTr":  "Güç elde etmek için kan ada (-10 HP, +15 Aether)",
+                                      "journalEn":  "Shed blood for the Sanctum\u0027s warm light on Floor 1.",
+                                      "journalTr":  "Lütuf ve ışık parıltısı için sunağa canından kan adadınız.",
+                                      "hpChange":  -10,
+                                      "aetherChange":  15
+                                  },
+                      "willCost":  1
+                  },
+                  {
+                      "index":  4,
+                      "type":  "COMBAT",
+                      "title":  "Blight Infested Crawler",
+                      "titleTr":  "Yozlaşmış Musibet Böceği",
+                      "description":  "A many-legged insect coated in acid armor waits in the darkness.",
+                      "descriptionTr":  "Asit zırhıyla kaplanmış çok ayaklı bir böcek karanlıkta bekliyor.",
+                      "enemyNameEn":  "Blighted Acid Crawler",
+                      "enemyNameTr":  "Asitli Musibet Böceği",
+                      "enemyHp":  48,
+                      "enemyMaxHp":  48,
+                      "enemyAtk":  5,
+                      "willCost":  1
+                  },
+                  {
+                      "index":  5,
+                      "type":  "NARRATIVE",
+                      "title":  "The Whispering Wall",
+                      "titleTr":  "Fısıldayan Duvar",
+                      "description":  "Eerie runes glow on a cracked pillar. A quiet voice promises power in exchange for your faith.",
+                      "descriptionTr":  "Çatlamış bir sütunda tekinsiz rünler parlıyor. Sessiz bir ses inancına karşılık güç vaat ediyor.",
+                      "optionA":  {
+                                      "textEn":  "Reject the voice and cleanse the stone (+10 Alignment, +20 EXP)",
+                                      "textTr":  "Sesi reddet ve taşı arındır (+10 Hizalanma, +20 EXP)",
+                                      "journalEn":  "Purified a whispering chaotic wall, aligning further with Spires Order.",
+                                      "journalTr":  "Fısıldayan kaotik bir duvarı arındırıp Ak Kule yoluna daha da yaklaştınız.",
+                                      "alignmentShift":  10,
+                                      "expChange":  20
+                                  },
+                      "optionB":  {
+                                      "textEn":  "Embrace the shadows (+15 Aether, -10 Alignment)",
+                                      "textTr":  "Gölgeleri kucakla (+15 Aether, -10 Hizalanma)",
+                                      "journalEn":  "Whispered secrets back to the dark wall, feeding the void soul.",
+                                      "journalTr":  "Karanlık duvara sırlar fısıldayarak boşluk ruhunu beslediniz.",
+                                      "alignmentShift":  -10,
+                                      "aetherChange":  15
+                                  },
+                      "willCost":  0
+                  },
+                  {
+                      "index":  6,
+                      "type":  "MERCHANT",
+                      "title":  "Shabby Scavenger",
+                      "titleTr":  "Hırpani Hurdacı",
+                      "description":  "A hunched goblin-like figure with a dynamic trading cart filled with metal scraps.",
+                      "descriptionTr":  "Metal hurdalarla dolu hareketli ticaret arabası olan kambur, goblin benzeri bir figür.",
+                      "optionA":  {
+                                      "textEn":  "Buy Scout Boots (-35 Gold, +Scout Leather Boots)",
+                                      "textTr":  "Gözcü Çizmesi Al (-35 Altın, +Scout Leather Boots)",
+                                      "journalEn":  "Purchased Scout Leather Boots from the shabby scavenger on Floor 1.",
+                                      "journalTr":  "Hırpani hurdacıdan gözcü deri çizmeleri satın aldınız.",
+                                      "goldChange":  -35,
+                                      "rewardItem":  "Scout Leather Boots"
+                                  },
+                      "optionB":  {
+                                      "textEn":  "Sell scrap metal pieces (+15 Gold)",
+                                      "textTr":  "Metal hurdası sat (+15 Altın)",
+                                      "journalEn":  "Traded junk metal parts for solid coins.",
+                                      "journalTr":  "Hurda parçalarını takas ederek fazladan altın kazandınız.",
+                                      "goldChange":  15
+                                  },
+                      "optionC":  {
+                                      "textEn":  "Decline trade",
+                                      "textTr":  "Ticareti reddet",
+                                      "journalEn":  "Walked past the scavenger merchant without buying.",
+                                      "journalTr":  "Hurdacı tüccarın tekliflerini reddedip yola devam ettiniz."
+                                  },
+                      "willCost":  1
+                  },
+                  {
+                      "index":  7,
+                      "type":  "COMBAT",
+                      "title":  "Fungal Sporehead",
+                      "titleTr":  "Mantar Spor Kafası",
+                      "description":  "A parasitic fungus animation driving a dead skeleton forward.",
+                      "descriptionTr":  "Ölü bir iskeleti ileri süren parazit mantar oluşumu.",
+                      "enemyNameEn":  "Spreading Spore Host",
+                      "enemyNameTr":  "Spor Yayan İskelet",
+                      "enemyHp":  50,
+                      "enemyMaxHp":  50,
+                      "enemyAtk":  5,
+                      "willCost":  1
+                  },
+                  {
+                      "index":  8,
+                      "type":  "CHEST",
+                      "title":  "Blighted Supply Locker",
+                      "titleTr":  "Musibetli Erzak Deposu",
+                      "description":  "A locked wooden crate smelling of old pine and sulfur.",
+                      "descriptionTr":  "Eski çam ve kükürt kokan kilitli bir ahşap sandık.",
+                      "optionA":  {
+                                      "textEn":  "Force open lock (+20 Gold, -5 HP)",
+                                      "textTr":  "Kilidi zorla (+20 Altın, -5 HP)",
+                                      "journalEn":  "Forced a crate lock open, getting minor splinter damage but discovering gold.",
+                                      "journalTr":  "Sandığı zorla açarken eline kıymık battı fakat altın buldunuz.",
+                                      "hpChange":  -5,
+                                      "goldChange":  20
+                                  },
+                      "optionB":  {
+                                      "textEn":  "Leave it untouched for safety (+10 EXP)",
+                                      "textTr":  "Güvenlik için sandığı elleme (+10 EXP)",
+                                      "journalEn":  "Exercised caution by ignoring the suspicious locked crate.",
+                                      "journalTr":  "Şüpheli sandığı pas geçip tedbirli olmayı tercih ettiniz.",
+                                      "expChange":  10
+                                  },
+                      "willCost":  1
+                  },
+                  {
+                      "index":  9,
+                      "type":  "SHRINE",
+                      "title":  "Shrine of Forgotten Moon",
+                      "titleTr":  "Unutulmuş Ay Mabedi",
+                      "description":  "A moonstone basin filled with glowing dark blue waters.",
+                      "descriptionTr":  "Parıldayan koyu mavi sularla dolu aytaşı mermer mabet.",
+                      "optionA":  {
+                                      "textEn":  "Sip moon water (+40 HP, -5 Alignment)",
+                                      "textTr":  "Ay suyundan iç (+40 HP, -5 Hizalanma)",
+                                      "journalEn":  "Drank moon water on Floor 1, closing all wounds at small spiritual cost.",
+                                      "journalTr":  "Gizemli ay suyundan yudumlayarak tüm yaralarınızı hızla kapattınız.",
+                                      "hpChange":  40,
+                                      "alignmentShift":  -5
+                                  },
+                      "optionB":  {
+                                      "textEn":  "Offer gold sacrifice (-20 Gold, +15 Will)",
+                                      "textTr":  "Altın kurban sun (-20 Altın, +15 İrade)",
+                                      "journalEn":  "Sacrificed material wealth to restore enormous raw mental focus and willpower.",
+                                      "journalTr":  "Maddi zenginliği feda ederek muazzam zihinsel irade gücü topladınız.",
+                                      "goldChange":  -20,
+                                      "willChange":  15
+                                  },
+                      "willCost":  1
+                  },
+                  {
+                      "index":  10,
+                      "type":  "NARRATIVE",
+                      "title":  "Old Scout\u0027s Sanctuary",
+                      "titleTr":  "Eski Gözcü Sığınağı",
+                      "description":  "A hidden camp under stone roots. A dying scout hands you a secret chain journal.",
+                      "descriptionTr":  "Taş kökler altında gizli bir kamp. Ölmek üzere olan bir gözcü sana gizli bir günlük uzatıyor.",
+                      "optionA":  {
+                                      "textEn":  "Vow to deliver the journal to the Spires (+15 Alignment, +20 EXP, +Old Scout Journal)",
+                                      "textTr":  "Günlüğü Ak Sığınağa ulaştırmaya yemin et (+15 Hizalanma, +20 EXP, +Old Scout Journal)",
+                                      "journalEn":  "Vowed to complete the dying scout\u0027s chain bequest, starting a hidden questline.",
+                                      "journalTr":  "Ölen gözcünün vasiyetini kabul ederek gizli bir silsile görevi başlattınız.",
+                                      "alignmentShift":  15,
+                                      "expChange":  20,
+                                      "rewardItem":  "Old Scout Journal"
+                                  },
+                      "optionB":  {
+                                      "textEn":  "Take his remaining gold and let him rest (+40 Gold, -15 Alignment)",
+                                      "textTr":  "Kalan altınlarını al ve onu kaderine bırak (+40 Altın, -15 Hizalanma)",
+                                      "journalEn":  "Looted the scout\u0027s purse, prioritizing coin values over morality.",
+                                      "journalTr":  "Gözcünün kesesindeki altınları alıp onu dehlizin soğukluğunda bıraktınız.",
+                                      "goldChange":  40,
+                                      "alignmentShift":  -15
+                                  },
+                      "willCost":  0
+                  },
+                  {
+                      "index":  11,
+                      "type":  "COMBAT",
+                      "title":  "Plague Rat Swarm",
+                      "titleTr":  "Lağım Faresi İstilası Sürüsü",
+                      "description":  "Dozens of tiny red-eyed rodents scurrying and forming an aggressive wall.",
+                      "descriptionTr":  "Kırmızı gözlü düzinelerce küçük kemirgen tıkırdayarak bir saldırı duvarı örüyor.",
+                      "enemyNameEn":  "Cavern Swarm Nibblers",
+                      "enemyNameTr":  "Dehliz Isırgan Sürüsü",
+                      "enemyHp":  55,
+                      "enemyMaxHp":  55,
+                      "enemyAtk":  5,
+                      "willCost":  1
+                  },
+                  {
+                      "index":  12,
+                      "type":  "CHEST",
+                      "title":  "Hidden Grotto Coffer",
+                      "titleTr":  "Gizli Oyuk Sandığı",
+                      "description":  "An overgrown chest concealed under hanging moss vines.",
+                      "descriptionTr":  "Sarkık yosun sarmaşıkları arkasında gizlenmiş yeşil bir sandık.",
+                      "optionA":  {
+                                      "textEn":  "Slice vines carefully (-5 HP, +Iron Guard Ring)",
+                                      "textTr":  "Sarmaşıkları kes (-5 HP, +Iron Guard Ring)",
+                                      "journalEn":  "Slashed thorn vines to reveal an Iron Guard Ring on Floor 1.",
+                                      "journalTr":  "Dikenli dalları keserek kadim Demir Muhafız Yüzüğünü sandıktan çıkardınız.",
+                                      "hpChange":  -5,
+                                      "rewardItem":  "Iron Guard Ring"
+                                  },
+                      "optionB":  {
+                                      "textEn":  "Exchange void core connection code (-10 Aether, +30 Gold)",
+                                      "textTr":  "Boşluk kodunu feda et (-10 Aether, +30 Altın)",
+                                      "journalEn":  "Exchanged shadow essence for direct coin trade.",
+                                      "journalTr":  "Gölge kıvılcımını feda ederek sandıktan altın külçeleri çektiniz.",
+                                      "goldChange":  30,
+                                      "aetherChange":  -10
+                                  },
+                      "willCost":  1
+                  },
+                  {
+                      "index":  13,
+                      "type":  "SHRINE",
+                      "title":  "Well of Purifying Solace",
+                      "titleTr":  "Arındırıcı Teselli Kuyusu",
+                      "description":  "A quiet well glowing with restorative white energy.",
+                      "descriptionTr":  "Onarıcı beyaz enerjiyle sessizce ışıldayan mermer kuyu.",
+                      "optionA":  {
+                                      "textEn":  "Pure wash (+30 HP, +5 Alignment)",
+                                      "textTr":  "Temiz yıkanma (+30 HP, +5 Hizalanma)",
+                                      "journalEn":  "Washed away dark corruption inside the Well of Purifying Solace.",
+                                      "journalTr":  "Kuyudan süzülen saf kutsal enerjiyle bulaşmış hastalıkları temizlediniz.",
+                                      "hpChange":  30,
+                                      "alignmentShift":  5
+                                  },
+                      "optionB":  {
+                                      "textEn":  "Drink dark residues (+25 Aether, -15 HP)",
+                                      "textTr":  "Karanlık kalıntıları yut (+25 Aether, -15 HP)",
+                                      "journalEn":  "Drank toxic residue to boost void pyre power at substantial physical damage.",
+                                      "journalTr":  "Kalıntılardan kalan karanlık kükürdü yutup can pahasına Pyre gücü kazandınız.",
+                                      "hpChange":  -15,
+                                      "aetherChange":  25
+                                  },
+                      "willCost":  1
+                  },
+                  {
+                      "index":  14,
+                      "type":  "COMBAT",
+                      "title":  "⚡ SECRET BOSS: Blight Abomination",
+                      "titleTr":  "⚡ GİZLİ LİDER: Musibet Heyulası",
+                      "description":  "An optional giant amalgam of flesh and steel construct lumbering from a side passage! Extreme threat!",
+                      "descriptionTr":  "Yan dehlizden kükreyerek çıkan, et ve çeliğin canavarca birleşimi devasa bir canavar! Aşırı tehlike!",
+                      "enemyNameEn":  "Gargantuan Blight Abomination",
+                      "enemyNameTr":  "Dev Musibet Heyulası",
+                      "enemyHp":  105,
+                      "enemyMaxHp":  105,
+                      "enemyAtk":  9,
+                      "willCost":  2
+                  },
+                  {
+                      "index":  15,
+                      "type":  "NARRATIVE",
+                      "title":  "Blight Crypt Alchemist",
+                      "titleTr":  "Musibet Dehlizi Simyacısı",
+                      "description":  "A rogue scholar studying mutations offers a secret chain catalyst infusion.",
+                      "descriptionTr":  "Yozlaşmayı inceleyen kaçak bir bilim insanı gizli bir simya aşısı öneriyor.",
+                      "optionA":  {
+                                      "textEn":  "Inject the experimental catalyst (+15 Aether, +15 Aether, -10 HP)",
+                                      "textTr":  "Deneysel aşıyı enjekte et (+15 Aether, +15 Aether, -10 HP)",
+                                      "journalEn":  "Accepted experimental chemical injection, unlocking deep catalyst potential.",
+                                      "journalTr":  "Tehlikeli simyasal formülü damarlarına kabul ederek ruhu alevlendirdiniz.",
+                                      "hpChange":  -10,
+                                      "aetherChange":  30
+                                  },
+                      "optionB":  {
+                                      "textEn":  "Decline chemical experiments (+15 EXP)",
+                                      "textTr":  "Deneyi reddet ve ayrıl (+15 EXP)",
+                                      "journalEn":  "Safely bypassed suspicious experimental catalyst injections.",
+                                      "journalTr":  "Güvenliğini tehlikeye atmayarak şüpheli simya testlerini reddettiniz.",
+                                      "expChange":  15
+                                  },
+                      "willCost":  0
+                  },
+                  {
+                      "index":  16,
+                      "type":  "MERCHANT",
+                      "title":  "Wandering Herbologist",
+                      "titleTr":  "Gezgin Bitki Bilimci",
+                      "description":  "An herbalism druid selling wild roots and healing salves.",
+                      "descriptionTr":  "Yabani kökler ve şifalı merhemler satan bir doğa şifacısı.",
+                      "optionA":  {
+                                      "textEn":  "Buy Healing Elixir (-40 Gold, +Deep Cavern Herb Juice)",
+                                      "textTr":  "Şifa İksiri satın al (-40 Altın, +Deep Cavern Herb Juice)",
+                                      "journalEn":  "Bought herbal healing juice from wandering druid.",
+                                      "journalTr":  "Gezgin doğacıdan yara iyileştirici bitki özü satın aldınız.",
+                                      "goldChange":  -40,
+                                      "rewardItem":  "Deep Cavern Herb Juice"
+                                  },
+                      "optionB":  {
+                                      "textEn":  "Trade old seeds (+15 Gold)",
+                                      "textTr":  "Eski tohumları sat (+15 Altın)",
+                                      "journalEn":  "Sought coins by selling worthless seeds to druid.",
+                                      "journalTr":  "Sırt çantasındaki eski tohumları takas edip altın kazandınız.",
+                                      "goldChange":  15
+                                  },
+                      "optionC":  {
+                                      "textEn":  "Leave peacefully",
+                                      "textTr":  "Huzurla ayrıl",
+                                      "journalEn":  "Left Wandering Druid peacefully.",
+                                      "journalTr":  "Bitki bilimciyle vedalaşarak yola devam ettiniz."
+                                  },
+                      "willCost":  1
+                  },
+                  {
+                      "index":  17,
+                      "type":  "COMBAT",
+                      "title":  "Rabid Tunnel Hound",
+                      "titleTr":  "Kudurmuş Tünel Tazısı",
+                      "description":  "A long-toothed beast glowing with unstable blight fury attacks!",
+                      "descriptionTr":  "Yozlaşmış öfkeyle parıldayan uzun dişli vahşi bir tünel canavarı saldırıyor!",
+                      "enemyNameEn":  "Blight-Frenzied Ravager Hound",
+                      "enemyNameTr":  "Gözü Dönmüş Tünel Isırganı",
+                      "enemyHp":  62,
+                      "enemyMaxHp":  62,
+                      "enemyAtk":  6,
+                      "willCost":  1
+                  },
+                  {
+                      "index":  18,
+                      "type":  "SHRINE",
+                      "title":  "Totem of Deep Earth",
+                      "titleTr":  "Derin Toprak Totemi",
+                      "description":  "A heavy stone monolith echoing with ancient earthquakes.",
+                      "descriptionTr":  "Zeminden yükselen, kadim kıta sarsıntılarıyla rezonansa giren devasa taş anıt.",
+                      "optionA":  {
+                                      "textEn":  "Vibrate hand on totem (+50 EXP, -12 HP)",
+                                      "textTr":  "Toteme dokunup enerjiyi hisset (+50 EXP, -12 HP)",
+                                      "journalEn":  "Touched vibrating earthen monolith, learning deep defensive techniques at minor health loss.",
+                                      "journalTr":  "Toprak anıtın şok dalgalarını canına çekip yüksek tecrübe kazandınız.",
+                                      "expChange":  50,
+                                      "hpChange":  -12
+                                  },
+                      "optionB":  {
+                                      "textEn":  "Offer alignment pledge for willpower (+10 Will, -5 Alignment)",
+                                      "textTr":  "İrade için faksiyon gücü sun (+10 İrade, -5 Hizalanma)",
+                                      "journalEn":  "Sacrificed minor alignment rigidity to absorb stone willpower.",
+                                      "journalTr":  "Karakter bağını sarsıp, anıttan 10 İrade gücü emdiniz.",
+                                      "willChange":  10,
+                                      "alignmentShift":  -5
+                                  },
+                      "willCost":  1
+                  },
+                  {
+                      "index":  19,
+                      "type":  "BOSS",
+                      "title":  "Crown of Rat\u0027s Nest",
+                      "titleTr":  "Fare Yuvasının Tacı",
+                      "description":  "Golgoth, the Plague Rat King, sits bloated upon a pile of garbage and rusted scepters. Complete all 20 sectors to secure ascension!",
+                      "descriptionTr":  "Büyük Veba Faresi Kralı Golgoth, çöp yığınlarından tahtında kükrüyor! Yükseliş mührünü almak için onu dize getir!",
+                      "enemyNameEn":  "Plague Rat King Golgoth",
+                      "enemyNameTr":  "Lağım Faresi Kralı Golgoth",
+                      "enemyHp":  150,
+                      "enemyMaxHp":  150,
+                      "enemyAtk":  8,
+                      "willCost":  2
+                  }
+              ]
+}

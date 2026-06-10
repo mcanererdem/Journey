@@ -265,7 +265,7 @@ fun RpgGameScreen(
                         onScoutClick = { viewModel.performScouting() },
                         onLockedClicked = { en, tr -> viewModel.showActionMessage(en, tr) },
                         onChoiceSelected = { viewModel.selectNodeChoice(it) },
-                        onNextNodeClick = { viewModel.advanceToNextNode() },
+                        onNextNodeClick = { depth, column -> viewModel.selectNodeAt(depth, column) },
                         onAscendFloorClick = { viewModel.ascendToNextFloor() },
                         onCombatAction = { viewModel.executeCombatTurn(it) },
                         onResetClick = { viewModel.resetGame() }
