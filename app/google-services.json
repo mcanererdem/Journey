@@ -1,26 +1,26 @@
 {
   "project_info": {
-    "project_number": "123456789012",
-    "project_id": "journey-dark-fantasy-mock",
-    "storage_bucket": "journey-dark-fantasy-mock.appspot.com"
+    "project_number": "233044224577",
+    "project_id": "journey-92553",
+    "storage_bucket": "journey-92553.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:123456789012:android:abcdef123456",
+        "mobilesdk_app_id": "1:233044224577:android:3a26770d067c25ae8db4c0",
         "android_client_info": {
-          "package_name": "com.example"
+          "package_name": "com.mcanererdem.journey"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "mock_api_key_for_compilation_purposes"
+          "current_key": "AIzaSyA-6EKx-IUI-18Th0YC-zZOKk4edII3rMs"
         }
       ],
       "services": {
-        "appdetect_service": {
-          "status": 1
+        "appinvite_service": {
+          "other_platform_oauth_client": []
         }
       }
     }
