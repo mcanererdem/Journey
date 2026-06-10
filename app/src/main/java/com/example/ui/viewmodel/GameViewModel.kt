@@ -27,6 +27,12 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     val playerProfile: StateFlow<PlayerProfile?>
     val journalEntries: StateFlow<List<JournalEntry>>
 
+    private val _firebaseSyncState = MutableStateFlow("IDLE") // "IDLE", "SYNCING", "SUCCESS", "FAILURE"
+    val firebaseSyncState: StateFlow<String> = _firebaseSyncState.asStateFlow()
+
+    private val _firebaseLeaderboard = MutableStateFlow<List<com.example.data.engine.LeaderboardEntry>>(emptyList())
+    val firebaseLeaderboard: StateFlow<List<com.example.data.engine.LeaderboardEntry>> = _firebaseLeaderboard.asStateFlow()
+
     // Display and notification preferences state
     private val _themeSelection = MutableStateFlow("ALIGNMENT")
     val themeSelection: StateFlow<String> = _themeSelection.asStateFlow()
@@ -2010,6 +2016,47 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             
             _lastActionMessageEn.value = "✔️ Upgraded ${type.nameEn} to Level ${currentLvl + 1}!"
             _lastActionMessageTr.value = "✔️ ${type.nameTr} Seviye ${currentLvl + 1} düzeyine yükseltildi!"
+        }
+    }
+
+    fun syncProfileToFirebase() {
+        viewModelScope.launch {
+            val profile = repository.getPlayerProfileDirect() ?: return@launch
+            _firebaseSyncState.value = "SYNCING"
+            val success = FirebaseManager.syncProfileToCloud(profile)
+            if (success) {
+                _firebaseSyncState.value = "SUCCESS"
+                _lastActionMessageEn.value = "✔️ Progress successfully backed up to cloud save!"
+                _lastActionMessageTr.value = "✔️ Karakter ilerlemesi başarıyla buluta yedeklendi!"
+            } else {
+                _firebaseSyncState.value = "FAILURE"
+                _lastActionMessageEn.value = "❌ Cloud save sync failed. Verify network connection."
+                _lastActionMessageTr.value = "❌ Bulut yedeklemesi başarısız. Bağlantınızı kontrol edin."
+            }
+        }
+    }
+
+    fun restoreProfileFromFirebase() {
+        viewModelScope.launch {
+            _firebaseSyncState.value = "SYNCING"
+            val cloudProfile = FirebaseManager.fetchProfileFromCloud()
+            if (cloudProfile != null) {
+                repository.savePlayerProfile(cloudProfile)
+                _firebaseSyncState.value = "SUCCESS"
+                _lastActionMessageEn.value = "✔️ Progress successfully restored from cloud save!"
+                _lastActionMessageTr.value = "✔️ İlerleme buluttan başarıyla geri yüklendi!"
+            } else {
+                _firebaseSyncState.value = "FAILURE"
+                _lastActionMessageEn.value = "❌ No cloud save found for this user."
+                _lastActionMessageTr.value = "❌ Bu kullanıcı için bulut kaydı bulunamadı."
+            }
+        }
+    }
+
+    fun loadFirebaseLeaderboard() {
+        viewModelScope.launch {
+            val board = FirebaseManager.fetchLeaderboard()
+            _firebaseLeaderboard.value = board
         }
     }
 

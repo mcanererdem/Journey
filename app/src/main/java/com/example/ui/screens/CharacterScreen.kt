@@ -15,8 +15,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.data.engine.LocalizationManager
 import com.example.data.model.PlayerProfile
 import com.example.ui.theme.*
@@ -25,9 +23,12 @@ import com.example.ui.theme.*
 fun CharacterSheetTab(
     player: PlayerProfile?,
     activeLang: String,
+    firebaseSyncState: String,
     onFactionSelect: (String) -> Unit,
     onRenounce: () -> Unit,
-    onNameUpdate: (String) -> Unit
+    onNameUpdate: (String) -> Unit,
+    onSyncCloud: () -> Unit,
+    onRestoreCloud: () -> Unit
 ) {
     if (player == null) return
 
@@ -59,7 +60,7 @@ fun CharacterSheetTab(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(30.dp)
+                    .height(Dimens.BadgeSize)
                     .clip(RoundedCornerShape(Dimens.SpacingS))
                     .background(
                         Brush.horizontalGradient(
@@ -227,7 +228,7 @@ fun CharacterSheetTab(
                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
                         )
                     }
-                    Divider(modifier = Modifier.padding(vertical = Dimens.SpacingS))
+                    HorizontalDivider(modifier = Modifier.padding(vertical = Dimens.SpacingS))
 
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Text("Spirit Fractures:", style = MaterialTheme.typography.bodyMedium)
@@ -239,11 +240,70 @@ fun CharacterSheetTab(
                     }
                 }
             }
+            Spacer(modifier = Modifier.height(Dimens.SpacingL))
+        }
+
+        // Firebase Cloud Save Sync Card
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            ) {
+                Column(modifier = Modifier.padding(Dimens.SpacingL)) {
+                    Text(
+                        text = if (activeLang == "TR") "KADER BULUT YEDEĞİ" else "SPIRES CLOUD BACKUP",
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(bottom = Dimens.SpacingS)
+                    )
+                    Text(
+                        text = if (activeLang == "TR") {
+                            "İlerlemenizi Firebase bulut veritabanına yedekleyin veya eski bir kaydı geri yükleyin."
+                        } else {
+                            "Backup your character progress to the Firebase cloud database or restore an existing save."
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(bottom = Dimens.SpacingM)
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingM)
+                    ) {
+                        Button(
+                            onClick = onSyncCloud,
+                            enabled = firebaseSyncState != "SYNCING",
+                            modifier = Modifier
+                                .weight(1f)
+                                .testTag("sync_cloud_btn")
+                        ) {
+                            Text(
+                                text = if (firebaseSyncState == "SYNCING") {
+                                    (if (activeLang == "TR") "Yedekleniyor..." else "Backing Up...")
+                                } else {
+                                    (if (activeLang == "TR") "Buluta Yedekle" else "Backup Cloud")
+                                }
+                            )
+                        }
+
+                        OutlinedButton(
+                            onClick = onRestoreCloud,
+                            enabled = firebaseSyncState != "SYNCING",
+                            modifier = Modifier
+                                .weight(1f)
+                                .testTag("restore_cloud_btn"),
+                            border = BorderStroke(Dimens.BorderThin, MaterialTheme.colorScheme.primary)
+                        ) {
+                            Text(if (activeLang == "TR") "Kayıt Geri Yükle" else "Restore Cloud")
+                        }
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(Dimens.SpacingL))
         }
 
         // Dynamic Materials & Loot Inventory
         item {
-            Spacer(modifier = Modifier.height(Dimens.SpacingL))
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -258,7 +318,7 @@ fun CharacterSheetTab(
                         )
                     }
                     Spacer(modifier = Modifier.height(Dimens.SpacingM))
-                    
+
                     if (itemsList.isEmpty()) {
                         Text(
                             text = if (activeLang == "TR") "Sırt çantanız boş. Kule çarpışmalarından teçhizat kazanın." else "Your inventory is empty. Complete battles to loot gear.",
@@ -281,23 +341,23 @@ fun CharacterSheetTab(
                                     .padding(vertical = Dimens.SpacingXs),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(text = bulletIcon, fontSize = Dimens.TextM)
-                                Spacer(modifier = Modifier.width(Dimens.SpacingS))
-                                Text(
-                                    text = gear,
-                                    style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold),
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
+                                  Text(text = bulletIcon, fontSize = Dimens.TextM)
+                                  Spacer(modifier = Modifier.width(Dimens.SpacingS))
+                                  Text(
+                                      text = gear,
+                                      style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold),
+                                      color = MaterialTheme.colorScheme.onSurface
+                                  )
                             }
                         }
                     }
                 }
             }
+            Spacer(modifier = Modifier.height(Dimens.SpacingL))
         }
 
         // Dynamic Titles Inventory Ledger
         item {
-            Spacer(modifier = Modifier.height(Dimens.SpacingL))
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -312,7 +372,7 @@ fun CharacterSheetTab(
                         )
                     }
                     Spacer(modifier = Modifier.height(Dimens.SpacingM))
-                    
+
                     if (titlesList.isEmpty()) {
                         Text(
                             text = if (activeLang == "TR") "Henüz kazanılmış bir unvanınız yok. Seçimleriniz kaderi yazar." else "No sovereign titles acquired yet. Make history on higher floors.",

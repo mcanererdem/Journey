@@ -66,6 +66,7 @@ fun RpgGameScreen(
     val soundEnabled by viewModel.soundEnabled.collectAsStateWithLifecycle()
     val showTitlePrefix by viewModel.showTitlePrefix.collectAsStateWithLifecycle()
     var isSettingsDialogShown by remember { mutableStateOf(false) }
+    val firebaseSyncState by viewModel.firebaseSyncState.collectAsStateWithLifecycle()
 
     val context = LocalContext.current
     val p = player
@@ -287,9 +288,12 @@ fun RpgGameScreen(
                     "CHAR_SHEET" -> CharacterSheetTab(
                         player = player,
                         activeLang = activeLang,
+                        firebaseSyncState = firebaseSyncState,
                         onFactionSelect = { viewModel.selectFaction(it) },
                         onRenounce = { viewModel.renounceAllegiance() },
-                        onNameUpdate = { viewModel.setPlayerName(it) }
+                        onNameUpdate = { viewModel.setPlayerName(it) },
+                        onSyncCloud = { viewModel.syncProfileToFirebase() },
+                        onRestoreCloud = { viewModel.restoreProfileFromFirebase() }
                     )
                     "QUESTS" -> QuestsTab(
                         player = player,
