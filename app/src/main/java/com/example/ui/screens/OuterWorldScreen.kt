@@ -15,8 +15,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.data.engine.LocalizationManager
 import com.example.data.model.PlayerProfile
 import com.example.ui.theme.*
@@ -34,7 +32,7 @@ fun OuterWorldTab(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(Dimens.SpacingL),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         item {
@@ -44,14 +42,14 @@ fun OuterWorldTab(
                 color = MaterialTheme.colorScheme.primary,
                 textAlign = TextAlign.Center
             )
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(Dimens.SpacingS))
             Text(
                 text = LocalizationManager.getString(activeLang, "outer_haven_desc"),
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
             )
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(Dimens.SpacingXl))
         }
 
         // Rest & Recover section
@@ -59,34 +57,34 @@ fun OuterWorldTab(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 6.dp),
-                shape = RoundedCornerShape(12.dp),
+                    .padding(vertical = Dimens.SpacingS),
+                shape = RoundedCornerShape(Dimens.RadiusM),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.15f))
+                border = BorderStroke(Dimens.BorderThin, MaterialTheme.colorScheme.primary.copy(alpha = 0.15f))
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column(modifier = Modifier.padding(Dimens.SpacingL)) {
                     Text(
                         text = LocalizationManager.getString(activeLang, "action_rest_title"),
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, fontFamily = FontFamily.Serif),
                         color = MaterialTheme.colorScheme.primary
                     )
-                    Spacer(modifier = Modifier.height(6.dp))
+                    Spacer(modifier = Modifier.height(Dimens.SpacingS))
                     Text(
                         text = LocalizationManager.getString(activeLang, "action_rest_desc"),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
-                    Spacer(modifier = Modifier.height(14.dp))
+                    Spacer(modifier = Modifier.height(Dimens.SpacingM))
                     
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingS)
                     ) {
                         Button(
                             onClick = { onHeal(20) },
                             enabled = player.gold >= 15 && player.currentHp < player.maxHp,
                             modifier = Modifier.weight(1f).testTag("rest_light_btn"),
-                            colors = ButtonDefaults.buttonColors(containerColor = SpiritHealColor)
+                            colors = ButtonDefaults.buttonColors(containerColor = ColorHeal)
                         ) {
                             Text(
                                 text = if (activeLang == "TR") "Hafif Şifa (15🪙)" else "Light Rest (15🪙)",
@@ -98,7 +96,7 @@ fun OuterWorldTab(
                             onClick = { onHeal(50) },
                             enabled = player.gold >= 30 && player.currentHp < player.maxHp,
                             modifier = Modifier.weight(1f).testTag("rest_deep_btn"),
-                            colors = ButtonDefaults.buttonColors(containerColor = SanctumGold)
+                            colors = ButtonDefaults.buttonColors(containerColor = ColorSanctumPrimary)
                         ) {
                             Text(
                                 text = if (activeLang == "TR") "Tam Şifa (30🪙)" else "Deep Rest (30🪙)",
@@ -115,30 +113,30 @@ fun OuterWorldTab(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 6.dp),
-                shape = RoundedCornerShape(12.dp),
+                    .padding(vertical = Dimens.SpacingS),
+                shape = RoundedCornerShape(Dimens.RadiusM),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.15f))
+                border = BorderStroke(Dimens.BorderThin, MaterialTheme.colorScheme.primary.copy(alpha = 0.15f))
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column(modifier = Modifier.padding(Dimens.SpacingL)) {
                     Text(
                         text = LocalizationManager.getString(activeLang, "action_scout_title"),
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, fontFamily = FontFamily.Serif),
                         color = MaterialTheme.colorScheme.primary
                     )
-                    Spacer(modifier = Modifier.height(6.dp))
+                    Spacer(modifier = Modifier.height(Dimens.SpacingS))
                     Text(
                         text = LocalizationManager.getString(activeLang, "action_scout_desc"),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
-                    Spacer(modifier = Modifier.height(14.dp))
+                    Spacer(modifier = Modifier.height(Dimens.SpacingM))
                     
                     Button(
                         onClick = onScout,
                         enabled = player.gold >= 25,
                         modifier = Modifier.fillMaxWidth().testTag("scout_abyss_btn"),
-                        colors = ButtonDefaults.buttonColors(containerColor = VoidNeonPurple)
+                        colors = ButtonDefaults.buttonColors(containerColor = ColorCovenantGlow)
                     ) {
                         Text(
                             text = if (activeLang == "TR") "Kozmik İzleme Yeteneği (25 Altın)" else "Chronicle Scouting Map (25 Gold)",
@@ -151,15 +149,15 @@ fun OuterWorldTab(
 
         // Trade Resources / Exchange marketplace section
         item {
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(Dimens.SpacingM))
             Text(
                 text = LocalizationManager.getString(activeLang, "market_header"),
-                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, letterSpacing = 1.sp),
+                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, letterSpacing = Dimens.LetterSpacingNormal),
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Start
             )
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(Dimens.SpacingS))
         }
 
         // Buy Aether
@@ -169,7 +167,7 @@ fun OuterWorldTab(
                 description = LocalizationManager.getString(activeLang, "buy_aether_desc"),
                 goldCost = 50,
                 currentGold = player.gold,
-                badgeColor = SanctumGold,
+                badgeColor = ColorSanctumPrimary,
                 onClick = { onTrade("GOLD_TO_AETHER") },
                 testTagValue = "buy_aether_btn"
             )
@@ -190,20 +188,20 @@ fun ExchangeCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 5.dp),
+            .padding(vertical = Dimens.SpacingXs),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = RoundedCornerShape(10.dp)
+        shape = RoundedCornerShape(Dimens.RadiusS)
     ) {
         Row(
-            modifier = Modifier.padding(14.dp),
+            modifier = Modifier.padding(Dimens.SpacingM),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
-                    .size(8.dp)
+                    .size(Dimens.SpacingS)
                     .background(badgeColor, CircleShape)
             )
-            Spacer(modifier = Modifier.width(10.dp))
+            Spacer(modifier = Modifier.width(Dimens.SpacingM))
             Column(modifier = Modifier.weight(1f)) {
                 Text(text = title, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold))
                 Text(text = description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))

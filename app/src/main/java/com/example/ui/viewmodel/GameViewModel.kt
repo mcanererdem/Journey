@@ -209,10 +209,15 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     currentNodeIndex = 0,
                     currentNodeCompleted = false
                 )
-                repository.savePlayerProfile(newProfile)
+                val checked = checkDailyLogin(newProfile)
+                repository.savePlayerProfile(checked)
                 _currentScenario.value = LocalizationManager.getScenarioForFloor(initialLang, 1)
             } else {
-                _currentScenario.value = LocalizationManager.getScenarioForFloor(initialLang, direct.currentFloor)
+                val checked = checkDailyLogin(direct)
+                if (checked != direct) {
+                    repository.savePlayerProfile(checked)
+                }
+                _currentScenario.value = LocalizationManager.getScenarioForFloor(initialLang, checked.currentFloor)
             }
         }
     }
@@ -258,9 +263,13 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             val profile = repository.getPlayerProfileDirect() ?: return@launch
             
+            val greedLvl = com.example.data.model.LegacyUpgradeType.getUpgradeLevel(profile.upgradesEncoded, com.example.data.model.LegacyUpgradeType.GREED)
+            val greedMultiplier = 1.0f + (greedLvl * 0.20f)
+            val scaledGoldChange = if (option.goldChange > 0) (option.goldChange * greedMultiplier).toInt() else option.goldChange
+
             // Calculate status adjustments
             val newMomentum = (profile.momentum + option.alignmentShift).coerceIn(-100, 100)
-            val newGold = (profile.gold + option.goldChange).coerceAtLeast(0)
+            val newGold = (profile.gold + scaledGoldChange).coerceAtLeast(0)
             val newAether = (profile.aether + option.aetherChange).coerceAtLeast(0)
             var newHp = profile.currentHp + option.hpChange
             
@@ -364,7 +373,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             val profile = repository.getPlayerProfileDirect() ?: return@launch
             if (profile.currentHp > 15) {
-                val reward = (20..50).random()
+                val greedLvl = com.example.data.model.LegacyUpgradeType.getUpgradeLevel(profile.upgradesEncoded, com.example.data.model.LegacyUpgradeType.GREED)
+                val greedMultiplier = 1.0f + (greedLvl * 0.20f)
+                val baseReward = (20..50).random()
+                val reward = (baseReward * greedMultiplier).toInt()
                 val damage = (5..15).random()
                 val isVoid = (0..1).random() == 1
                 
@@ -429,16 +441,41 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     fun resetGame() {
         viewModelScope.launch {
+            val profile = repository.getPlayerProfileDirect()
+            val oldLegacyPoints = profile?.legacyPoints ?: 0
+            val currentFloor = profile?.currentFloor ?: 1
+            val currentLevel = profile?.level ?: 1
+            
+            // Calculate earned legacy points
+            val earnedPoints = (currentFloor * 2) + (currentLevel * 5)
+            val newLegacyPoints = oldLegacyPoints + earnedPoints
+            
+            val upgradesEncoded = profile?.upgradesEncoded ?: ""
+            
+            // Extract upgrade levels to apply starting bonuses
+            val vitLvl = com.example.data.model.LegacyUpgradeType.getUpgradeLevel(upgradesEncoded, com.example.data.model.LegacyUpgradeType.VITALITY)
+            val focusLvl = com.example.data.model.LegacyUpgradeType.getUpgradeLevel(upgradesEncoded, com.example.data.model.LegacyUpgradeType.AETHER_FOCUS)
+            val fortLvl = com.example.data.model.LegacyUpgradeType.getUpgradeLevel(upgradesEncoded, com.example.data.model.LegacyUpgradeType.FORTITUDE)
+            
+            val startMaxHp = 100 + (vitLvl * 10)
+            val startAether = focusLvl * 15
+            val startMaxWill = 10 + fortLvl
+            
+            // Preserve daily login values
+            val lastLogin = profile?.lastLoginTimestamp ?: 0L
+            val streak = profile?.loginStreak ?: 0
+            val dailyQuests = profile?.dailyQuestsEncoded ?: ""
+
             repository.clearJournal()
             val newProfile = PlayerProfile(
-                playerName = "Lord Alistair",
+                playerName = profile?.playerName ?: "Lord Alistair",
                 currentFloor = 1,
-                currentHp = 100,
-                maxHp = 100,
+                currentHp = startMaxHp,
+                maxHp = startMaxHp,
                 gold = 150,
                 side = "NEUTRAL",
                 momentum = 50,
-                aether = 0,
+                aether = startAether,
                 rank = "EMISSARY",
                 chosenClass = "Initiate",
                 totalFractures = 0,
@@ -446,12 +483,17 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 level = 1,
                 exp = 0,
                 maxExp = 100,
-                currentWill = 10,
-                maxWill = 10,
+                currentWill = startMaxWill,
+                maxWill = startMaxWill,
                 itemsEncoded = "",
                 titlesEncoded = "",
                 currentNodeIndex = 0,
-                currentNodeCompleted = false
+                currentNodeCompleted = false,
+                legacyPoints = newLegacyPoints,
+                upgradesEncoded = upgradesEncoded,
+                lastLoginTimestamp = lastLogin,
+                loginStreak = streak,
+                dailyQuestsEncoded = dailyQuests
             )
             repository.savePlayerProfile(newProfile)
             _activeEnemyHp.value = null
@@ -462,8 +504,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             _activeSecretBossCombat.value = null
             _activeSecretBossHp.value = null
             _currentScenario.value = LocalizationManager.getScenarioForFloor(_activeLanguage.value, 1)
-            _lastActionMessageEn.value = "Game restarted. Chronology reset."
-            _lastActionMessageTr.value = "Zaman döngüsü sıfırlandı. Macera yeniden başlıyor."
+            
+            _lastActionMessageEn.value = "Game restarted. Gained +$earnedPoints Legacy Points! Upgrades retained."
+            _lastActionMessageTr.value = "Zaman döngüsü sıfırlandı. +$earnedPoints Miras Puanı kazanıldı! Kalıcı yükseltmeler korundu."
             _currentTab.value = "TOWER"
         }
     }
@@ -471,7 +514,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     // Interacting with Adventure Nodes
     fun selectNodeChoice(choice: NodeChoice) {
         viewModelScope.launch {
-            val profile = repository.getPlayerProfileDirect() ?: return@launch
+            var profile = repository.getPlayerProfileDirect() ?: return@launch
             
             val hasPass = profile.itemsEncoded.split(",").any { it.trim() == "Seasonal Sovereign Pass" }
             val resolvedWillChange = if (hasPass && choice.willChange < 0) 0 else choice.willChange
@@ -483,8 +526,24 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 return@launch
             }
 
+            // Calculate gold change with Greed
+            val greedLvl = com.example.data.model.LegacyUpgradeType.getUpgradeLevel(profile.upgradesEncoded, com.example.data.model.LegacyUpgradeType.GREED)
+            val greedMultiplier = 1.0f + (greedLvl * 0.20f)
+            val scaledGoldChange = if (choice.goldChange > 0) (choice.goldChange * greedMultiplier).toInt() else choice.goldChange
+
+            // Process Quest progress updates
+            val nodes = _currentFloorNodes.value
+            val activeNode = nodes.getOrNull(profile.currentNodeIndex)
+            if (activeNode != null && activeNode.type == NodeType.CHEST) {
+                profile = updateDailyQuestProgress(profile, 1, 1)
+            }
+            val willSpent = if (resolvedWillChange < 0) -resolvedWillChange else 0
+            if (willSpent > 0) {
+                profile = updateDailyQuestProgress(profile, 2, willSpent)
+            }
+
             val newMomentum = (profile.momentum + choice.alignmentShift).coerceIn(-100, 100)
-            val newGold = (profile.gold + choice.goldChange).coerceAtLeast(0)
+            val newGold = (profile.gold + scaledGoldChange).coerceAtLeast(0)
             val newAether = (profile.aether + choice.aetherChange).coerceAtLeast(0)
             val newWill = (profile.currentWill + resolvedWillChange).coerceIn(0, profile.maxWill)
             var newHp = profile.currentHp + choice.hpChange
@@ -631,7 +690,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     fun selectNodeAt(depth: Int, column: Int) {
         viewModelScope.launch {
-            val profile = repository.getPlayerProfileDirect() ?: return@launch
+            var profile = repository.getPlayerProfileDirect() ?: return@launch
             val nodes = _currentFloorNodes.value
             
             // Find the node at the selected depth and column
@@ -661,6 +720,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 _combatLog.value = emptyList()
             }
 
+            val willSpent = if (hasPass) 0 else 1
+            if (willSpent > 0) {
+                profile = updateDailyQuestProgress(profile, 2, willSpent)
+            }
+
             val updated = profile.copy(
                 currentNodeIndex = nextNode.index,
                 currentNodeColumn = column,
@@ -681,7 +745,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     fun performScouting() {
         viewModelScope.launch {
-            val profile = repository.getPlayerProfileDirect() ?: return@launch
+            var profile = repository.getPlayerProfileDirect() ?: return@launch
             val nodes = _currentFloorNodes.value
             if (nodes.isEmpty()) return@launch
 
@@ -709,6 +773,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val updatedScouted = scoutedNodeIndices.value + newlyScouted
             _scoutedNodeIndices.value = updatedScouted
 
+            val willSpent = if (hasPass) 0 else scoutCost
+            if (willSpent > 0) {
+                profile = updateDailyQuestProgress(profile, 2, willSpent)
+            }
+
             val updatedProfile = profile.copy(
                 currentWill = if (hasPass) profile.currentWill else (profile.currentWill - scoutCost).coerceAtLeast(0),
                 lastUpdated = System.currentTimeMillis()
@@ -724,7 +793,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     fun ascendToNextFloor() {
         viewModelScope.launch {
-            val profile = repository.getPlayerProfileDirect() ?: return@launch
+            var profile = repository.getPlayerProfileDirect() ?: return@launch
             
             val hasPass = profile.itemsEncoded.split(",").any { it.trim() == "Seasonal Sovereign Pass" }
 
@@ -752,6 +821,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val isCheckpoint = (nextFloor % 10 == 0)
             val newCheckpoint = if (isCheckpoint) nextFloor else profile.savedFloorCheckpoint
             val nextRank = calculateRank(nextFloor)
+
+            val willSpent = if (hasPass) 0 else 2
+            if (willSpent > 0) {
+                profile = updateDailyQuestProgress(profile, 2, willSpent)
+            }
 
             val updated = profile.copy(
                 currentFloor = nextFloor,
@@ -1083,7 +1157,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
         // Scale rewards if on elite path (column == 1)
         val isElite = activeNode.column == 1
+        val greedLvl = com.example.data.model.LegacyUpgradeType.getUpgradeLevel(profile.upgradesEncoded, com.example.data.model.LegacyUpgradeType.GREED)
+        val greedMultiplier = 1.0f + (greedLvl * 0.20f)
+        
         val goldGained = if (isElite) (rewards.goldGained * 1.5).toInt() else rewards.goldGained
+        val scaledGoldGained = (goldGained * greedMultiplier).toInt()
         val expGained = if (isElite) (rewards.expGained * 1.5).toInt() else rewards.expGained
 
         // Recalculate leveling with scaled EXP
@@ -1102,13 +1180,16 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             didLevelUp = true
         }
 
-        val updatedProfile = profile.copy(
+        // Process Combat Quest progress on profile
+        val profileWithQuest = updateDailyQuestProgress(profile, 0, 1)
+
+        val updatedProfile = profileWithQuest.copy(
             currentHp = newHp,
             maxHp = totalMaxHp,
             level = totalLevel,
             exp = totalExp,
             maxExp = totalMaxExp,
-            gold = profile.gold + goldGained,
+            gold = profileWithQuest.gold + scaledGoldGained,
             itemsEncoded = newItemsEncoded,
             titlesEncoded = newTitlesEncoded,
             currentNodeCompleted = true,
@@ -1117,12 +1198,12 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         repository.savePlayerProfile(updatedProfile)
 
         if (_activeLanguage.value == "TR") {
-            logs.add("🎉 ZAFER! Düşman katledildi. +$expGained Deneyim, +$goldGained Altın kazanıldı.")
+            logs.add("🎉 ZAFER! Düşman katledildi. +$expGained Deneyim, +$scaledGoldGained Altın kazanıldı.")
             if (rewards.itemAwarded != null) logs.add("🎁 Hazine: [${rewards.itemAwarded}] toplandı teçhizat torbana konuldu!")
             if (rewards.titleAwarded != null) logs.add("👑 Yeni Unvan Kazandınız: [${rewards.titleAwarded}]!")
             if (didLevelUp) logs.add("⚡ SEVİYE ATLADINIZ! Seviye $totalLevel oldunuz! Maksimum Canınız arttı.")
         } else {
-            logs.add("🎉 VICTORY! Enemy defeated. Won +$expGained EXP, +$goldGained Gold.")
+            logs.add("🎉 VICTORY! Enemy defeated. Won +$expGained EXP, +$scaledGoldGained Gold.")
             if (rewards.itemAwarded != null) logs.add("🎁 Loot Pick: [${rewards.itemAwarded}] added to inventory!")
             if (rewards.titleAwarded != null) logs.add("👑 Achieved Epic Title: [${rewards.titleAwarded}]!")
             if (didLevelUp) logs.add("⚡ LEVEL UP! Reached Level $totalLevel! Max HP increased.")
@@ -1131,7 +1212,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val journalEntry = JournalEntry(
             floor = profile.currentFloor,
             actionTakenEs = "Defeated $ in combat on Floor $.",
-            actionTakenTr = "$. Katta $ karÅŸÄ±sÄ±ndaki dÃ¼elloyu kazandÄ±nÄ±z.",
+            actionTakenTr = "$. Katta $ karŞıŞındaki düelloyu kazandınız.",
             sideAlignmentShift = "NEUTRAL",
             alignmentImpact = 0,
             nodeIndex = profile.currentNodeIndex
@@ -1376,8 +1457,12 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             
             completedSet.add(questId)
             
-            // Calculate base currency rewards
-            val newGold = profile.gold + quest.rewardGold
+            // Calculate base currency rewards with Greed
+            val greedLvl = com.example.data.model.LegacyUpgradeType.getUpgradeLevel(profile.upgradesEncoded, com.example.data.model.LegacyUpgradeType.GREED)
+            val greedMultiplier = 1.0f + (greedLvl * 0.20f)
+            val scaledGoldReward = if (quest.rewardGold > 0) (quest.rewardGold * greedMultiplier).toInt() else quest.rewardGold
+
+            val newGold = profile.gold + scaledGoldReward
             val newAether = profile.aether + quest.rewardAether
             
             // Experience and levels
@@ -1681,7 +1766,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
             if (newEnemyHp <= 0) {
                 // Secret Boss Defeated!
-                val rewardGold = boss.rewardGold
+                val greedLvl = com.example.data.model.LegacyUpgradeType.getUpgradeLevel(profile.upgradesEncoded, com.example.data.model.LegacyUpgradeType.GREED)
+                val greedMultiplier = 1.0f + (greedLvl * 0.20f)
+                val rewardGold = (boss.rewardGold * greedMultiplier).toInt()
+                
                 var currentItems = if (profile.itemsEncoded.isEmpty()) emptyList() else profile.itemsEncoded.split(",")
                 if (boss.rewardItem.isNotEmpty() && !currentItems.contains(boss.rewardItem)) {
                     currentItems = currentItems + boss.rewardItem
@@ -1771,6 +1859,159 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    private fun checkDailyLogin(profile: PlayerProfile): PlayerProfile {
+        val now = System.currentTimeMillis()
+        val diffMs = now - profile.lastLoginTimestamp
+        val oneDayMs = 24 * 60 * 60 * 1000L
+        val twoDaysMs = 48 * 60 * 60 * 1000L
+
+        if (profile.lastLoginTimestamp == 0L || diffMs >= oneDayMs) {
+            val newStreak = if (profile.lastLoginTimestamp == 0L) {
+                1
+            } else if (diffMs < twoDaysMs) {
+                profile.loginStreak + 1
+            } else {
+                1
+            }
+
+            // Daily login reward: 20 gold + streak * 5 gold, 5 + streak aether (scaled by greed)
+            val greedLvl = com.example.data.model.LegacyUpgradeType.getUpgradeLevel(profile.upgradesEncoded, com.example.data.model.LegacyUpgradeType.GREED)
+            val greedMultiplier = 1.0f + (greedLvl * 0.20f)
+            val baseGoldReward = 20 + (newStreak * 5)
+            val goldReward = (baseGoldReward * greedMultiplier).toInt()
+            val aetherReward = 5 + newStreak
+
+            viewModelScope.launch {
+                _lastActionMessageEn.value = "📅 Daily Login! Streak: $newStreak day(s). Claimed login reward: +$goldReward Gold, +$aetherReward Aether."
+                _lastActionMessageTr.value = "📅 Günlük Giriş! Seri: $newStreak gün. Giriş ödülü kazanıldı: +$goldReward Altın, +$aetherReward Işıltı."
+            }
+
+            return profile.copy(
+                lastLoginTimestamp = now,
+                loginStreak = newStreak,
+                dailyQuestsEncoded = "0/3/0,0/2/0,0/5/0", // Reset quests: combat, chest, willpower
+                gold = profile.gold + goldReward,
+                aether = profile.aether + aetherReward,
+                lastUpdated = now
+            )
+        }
+        return profile
+    }
+
+    private fun updateDailyQuestProgress(profile: PlayerProfile, typeIndex: Int, amount: Int): PlayerProfile {
+        if (profile.dailyQuestsEncoded.isEmpty()) return profile
+        val quests = profile.dailyQuestsEncoded.split(",").toMutableList()
+        if (quests.size <= typeIndex) return profile
+        val parts = quests[typeIndex].split("/").toMutableList()
+        if (parts.size < 3) return profile
+        
+        val currentProgress = parts[0].toIntOrNull() ?: 0
+        val target = parts[1].toIntOrNull() ?: 0
+        val claimed = parts[2].toIntOrNull() ?: 0
+        
+        if (claimed == 1 || currentProgress >= target) return profile
+        
+        val newProgress = (currentProgress + amount).coerceAtMost(target)
+        parts[0] = newProgress.toString()
+        quests[typeIndex] = parts.joinToString("/")
+        
+        val newQuestsEncoded = quests.joinToString(",")
+        
+        if (newProgress >= target) {
+            viewModelScope.launch {
+                _lastActionMessageEn.value = "✨ Daily Quest Completed! Claim rewards in Legacy tab."
+                _lastActionMessageTr.value = "✨ Günlük Görev Tamamlandı! Miras sekmesinden ödülünüzü alın."
+            }
+        }
+        
+        return profile.copy(
+            dailyQuestsEncoded = newQuestsEncoded,
+            lastUpdated = System.currentTimeMillis()
+        )
+    }
+
+    fun claimDailyQuestReward(typeIndex: Int) {
+        viewModelScope.launch {
+            val profile = repository.getPlayerProfileDirect() ?: return@launch
+            if (profile.dailyQuestsEncoded.isEmpty()) return@launch
+            val quests = profile.dailyQuestsEncoded.split(",").toMutableList()
+            if (quests.size <= typeIndex) return@launch
+            val parts = quests[typeIndex].split("/")
+            if (parts.size < 3) return@launch
+            
+            val currentProgress = parts[0].toIntOrNull() ?: 0
+            val target = parts[1].toIntOrNull() ?: 0
+            val claimed = parts[2].toIntOrNull() ?: 0
+            
+            if (currentProgress < target) {
+                _lastActionMessageEn.value = "❌ Quest not completed yet!"
+                _lastActionMessageTr.value = "❌ Görev henüz tamamlanmadı!"
+                return@launch
+            }
+            if (claimed == 1) {
+                _lastActionMessageEn.value = "❌ Quest reward already claimed!"
+                _lastActionMessageTr.value = "❌ Görev ödülü zaten alındı!"
+                return@launch
+            }
+            
+            val newParts = parts.toMutableList()
+            newParts[2] = "1"
+            quests[typeIndex] = newParts.joinToString("/")
+            val newQuestsEncoded = quests.joinToString(",")
+            
+            val baseGold = 50
+            val baseAether = 15
+            val greedLvl = com.example.data.model.LegacyUpgradeType.getUpgradeLevel(profile.upgradesEncoded, com.example.data.model.LegacyUpgradeType.GREED)
+            val greedMultiplier = 1.0f + (greedLvl * 0.20f)
+            val finalGold = (baseGold * greedMultiplier).toInt()
+            
+            val updated = profile.copy(
+                dailyQuestsEncoded = newQuestsEncoded,
+                gold = profile.gold + finalGold,
+                aether = profile.aether + baseAether,
+                lastUpdated = System.currentTimeMillis()
+            )
+            repository.savePlayerProfile(updated)
+            
+            _lastActionMessageEn.value = "🎁 Claimed Daily Quest Reward: +$finalGold Gold, +$baseAether Aether!"
+            _lastActionMessageTr.value = "🎁 Günlük Görev Ödülü Alındı: +$finalGold Altın, +$baseAether Işıltı!"
+        }
+    }
+
+    fun purchaseUpgrade(upgradeKey: String) {
+        viewModelScope.launch {
+            val profile = repository.getPlayerProfileDirect() ?: return@launch
+            val type = com.example.data.model.LegacyUpgradeType.values().find { it.key == upgradeKey } ?: return@launch
+            val currentLvl = com.example.data.model.LegacyUpgradeType.getUpgradeLevel(profile.upgradesEncoded, type)
+            
+            if (currentLvl >= type.maxLevel) {
+                _lastActionMessageEn.value = "❌ Already at maximum level for this upgrade!"
+                _lastActionMessageTr.value = "❌ Bu yükseltme için zaten maksimum seviyedesiniz!"
+                return@launch
+            }
+            
+            val cost = type.getCostForLevel(currentLvl)
+            if (profile.legacyPoints < cost) {
+                _lastActionMessageEn.value = "❌ Insufficient Legacy Points!"
+                _lastActionMessageTr.value = "❌ Yetersiz Miras Puanı!"
+                return@launch
+            }
+            
+            val upgradesMap = com.example.data.model.LegacyUpgradeType.getUpgradesMap(profile.upgradesEncoded).toMutableMap()
+            upgradesMap[type.key] = currentLvl + 1
+            val newUpgradesEncoded = com.example.data.model.LegacyUpgradeType.encodeUpgrades(upgradesMap)
+            
+            val updated = profile.copy(
+                legacyPoints = profile.legacyPoints - cost,
+                upgradesEncoded = newUpgradesEncoded,
+                lastUpdated = System.currentTimeMillis()
+            )
+            repository.savePlayerProfile(updated)
+            
+            _lastActionMessageEn.value = "✔️ Upgraded ${type.nameEn} to Level ${currentLvl + 1}!"
+            _lastActionMessageTr.value = "✔️ ${type.nameTr} Seviye ${currentLvl + 1} düzeyine yükseltildi!"
+        }
+    }
 
     companion object {
         fun getPlayerClassString(side: String, momentum: Int): String {

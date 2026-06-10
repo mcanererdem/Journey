@@ -93,27 +93,3 @@ val ColorScrimLight         = Color(0x4D000000)   // 30% siyah overlay
 val ColorFracturePrimary    = Color(0xFF4A0000)   // Koyu kan kırmızısı
 val ColorFractureGlow       = Color(0xFFFF1744)   // Parlayan kırmızı
 
-// ── Eski (Legacy) — Geriye dönük uyumluluk için (kaldırılacak) ───────────────
-@Deprecated("Use ColorSanctumPrimary instead", ReplaceWith("ColorSanctumPrimary"))
-val SanctumGold             = ColorSanctumPrimary
-
-@Deprecated("Use ColorCovenantGlow instead", ReplaceWith("ColorCovenantGlow"))
-val VoidNeonPurple          = ColorCovenantGlow
-
-@Deprecated("Use ColorHeal instead", ReplaceWith("ColorHeal"))
-val SpiritHealColor         = ColorHeal
-
-@Deprecated("Use ColorDanger instead", ReplaceWith("ColorDanger"))
-val BlightDamageColor       = ColorDanger
-
-@Deprecated("Use ColorStatGold instead", ReplaceWith("ColorStatGold"))
-val GleamGold               = ColorStatGold
-
-@Deprecated("Use ColorCovenantPrimary instead", ReplaceWith("ColorCovenantPrimary"))
-val PyrePurple              = ColorCovenantPrimary
-
-@Deprecated("Use ColorWarning instead", ReplaceWith("ColorWarning"))
-val GoldYellow              = ColorWarning
-
-@Deprecated("Use ColorSanctumPrimary instead", ReplaceWith("ColorSanctumPrimary"))
-val SlateBronze             = ColorNeutralPrimary

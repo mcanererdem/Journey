@@ -43,24 +43,24 @@ fun CharacterSheetTab(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(Dimens.SpacingL),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Alignment Scale Widget
         item {
             Text(
                 text = if (activeLang == "TR") "HİZALANMA DURUMU" else "FACTION ALIGNMENT SPECTRUM",
-                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, letterSpacing = 1.sp),
+                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, letterSpacing = Dimens.LetterSpacingNormal),
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(Dimens.SpacingS))
 
             // Spec graphic
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(30.dp)
-                    .clip(RoundedCornerShape(6.dp))
+                    .clip(RoundedCornerShape(Dimens.SpacingS))
                     .background(
                         Brush.horizontalGradient(
                             colors = listOf(
@@ -82,7 +82,7 @@ fun CharacterSheetTab(
                     Box(
                         modifier = Modifier
                             .align(Alignment.CenterEnd)
-                            .width(6.dp)
+                            .width(Dimens.SpacingS)
                             .fillMaxHeight()
                             .background(Color.White)
                     )
@@ -92,15 +92,15 @@ fun CharacterSheetTab(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 4.dp),
+                    .padding(top = Dimens.SpacingXs),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text("🔥 Abyss (0)", style = MaterialTheme.typography.labelSmall, color = VoidNeonPurple)
+                Text("🔥 Abyss (0)", style = MaterialTheme.typography.labelSmall, color = ColorCovenantGlow)
                 Text("Neutral (${player.momentum})", style = MaterialTheme.typography.labelSmall)
-                Text("Sanctum (100) ✨", style = MaterialTheme.typography.labelSmall, color = SanctumGold)
+                Text("Sanctum (100) ✨", style = MaterialTheme.typography.labelSmall, color = ColorSanctumPrimary)
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(Dimens.SpacingL))
         }
 
         // Editable name card
@@ -109,13 +109,13 @@ fun CharacterSheetTab(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column(modifier = Modifier.padding(Dimens.SpacingL)) {
                     Text(
                         text = if (activeLang == "TR") "KAHRAMAN UNVANI" else "SOVEREIGN TITLE DESIGNATION",
                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.primary
                     )
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(Dimens.SpacingM))
                     OutlinedTextField(
                         value = nameInput,
                         onValueChange = { nameInput = it },
@@ -125,7 +125,7 @@ fun CharacterSheetTab(
                         singleLine = true,
                         placeholder = { Text("E.g. Lord Aldous") }
                     )
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(Dimens.SpacingM))
                     Button(
                         onClick = { onNameUpdate(nameInput) },
                         modifier = Modifier
@@ -136,7 +136,7 @@ fun CharacterSheetTab(
                     }
                 }
             }
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(Dimens.SpacingL))
         }
 
         // Faction swearing mechanics
@@ -145,12 +145,12 @@ fun CharacterSheetTab(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column(modifier = Modifier.padding(Dimens.SpacingL)) {
                     Text(
                         text = if (activeLang == "TR") "YEMİNLİ BAĞLILIK ANDI" else "SWEAR AN OATH OF POWER",
                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(bottom = 8.dp)
+                        modifier = Modifier.padding(bottom = Dimens.SpacingS)
                     )
 
                     Text(
@@ -160,7 +160,7 @@ fun CharacterSheetTab(
                             "Joining a faction unlocks specialized reflection classes (e.g. Holy Aegis, Death Herald) dependent on your core Alignment."
                         },
                         style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(bottom = 12.dp)
+                        modifier = Modifier.padding(bottom = Dimens.SpacingM)
                     )
 
                     Row(
@@ -172,38 +172,38 @@ fun CharacterSheetTab(
                             modifier = Modifier
                                 .weight(1f)
                                 .testTag("pledge_sanctum_btn"),
-                            colors = ButtonDefaults.buttonColors(containerColor = SanctumGold)
+                            colors = ButtonDefaults.buttonColors(containerColor = ColorSanctumPrimary)
                         ) {
                             Text(if (activeLang == "TR") "Semavi" else "Sanctum")
                         }
-                        Spacer(modifier = Modifier.width(10.dp))
+                        Spacer(modifier = Modifier.width(Dimens.SpacingM))
                         Button(
                             onClick = { onFactionSelect("COVENANT") },
                             modifier = Modifier
                                 .weight(1f)
                                 .testTag("pledge_covenant_btn"),
-                            colors = ButtonDefaults.buttonColors(containerColor = VoidNeonPurple)
+                            colors = ButtonDefaults.buttonColors(containerColor = ColorCovenantGlow)
                         ) {
                             Text(if (activeLang == "TR") "Kara Ahit" else "Void")
                         }
                     }
 
                     if (player.side != "NEUTRAL") {
-                        Spacer(modifier = Modifier.height(14.dp))
+                        Spacer(modifier = Modifier.height(Dimens.SpacingM))
                         OutlinedButton(
                             onClick = onRenounce,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .testTag("outcast_button"),
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = BlightDamageColor),
-                            border = BorderStroke(1.dp, BlightDamageColor)
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = ColorDanger),
+                            border = BorderStroke(Dimens.BorderThin, ColorDanger)
                         ) {
                             Text(if (activeLang == "TR") "Bağlılıktan İhanet Et (Sürgün Ol)" else "Renounce Allegiance (Become Outcast)")
                         }
                     }
                 }
             }
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(Dimens.SpacingL))
         }
 
         // Stats checklist
@@ -212,12 +212,12 @@ fun CharacterSheetTab(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column(modifier = Modifier.padding(Dimens.SpacingL)) {
                     Text(
                         text = if (activeLang == "TR") "MİSTİK UNVAN KAYDI" else "SOVEREIGN ARCHIVE DECREE",
                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(bottom = 10.dp)
+                        modifier = Modifier.padding(bottom = Dimens.SpacingM)
                     )
 
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -227,14 +227,14 @@ fun CharacterSheetTab(
                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
                         )
                     }
-                    Divider(modifier = Modifier.padding(vertical = 8.dp))
+                    Divider(modifier = Modifier.padding(vertical = Dimens.SpacingS))
 
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Text("Spirit Fractures:", style = MaterialTheme.typography.bodyMedium)
                         Text(
                             text = "${player.totalFractures} deaths",
                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
-                            color = BlightDamageColor
+                            color = ColorDanger
                         )
                     }
                 }
@@ -243,21 +243,21 @@ fun CharacterSheetTab(
 
         // Dynamic Materials & Loot Inventory
         item {
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(Dimens.SpacingL))
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column(modifier = Modifier.padding(Dimens.SpacingL)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(text = "🎒 ", fontSize = 18.sp)
+                        Text(text = "🎒 ", fontSize = Dimens.TextXl)
                         Text(
                             text = LocalizationManager.getString(activeLang, "label_items"),
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, letterSpacing = 1.sp),
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, letterSpacing = Dimens.LetterSpacingNormal),
                             color = MaterialTheme.colorScheme.primary
                         )
                     }
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(Dimens.SpacingM))
                     
                     if (itemsList.isEmpty()) {
                         Text(
@@ -278,11 +278,11 @@ fun CharacterSheetTab(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 4.dp),
+                                    .padding(vertical = Dimens.SpacingXs),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(text = bulletIcon, fontSize = 14.sp)
-                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(text = bulletIcon, fontSize = Dimens.TextM)
+                                Spacer(modifier = Modifier.width(Dimens.SpacingS))
                                 Text(
                                     text = gear,
                                     style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold),
@@ -297,21 +297,21 @@ fun CharacterSheetTab(
 
         // Dynamic Titles Inventory Ledger
         item {
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(Dimens.SpacingL))
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column(modifier = Modifier.padding(Dimens.SpacingL)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(text = "👑 ", fontSize = 18.sp)
+                        Text(text = "👑 ", fontSize = Dimens.TextXl)
                         Text(
                             text = LocalizationManager.getString(activeLang, "label_titles"),
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, letterSpacing = 1.sp),
-                            color = SanctumGold
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, letterSpacing = Dimens.LetterSpacingNormal),
+                            color = ColorSanctumPrimary
                         )
                     }
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(Dimens.SpacingM))
                     
                     if (titlesList.isEmpty()) {
                         Text(
@@ -324,15 +324,15 @@ fun CharacterSheetTab(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 4.dp),
+                                    .padding(vertical = Dimens.SpacingXs),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(text = "⚜️", fontSize = 14.sp)
-                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(text = "⚜️", fontSize = Dimens.TextM)
+                                Spacer(modifier = Modifier.width(Dimens.SpacingS))
                                 Text(
                                     text = title,
                                     style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
-                                    color = SanctumGold
+                                    color = ColorSanctumPrimary
                                 )
                             }
                         }

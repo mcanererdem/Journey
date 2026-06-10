@@ -57,6 +57,11 @@ data class PlayerProfile(
     val currentNodeColumn: Int = 0,
     val currentNodeCompleted: Boolean = false,
     val storyFlagsEncoded: String = "",
+    val legacyPoints: Int = 0,
+    val upgradesEncoded: String = "",
+    val lastLoginTimestamp: Long = 0L,
+    val loginStreak: Int = 0,
+    val dailyQuestsEncoded: String = "",
     val lastUpdated: Long = System.currentTimeMillis()
 )
 

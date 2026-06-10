@@ -80,27 +80,27 @@ fun QuestsTab(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(Dimens.SpacingL),
+            verticalArrangement = Arrangement.spacedBy(Dimens.SpacingL)
         ) {
         // --- TITLES CARD BOARD ---
         item {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                shape = RoundedCornerShape(12.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                shape = RoundedCornerShape(Dimens.SpacingM),
+                elevation = CardDefaults.cardElevation(defaultElevation = Dimens.BorderThick)
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column(modifier = Modifier.padding(Dimens.SpacingL)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("👑 ", fontSize = 20.sp)
+                        Text("👑 ", fontSize = Dimens.TextXxl)
                         Text(
                             text = if (activeLang == "TR") "ŞANLI MİSTİK UNVANLAR" else "ARCHIVE OF SOVEREIGN TITLES",
-                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, letterSpacing = 1.sp),
-                            color = SanctumGold
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, letterSpacing = Dimens.LetterSpacingNormal),
+                            color = ColorSanctumPrimary
                         )
                     }
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(Dimens.SpacingM))
                     Text(
                         text = if (activeLang == "TR") {
                             "Bu kadim unvanları gerekli şartları sağlayarak açabilir ve kuşanıp pasif can (+HP) bonusu kazanabilirsiniz."
@@ -111,7 +111,7 @@ fun QuestsTab(
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
 
-                    Spacer(modifier = Modifier.height(14.dp))
+                    Spacer(modifier = Modifier.height(Dimens.SpacingM))
 
                     QuestTitleSystem.titles.forEach { title ->
                         val isUnlocked = player.titlesEncoded.split(",").filter { it.isNotBlank() }.contains(title.id)
@@ -121,17 +121,17 @@ fun QuestsTab(
                             Card(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 4.dp),
+                                    .padding(vertical = Dimens.SpacingXs),
                                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
-                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
+                                border = BorderStroke(Dimens.BorderThin, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
                             ) {
                                 Row(
                                     modifier = Modifier
-                                        .padding(12.dp)
+                                        .padding(Dimens.SpacingM)
                                         .fillMaxWidth(),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text("🔒 ", fontSize = 16.sp)
+                                    Text("🔒 ", fontSize = Dimens.TextL)
                                     Column {
                                         Text(
                                             text = if (activeLang == "TR") "Bilinmeyen Kadim Sır" else "🔒 Mystery Ancient Pact",
@@ -150,7 +150,7 @@ fun QuestsTab(
                             Card(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 4.dp),
+                                    .padding(vertical = Dimens.SpacingXs),
                                 colors = CardDefaults.cardColors(
                                     containerColor = if (isEquipped) {
                                         MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f)
@@ -159,13 +159,13 @@ fun QuestsTab(
                                     }
                                 ),
                                 border = BorderStroke(
-                                    width = if (isEquipped) 2.dp else 1.dp,
-                                    color = if (isEquipped) SanctumGold else if (isUnlocked) SanctumGold.copy(alpha = 0.4f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
+                                    width = if (isEquipped) Dimens.BorderThick else Dimens.BorderThin,
+                                    color = if (isEquipped) ColorSanctumPrimary else if (isUnlocked) ColorSanctumPrimary.copy(alpha = 0.4f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                                 )
                             ) {
                                 Row(
                                     modifier = Modifier
-                                        .padding(12.dp)
+                                        .padding(Dimens.SpacingM)
                                         .fillMaxWidth(),
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.SpaceBetween
@@ -175,19 +175,19 @@ fun QuestsTab(
                                             Text(
                                                 text = if (activeLang == "TR") title.nameTr else title.nameEn,
                                                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
-                                                color = if (isUnlocked) SanctumGold else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                                                color = if (isUnlocked) ColorSanctumPrimary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                                             )
                                             if (isUnlocked) {
-                                                Spacer(modifier = Modifier.width(6.dp))
+                                                Spacer(modifier = Modifier.width(Dimens.SpacingS))
                                                 Box(
                                                     modifier = Modifier
-                                                        .background(SanctumGold.copy(alpha = 0.15f), RoundedCornerShape(4.dp))
-                                                        .padding(horizontal = 4.dp, vertical = 2.dp)
+                                                        .background(ColorSanctumPrimary.copy(alpha = 0.15f), RoundedCornerShape(Dimens.SpacingXs))
+                                                        .padding(horizontal = Dimens.SpacingXs, vertical = Dimens.BorderThick)
                                                 ) {
                                                     Text(
                                                         text = if (activeLang == "TR") "KAZANILDI" else "UNLOCKED",
-                                                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 8.sp, fontWeight = FontWeight.Bold),
-                                                        color = SanctumGold
+                                                        style = MaterialTheme.typography.labelSmall.copy(fontSize = Dimens.TextXxs, fontWeight = FontWeight.Bold),
+                                                        color = ColorSanctumPrimary
                                                     )
                                                 }
                                             }
@@ -197,14 +197,14 @@ fun QuestsTab(
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                                         )
-                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Spacer(modifier = Modifier.height(Dimens.SpacingXs))
                                         Text(
                                             text = if (activeLang == "TR") "Bonus: +${title.hpBonus} HP • Şart: ${title.requirementDescTr}" else "Synergies: +${title.hpBonus} HP • Goal: ${title.requirementDescEn}",
                                             style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium),
                                             color = if (isUnlocked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                                         )
                                     }
-                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Spacer(modifier = Modifier.width(Dimens.SpacingS))
                                     if (isUnlocked) {
                                         Button(
                                             onClick = {
@@ -216,10 +216,10 @@ fun QuestsTab(
                                             },
                                             modifier = Modifier.testTag("equip_title_${title.id}"),
                                             colors = ButtonDefaults.buttonColors(
-                                                containerColor = if (isEquipped) BlightDamageColor else SanctumGold
+                                                containerColor = if (isEquipped) ColorDanger else ColorSanctumPrimary
                                             ),
-                                            shape = RoundedCornerShape(6.dp),
-                                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                                            shape = RoundedCornerShape(Dimens.SpacingS),
+                                            contentPadding = PaddingValues(horizontal = Dimens.SpacingM, vertical = Dimens.SpacingS)
                                         ) {
                                             Text(
                                                 text = if (isEquipped) {
@@ -233,8 +233,8 @@ fun QuestsTab(
                                     } else {
                                         Box(
                                             modifier = Modifier
-                                                .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f), RoundedCornerShape(6.dp))
-                                                .padding(horizontal = 10.dp, vertical = 6.dp)
+                                                .border(Dimens.BorderThin, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f), RoundedCornerShape(Dimens.SpacingS))
+                                                .padding(horizontal = Dimens.SpacingM, vertical = Dimens.SpacingS)
                                         ) {
                                             Text(
                                                 text = if (activeLang == "TR") "KİLİTLİ" else "LOCKED",
@@ -256,18 +256,18 @@ fun QuestsTab(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(Dimens.SpacingM)
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column(modifier = Modifier.padding(Dimens.SpacingL)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("📐 ", fontSize = 20.sp)
+                        Text("📐 ", fontSize = Dimens.TextXxl)
                         Text(
                             text = if (activeLang == "TR") "KAT PLANI HEDEFLERİ" else "HANDCRAFTED FLOOR OBJECTIVES",
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                             color = MaterialTheme.colorScheme.onBackground
                         )
                     }
-                    Spacer(modifier = Modifier.height(6.dp))
+                    Spacer(modifier = Modifier.height(Dimens.SpacingS))
                     Text(
                         text = if (activeLang == "TR") {
                             "Bulunduğunuz katın özel hedeflerini, gizli boss savaşlarını ve faksiyon planlarını bu ekrandan takip edebilirsiniz."
@@ -278,12 +278,12 @@ fun QuestsTab(
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
                     )
                     
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(Dimens.SpacingM))
                     
                     // Quick Floor Selector Pills
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingS)
                     ) {
                         for (f in 1..3) {
                             val isActive = selectedFloorToView == f
@@ -291,12 +291,12 @@ fun QuestsTab(
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
-                                    .clip(RoundedCornerShape(8.dp))
+                                    .clip(RoundedCornerShape(Dimens.SpacingS))
                                     .background(
                                         if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                                     )
                                     .clickable { selectedFloorToView = f }
-                                    .padding(vertical = 8.dp),
+                                    .padding(vertical = Dimens.SpacingS),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
@@ -328,8 +328,8 @@ fun QuestsTab(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 4.dp),
-                shape = RoundedCornerShape(10.dp),
+                    .padding(vertical = Dimens.SpacingXs),
+                shape = RoundedCornerShape(Dimens.SpacingM),
                 colors = CardDefaults.cardColors(
                     containerColor = if (player.currentFloor == floorNum) {
                         MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f)
@@ -338,7 +338,7 @@ fun QuestsTab(
                     }
                 ),
                 border = BorderStroke(
-                    1.dp,
+                    Dimens.BorderThin,
                     if (player.currentFloor == floorNum) MaterialTheme.colorScheme.primary.copy(alpha = 0.4f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
                 )
             ) {
@@ -346,7 +346,7 @@ fun QuestsTab(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable { expanded = !expanded }
-                        .padding(14.dp)
+                        .padding(Dimens.SpacingM)
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -357,10 +357,10 @@ fun QuestsTab(
                                 if (player.currentFloor == floorNum) {
                                     Box(
                                         modifier = Modifier
-                                            .size(8.dp)
+                                            .size(Dimens.SpacingS)
                                             .background(MaterialTheme.colorScheme.primary, shape = CircleShape)
                                     )
-                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Spacer(modifier = Modifier.width(Dimens.SpacingS))
                                 }
                                 Text(
                                     text = if (activeLang == "TR") "$floorNum. Kat: $floorTitle" else "Floor $floorNum: $floorTitle",
@@ -368,7 +368,7 @@ fun QuestsTab(
                                     color = if (player.currentFloor == floorNum) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                                 )
                             }
-                            Spacer(modifier = Modifier.height(2.dp))
+                            Spacer(modifier = Modifier.height(Dimens.BorderThick))
                             Text(
                                 text = floorDesc,
                                 style = MaterialTheme.typography.bodySmall,
@@ -378,15 +378,15 @@ fun QuestsTab(
                             )
                         }
                         
-                        Spacer(modifier = Modifier.width(10.dp))
+                        Spacer(modifier = Modifier.width(Dimens.SpacingM))
                         
                         Box(
                             modifier = Modifier
                                 .background(
                                     if (percentage >= 1f) Color(0xFF4CAF50).copy(alpha = 0.15f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
-                                    shape = RoundedCornerShape(8.dp)
+                                    shape = RoundedCornerShape(Dimens.SpacingS)
                                 )
-                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                                .padding(horizontal = Dimens.SpacingS, vertical = Dimens.SpacingXs)
                         ) {
                             Text(
                                 text = "${(percentage * 100).toInt()}%",
@@ -396,35 +396,35 @@ fun QuestsTab(
                         }
                     }
                     
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(Dimens.SpacingS))
                     
                     LinearProgressIndicator(
                         progress = { percentage },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(6.dp)
-                            .clip(RoundedCornerShape(3.dp)),
+                            .height(Dimens.SpacingS)
+                            .clip(RoundedCornerShape(Dimens.BorderGlow)),
                         color = if (percentage >= 1f) Color(0xFF4CAF50) else MaterialTheme.colorScheme.primary,
                         trackColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
                     )
 
                     if (expanded) {
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(Dimens.SpacingM))
                         HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f))
-                        Spacer(modifier = Modifier.height(10.dp))
+                        Spacer(modifier = Modifier.height(Dimens.SpacingM))
                         
                         objectives.forEach { obj ->
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 4.dp),
+                                    .padding(vertical = Dimens.SpacingXs),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
                                     text = if (obj.isCompleted) "✅" else "⏳",
-                                    fontSize = 14.sp
+                                    fontSize = Dimens.TextM
                                 )
-                                Spacer(modifier = Modifier.width(10.dp))
+                                Spacer(modifier = Modifier.width(Dimens.SpacingM))
                                 Text(
                                     text = if (activeLang == "TR") obj.textTr else obj.textEn,
                                     style = MaterialTheme.typography.bodySmall.copy(
@@ -440,11 +440,11 @@ fun QuestsTab(
                         }
                         
                         if (player.currentFloor != floorNum) {
-                            Spacer(modifier = Modifier.height(10.dp))
+                            Spacer(modifier = Modifier.height(Dimens.SpacingM))
                             Button(
                                 onClick = { viewModel.initiateTransitionToFloor(floorNum) },
                                 modifier = Modifier.align(Alignment.End),
-                                shape = RoundedCornerShape(8.dp),
+                                shape = RoundedCornerShape(Dimens.SpacingS),
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = if (player.currentFloor > floorNum) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary
                                 )
@@ -466,16 +466,16 @@ fun QuestsTab(
 
         // --- QUESTS SECTION ---
         item {
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(Dimens.SpacingM))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("📁 ", fontSize = 18.sp)
+                Text("📁 ", fontSize = Dimens.TextXl)
                 Text(
                     text = if (activeLang == "TR") "KULE GÖREVLERİ DEKRETİ" else "SPIRE QUESTS & DECREES",
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.onBackground
                 )
             }
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(Dimens.SpacingXs))
             Text(
                 text = if (activeLang == "TR") {
                     "Kategorize edilmiş görev turlarını tamamlayarak kadim paralar, şanlı unvanlar ve mühürlü ekipmanlar kazanın."
@@ -503,21 +503,21 @@ fun QuestsTab(
             LazyRow(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    .padding(vertical = Dimens.SpacingXs),
+                horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingS)
             ) {
                 items(categories.size) { index ->
                     val (catId, catLabel) = categories[index]
                     val isSelected = selectedCategory == catId
                     Box(
                         modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
+                            .clip(RoundedCornerShape(Dimens.SpacingS))
                             .background(
                                 if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
                             )
-                            .border(1.dp, if (isSelected) Color.Transparent else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f), RoundedCornerShape(8.dp))
+                            .border(Dimens.BorderThin, if (isSelected) Color.Transparent else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f), RoundedCornerShape(Dimens.SpacingS))
                             .clickable { selectedCategory = catId }
-                            .padding(horizontal = 14.dp, vertical = 10.dp),
+                            .padding(horizontal = Dimens.SpacingM, vertical = Dimens.SpacingM),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
@@ -544,7 +544,7 @@ fun QuestsTab(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(24.dp),
+                            .padding(Dimens.SpacingXxl),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
@@ -569,7 +569,7 @@ fun QuestsTab(
 
                 val borderStrokeColor = when {
                     qStatus.isCompleted -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
-                    qStatus.requirementMet -> SanctumGold
+                    qStatus.requirementMet -> ColorSanctumPrimary
                     !qStatus.isUnlocked -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f)
                     else -> MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
                 }
@@ -577,13 +577,13 @@ fun QuestsTab(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 2.dp),
+                        .padding(vertical = Dimens.BorderThick),
                     colors = CardDefaults.cardColors(containerColor = cardColor),
-                    border = BorderStroke(if (qStatus.requirementMet) 2.dp else 1.dp, borderStrokeColor)
+                    border = BorderStroke(if (qStatus.requirementMet) Dimens.BorderThick else Dimens.BorderThin, borderStrokeColor)
                 ) {
                     Column(
                         modifier = Modifier
-                            .padding(14.dp)
+                            .padding(Dimens.SpacingM)
                             .fillMaxWidth()
                     ) {
                         Row(
@@ -594,25 +594,25 @@ fun QuestsTab(
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 val badgeColor = when (q.type) {
                                     QuestType.MAIN -> MaterialTheme.colorScheme.primary
-                                    QuestType.SIDE -> SanctumGold
+                                    QuestType.SIDE -> ColorSanctumPrimary
                                     QuestType.NORMAL -> MaterialTheme.colorScheme.secondary
                                     QuestType.SPECIAL -> MaterialTheme.colorScheme.tertiary
-                                    QuestType.CHAIN -> VoidNeonPurple
-                                    QuestType.HIDDEN -> BlightDamageColor
+                                    QuestType.CHAIN -> ColorCovenantGlow
+                                    QuestType.HIDDEN -> ColorDanger
                                     QuestType.EVENT -> Color(0xFFFF9800)
                                 }
                                 Box(
                                     modifier = Modifier
-                                        .background(badgeColor.copy(alpha = 0.15f), RoundedCornerShape(4.dp))
-                                        .padding(horizontal = 6.dp, vertical = 3.dp)
+                                        .background(badgeColor.copy(alpha = 0.15f), RoundedCornerShape(Dimens.SpacingXs))
+                                        .padding(horizontal = Dimens.SpacingS, vertical = Dimens.BorderGlow)
                                 ) {
                                     Text(
                                         text = q.type.name,
-                                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 8.sp, fontWeight = FontWeight.Bold),
+                                        style = MaterialTheme.typography.labelSmall.copy(fontSize = Dimens.TextXxs, fontWeight = FontWeight.Bold),
                                         color = badgeColor
                                     )
                                 }
-                                Spacer(modifier = Modifier.width(8.dp))
+                                Spacer(modifier = Modifier.width(Dimens.SpacingS))
 
                                 val displayTitle = if (q.type == QuestType.HIDDEN && !qStatus.isCompleted && !qStatus.requirementMet) {
                                     if (activeLang == "TR") "🔒 BİLİNMEYEN GİZEMLİ BULMACA" else "🔒 MYSTICLE TEMPLATE"
@@ -627,13 +627,13 @@ fun QuestsTab(
                             }
 
                             when {
-                                qStatus.isCompleted -> Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color.Green, modifier = Modifier.size(18.dp))
-                                qStatus.requirementMet -> Icon(Icons.Default.Star, contentDescription = "Ready to Claim", tint = SanctumGold, modifier = Modifier.size(18.dp))
-                                !qStatus.isUnlocked -> Icon(Icons.Default.Lock, contentDescription = "Locked", tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f), modifier = Modifier.size(18.dp))
+                                qStatus.isCompleted -> Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color.Green, modifier = Modifier.size(Dimens.SpacingL))
+                                qStatus.requirementMet -> Icon(Icons.Default.Star, contentDescription = "Ready to Claim", tint = ColorSanctumPrimary, modifier = Modifier.size(Dimens.SpacingL))
+                                !qStatus.isUnlocked -> Icon(Icons.Default.Lock, contentDescription = "Locked", tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f), modifier = Modifier.size(Dimens.SpacingL))
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(6.dp))
+                        Spacer(modifier = Modifier.height(Dimens.SpacingS))
 
                         val displayDesc = if (q.type == QuestType.HIDDEN && !qStatus.isCompleted && !qStatus.requirementMet) {
                             if (activeLang == "TR") "Kozmos eylemlerinizi sayıyor. Doğru katalizörü bulana dek devam edin." else "The matrix monitors your ascension metrics. Prove your power to unfold details."
@@ -646,7 +646,7 @@ fun QuestsTab(
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
                         )
 
-                        Spacer(modifier = Modifier.height(10.dp))
+                        Spacer(modifier = Modifier.height(Dimens.SpacingM))
 
                         val displayGoal = if (q.type == QuestType.HIDDEN && !qStatus.isCompleted && !qStatus.requirementMet) {
                             "??? (???)"
@@ -662,13 +662,13 @@ fun QuestsTab(
                             Text(
                                 text = displayGoal,
                                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
-                                color = if (qStatus.requirementMet) SanctumGold else MaterialTheme.colorScheme.onSurface
+                                color = if (qStatus.requirementMet) ColorSanctumPrimary else MaterialTheme.colorScheme.onSurface
                             )
                         }
 
                         val (progressLabel, progressFraction) = qStatus.getProgressLabelAndFraction(player, activeLang == "TR")
                         if (progressLabel.isNotEmpty()) {
-                            Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height(Dimens.SpacingS))
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -682,34 +682,34 @@ fun QuestsTab(
                                 Text(
                                     text = progressLabel,
                                     style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                    color = if (qStatus.requirementMet) SanctumGold else MaterialTheme.colorScheme.primary
+                                    color = if (qStatus.requirementMet) ColorSanctumPrimary else MaterialTheme.colorScheme.primary
                                 )
                             }
-                            Spacer(modifier = Modifier.height(4.dp))
+                            Spacer(modifier = Modifier.height(Dimens.SpacingXs))
                             LinearProgressIndicator(
                                 progress = { progressFraction },
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(5.dp)
-                                    .clip(RoundedCornerShape(3.dp)),
-                                color = if (qStatus.requirementMet) SanctumGold else MaterialTheme.colorScheme.primary,
+                                    .height(Dimens.SpacingXs)
+                                    .clip(RoundedCornerShape(Dimens.BorderGlow)),
+                                color = if (qStatus.requirementMet) ColorSanctumPrimary else MaterialTheme.colorScheme.primary,
                                 trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                             )
                         }
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(Dimens.SpacingS))
                         Column(
                             modifier = Modifier
-                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f), RoundedCornerShape(6.dp))
-                                .padding(8.dp)
+                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f), RoundedCornerShape(Dimens.SpacingS))
+                                .padding(Dimens.SpacingS)
                                 .fillMaxWidth()
                         ) {
                             Text(
                                 text = if (activeLang == "TR") "VAADEDİLEN GANİMETLER:" else "PROMISED LOOT REWARDS:",
-                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, fontSize = 8.sp),
+                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, fontSize = Dimens.TextXxs),
                                 color = MaterialTheme.colorScheme.primary
                             )
-                            Spacer(modifier = Modifier.height(4.dp))
+                            Spacer(modifier = Modifier.height(Dimens.SpacingXs))
                             val rList = mutableListOf<String>()
                             if (q.rewardExp > 0) rList.add("+${q.rewardExp} EXP")
                             if (q.rewardGold > 0) rList.add("+${q.rewardGold} GP")
@@ -723,17 +723,17 @@ fun QuestsTab(
                             Text(
                                 text = rList.joinToString("  •  "),
                                 style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold),
-                                color = SanctumGold
+                                color = ColorSanctumPrimary
                             )
                         }
 
                         if (qStatus.isCompleted) {
-                            Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height(Dimens.SpacingS))
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .background(Color.Green.copy(alpha = 0.1f), RoundedCornerShape(6.dp))
-                                    .padding(vertical = 8.dp),
+                                    .background(Color.Green.copy(alpha = 0.1f), RoundedCornerShape(Dimens.SpacingS))
+                                    .padding(vertical = Dimens.SpacingS),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
@@ -743,30 +743,30 @@ fun QuestsTab(
                                 )
                             }
                         } else if (qStatus.requirementMet) {
-                            Spacer(modifier = Modifier.height(10.dp))
+                            Spacer(modifier = Modifier.height(Dimens.SpacingM))
                             Button(
                                 onClick = { viewModel.claimQuestReward(q.id) },
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .testTag("claim_quest_${q.id}"),
-                                colors = ButtonDefaults.buttonColors(containerColor = SanctumGold),
-                                shape = RoundedCornerShape(6.dp)
+                                colors = ButtonDefaults.buttonColors(containerColor = ColorSanctumPrimary),
+                                shape = RoundedCornerShape(Dimens.SpacingS)
                             ) {
-                                Icon(Icons.Default.Star, contentDescription = null, modifier = Modifier.size(16.dp))
-                                Spacer(modifier = Modifier.width(6.dp))
+                                Icon(Icons.Default.Star, contentDescription = null, modifier = Modifier.size(Dimens.SpacingL))
+                                Spacer(modifier = Modifier.width(Dimens.SpacingS))
                                 Text(
                                     text = if (activeLang == "TR") "ÖDÜLLERİ HEYBEYE EKLE 🎁" else "RECEIVE DECREE REWARDS 🎁",
                                     style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold)
                                 )
                             }
                         } else if (!qStatus.isUnlocked && q.prerequisiteQuestId != null) {
-                            Spacer(modifier = Modifier.height(6.dp))
+                            Spacer(modifier = Modifier.height(Dimens.SpacingS))
                             val preQuest = QuestTitleSystem.quests.find { it.id == q.prerequisiteQuestId }
                             val preName = if (preQuest != null) (if (activeLang == "TR") preQuest.titleTr else preQuest.titleEn) else q.prerequisiteQuestId
                             Text(
                                 text = if (activeLang == "TR") "⚠️ Önce '${preName}' aşamasını tamamlamış olmalısınız." else "⚠️ Requires preceding trial '${preName}' complete.",
                                 style = MaterialTheme.typography.labelSmall.copy(fontStyle = FontStyle.Italic),
-                                color = BlightDamageColor
+                                color = ColorDanger
                             )
                         }
                     }
@@ -776,17 +776,17 @@ fun QuestsTab(
 
         if (selectedCategory == "ALL" || selectedCategory == "EVENT" || selectedCategory == "HIDDEN") {
                 item {
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(Dimens.SpacingM))
                     Text(
                         text = if (activeLang == "TR") "🔮 ZAMANSAL KRONİKLER: DİNAMİK SIRLAR" else "🔮 CHRONICLES OF TIME: DISSOLVED SECRETS",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
-                            letterSpacing = 1.sp,
+                            letterSpacing = Dimens.LetterSpacingNormal,
                             fontFamily = FontFamily.Serif
                         ),
-                        color = VoidNeonPurple
+                        color = ColorCovenantGlow
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(Dimens.SpacingXs))
                     Text(
                         text = if (activeLang == "TR") {
                             "Karakterinizin hizalanması ve seviyesine göre boyutsal yırtıklar açılır. Kaderini seçip gizli bosslarla savaşın."
@@ -807,7 +807,7 @@ fun QuestsTab(
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 4.dp),
+                                .padding(vertical = Dimens.SpacingXs),
                             colors = CardDefaults.cardColors(
                                 containerColor = if (isCompleted) {
                                     MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
@@ -818,11 +818,11 @@ fun QuestsTab(
                                 }
                             ),
                             border = BorderStroke(
-                                width = 1.dp,
-                                color = if (canUnlock && !isCompleted) SanctumGold else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
+                                width = Dimens.BorderThin,
+                                color = if (canUnlock && !isCompleted) ColorSanctumPrimary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
                             )
                         ) {
-                            Column(modifier = Modifier.padding(14.dp)) {
+                            Column(modifier = Modifier.padding(Dimens.SpacingM)) {
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -830,19 +830,19 @@ fun QuestsTab(
                                 ) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Surface(
-                                            color = if (isCompleted) Color.Green.copy(alpha = 0.15f) else if (canUnlock) SanctumGold.copy(alpha = 0.15f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
-                                            shape = RoundedCornerShape(4.dp)
+                                            color = if (isCompleted) Color.Green.copy(alpha = 0.15f) else if (canUnlock) ColorSanctumPrimary.copy(alpha = 0.15f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
+                                            shape = RoundedCornerShape(Dimens.SpacingXs)
                                         ) {
                                             Text(
                                                 text = if (isCompleted) "✓ " + (if (activeLang == "TR") "TAMAMLANDI" else "COMPLETED")
                                                        else if (canUnlock) "🌟 " + (if (activeLang == "TR") "KEŞFEDİLDİ" else "DISCOVERED")
                                                        else "🔒 " + (if (activeLang == "TR") "KİLİTLİ SEYİR" else "VEILED PATH"),
-                                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, fontWeight = FontWeight.Bold),
-                                                color = if (isCompleted) Color.Green else if (canUnlock) SanctumGold else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                                                modifier = Modifier.padding(horizontal = Dimens.SpacingS, vertical = Dimens.BorderThick),
+                                                style = MaterialTheme.typography.labelSmall.copy(fontSize = Dimens.TextXxs, fontWeight = FontWeight.Bold),
+                                                color = if (isCompleted) Color.Green else if (canUnlock) ColorSanctumPrimary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
                                             )
                                         }
-                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Spacer(modifier = Modifier.width(Dimens.SpacingS))
                                         Text(
                                             text = if (canUnlock || isCompleted) (if (activeLang == "TR") event.titleTr else event.titleEn) else "???",
                                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
@@ -851,7 +851,7 @@ fun QuestsTab(
                                     }
                                 }
 
-                                Spacer(modifier = Modifier.height(6.dp))
+                                Spacer(modifier = Modifier.height(Dimens.SpacingS))
                                 Text(
                                     text = if (canUnlock || isCompleted) (if (activeLang == "TR") event.descriptionTr else event.descriptionEn) 
                                            else (if (activeLang == "TR") "Kozmos bu boyutsal halkayı mühürlemiş durumda. Şartları tamamlayıp boyutlararası gerilimi tetikleyin." else "The cosmos has sealed this rift. Unlock the spatial pressure threshold to evoke details."),
@@ -859,7 +859,7 @@ fun QuestsTab(
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                                 )
 
-                                Spacer(modifier = Modifier.height(10.dp))
+                                Spacer(modifier = Modifier.height(Dimens.SpacingM))
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text(
                                         text = if (activeLang == "TR") "Giriş Şartları: " else "Unfolding Conditions: ",
@@ -881,20 +881,20 @@ fun QuestsTab(
                                     Text(
                                         text = if (activeLang == "TR") reqTr else reqEn,
                                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold, fontStyle = FontStyle.Italic),
-                                        color = if (canUnlock) SanctumGold else BlightDamageColor
+                                        color = if (canUnlock) ColorSanctumPrimary else ColorDanger
                                     )
                                 }
 
                                 if (canUnlock && !isCompleted) {
-                                    Spacer(modifier = Modifier.height(12.dp))
+                                    Spacer(modifier = Modifier.height(Dimens.SpacingM))
                                     Button(
                                         onClick = { viewModel.startNarrativeEvent(event) },
                                         modifier = Modifier.fillMaxWidth(),
                                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                                        shape = RoundedCornerShape(8.dp)
+                                        shape = RoundedCornerShape(Dimens.SpacingS)
                                     ) {
-                                        Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(16.dp))
-                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(Dimens.SpacingL))
+                                        Spacer(modifier = Modifier.width(Dimens.SpacingS))
                                         Text(
                                             text = if (activeLang == "TR") "BOYUTSAL ETKİLEŞİMİ BAŞLAT 🔮" else "TRIGGER TEMPORAL RIFT 🔮",
                                             style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold)
@@ -908,17 +908,17 @@ fun QuestsTab(
 
                 // Show all Secret Bosses from NarrativeEventProcessor
                 item {
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(Dimens.SpacingM))
                     Text(
                         text = if (activeLang == "TR") "🐉 KADİM İMTİHAN DEREBEYLERİ" else "🐉 ANCIENT TRIAL OVERLORDS",
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
-                            letterSpacing = 1.sp,
+                            letterSpacing = Dimens.LetterSpacingNormal,
                             fontFamily = FontFamily.Serif
                         ),
-                        color = BlightDamageColor
+                        color = ColorDanger
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(Dimens.SpacingXs))
                     Text(
                         text = if (activeLang == "TR") {
                             "Son derece tehlikeli imtihan arenalarında gizemli ejderhalara meydan okuyun. Büyük risk, muazzam rütbe ganimetleri."
@@ -938,7 +938,7 @@ fun QuestsTab(
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 4.dp),
+                                .padding(vertical = Dimens.SpacingXs),
                             colors = CardDefaults.cardColors(
                                 containerColor = if (isSlain) {
                                     MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
@@ -949,11 +949,11 @@ fun QuestsTab(
                                 }
                             ),
                             border = BorderStroke(
-                                width = 1.dp,
-                                color = if (canChallenge && !isSlain) BlightDamageColor else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
+                                width = Dimens.BorderThin,
+                                color = if (canChallenge && !isSlain) ColorDanger else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
                             )
                         ) {
-                            Column(modifier = Modifier.padding(14.dp)) {
+                            Column(modifier = Modifier.padding(Dimens.SpacingM)) {
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -961,19 +961,19 @@ fun QuestsTab(
                                 ) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Surface(
-                                            color = if (isSlain) Color.Green.copy(alpha = 0.15f) else if (canChallenge) BlightDamageColor.copy(alpha = 0.15f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
-                                            shape = RoundedCornerShape(4.dp)
+                                            color = if (isSlain) Color.Green.copy(alpha = 0.15f) else if (canChallenge) ColorDanger.copy(alpha = 0.15f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
+                                            shape = RoundedCornerShape(Dimens.SpacingXs)
                                         ) {
                                             Text(
                                                 text = if (isSlain) "✓ " + (if (activeLang == "TR") "YIKILDI" else "VANQUISHED")
                                                        else if (canChallenge) "🔥 " + (if (activeLang == "TR") "MEYDAN OKUMA HAZIR" else "CHALLENGE ACTIVE")
                                                        else "🔒 " + (if (activeLang == "TR") "KAPALI MİHRAK" else "SEALED TRIANGLE"),
-                                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, fontWeight = FontWeight.Bold),
-                                                color = if (isSlain) Color.Green else if (canChallenge) BlightDamageColor else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                                                modifier = Modifier.padding(horizontal = Dimens.SpacingS, vertical = Dimens.BorderThick),
+                                                style = MaterialTheme.typography.labelSmall.copy(fontSize = Dimens.TextXxs, fontWeight = FontWeight.Bold),
+                                                color = if (isSlain) Color.Green else if (canChallenge) ColorDanger else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
                                             )
                                         }
-                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Spacer(modifier = Modifier.width(Dimens.SpacingS))
                                         Text(
                                             text = if (canChallenge || isSlain) (if (activeLang == "TR") boss.nameTr else boss.nameEn) else "???",
                                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
@@ -982,7 +982,7 @@ fun QuestsTab(
                                     }
                                 }
 
-                                Spacer(modifier = Modifier.height(6.dp))
+                                Spacer(modifier = Modifier.height(Dimens.SpacingS))
                                 Text(
                                     text = if (canChallenge || isSlain) (if (activeLang == "TR") boss.descriptionTr else boss.descriptionEn) 
                                            else (if (activeLang == "TR") "Bu efsanevi varlığın aurası henüz gizli. Gerekli kılıç aşamalarını ve ruh düzeylerini tamamlayın." else "The dynamic presence of this overlord remains veiled. Perfect your stats and alignments to unravel limits."),
@@ -990,7 +990,7 @@ fun QuestsTab(
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                                 )
 
-                                Spacer(modifier = Modifier.height(10.dp))
+                                Spacer(modifier = Modifier.height(Dimens.SpacingM))
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text(
                                         text = if (activeLang == "TR") "Aura Şartları: " else "Vortex Requirements: ",
@@ -1012,40 +1012,40 @@ fun QuestsTab(
                                     Text(
                                         text = if (activeLang == "TR") reqTr else reqEn,
                                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold, fontStyle = FontStyle.Italic),
-                                        color = if (canChallenge) SanctumGold else BlightDamageColor
+                                        color = if (canChallenge) ColorSanctumPrimary else ColorDanger
                                     )
                                 }
 
-                                Spacer(modifier = Modifier.height(8.dp))
+                                Spacer(modifier = Modifier.height(Dimens.SpacingS))
                                 Column(
                                     modifier = Modifier
-                                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f), RoundedCornerShape(6.dp))
-                                        .padding(8.dp)
+                                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f), RoundedCornerShape(Dimens.SpacingS))
+                                        .padding(Dimens.SpacingS)
                                         .fillMaxWidth()
                                 ) {
                                     Text(
                                         text = if (activeLang == "TR") "KİLİTLİ ZAFER GANİMETLERİ:" else "VEILED TRIUMPH REWARDS:",
-                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, fontSize = 8.sp),
+                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, fontSize = Dimens.TextXxs),
                                         color = MaterialTheme.colorScheme.primary
                                     )
-                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Spacer(modifier = Modifier.height(Dimens.SpacingXs))
                                     Text(
                                         text = "+${boss.rewardGold} GP  •  +${boss.rewardAether} Aether  •  🎒 ${boss.rewardItem}",
                                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
-                                        color = SanctumGold
+                                        color = ColorSanctumPrimary
                                     )
                                 }
 
                                 if (canChallenge && !isSlain) {
-                                    Spacer(modifier = Modifier.height(12.dp))
+                                    Spacer(modifier = Modifier.height(Dimens.SpacingM))
                                     Button(
                                         onClick = { viewModel.startSecretBossEncounter(boss) },
                                         modifier = Modifier.fillMaxWidth(),
-                                        colors = ButtonDefaults.buttonColors(containerColor = BlightDamageColor),
-                                        shape = RoundedCornerShape(8.dp)
+                                        colors = ButtonDefaults.buttonColors(containerColor = ColorDanger),
+                                        shape = RoundedCornerShape(Dimens.SpacingS)
                                     ) {
-                                        Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(16.dp))
-                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(Dimens.SpacingL))
+                                        Spacer(modifier = Modifier.width(Dimens.SpacingS))
                                         Text(
                                             text = if (activeLang == "TR") "MEYDAN OKUMAYI BAŞLAT ⚔️" else "ENGAGE ELDRITCH BATTLE ⚔️",
                                             style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold)

@@ -104,10 +104,10 @@ fun RpgGameScreen(
                             viewModel.changeLanguage(if (activeLang == "TR") "EN" else "TR")
                         },
                         modifier = Modifier
-                            .padding(end = 8.dp)
+                            .padding(end = Dimens.SpacingS)
                             .testTag("lang_toggle"),
-                        shape = RoundedCornerShape(8.dp),
-                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
+                        shape = RoundedCornerShape(Dimens.RadiusS),
+                        contentPadding = PaddingValues(horizontal = Dimens.SpacingM, vertical = Dimens.SpacingXs),
                         colors = ButtonDefaults.outlinedButtonColors(
                             contentColor = MaterialTheme.colorScheme.primary
                         )
@@ -126,7 +126,7 @@ fun RpgGameScreen(
                         Icon(
                             imageVector = Icons.Default.Refresh,
                             contentDescription = "Restart RPG",
-                            tint = BlightDamageColor
+                            tint = ColorDanger
                         )
                     }
 
@@ -175,6 +175,13 @@ fun RpgGameScreen(
                     alwaysShowLabel = false
                 )
                 NavigationBarItem(
+                    selected = tab == "LEGACY",
+                    onClick = { viewModel.selectTab("LEGACY") },
+                    icon = { Icon(Icons.Default.Favorite, contentDescription = "Legacy") },
+                    modifier = Modifier.testTag("nav_legacy"),
+                    alwaysShowLabel = false
+                )
+                NavigationBarItem(
                     selected = tab == "CHAR_SHEET",
                     onClick = { viewModel.selectTab("CHAR_SHEET") },
                     icon = { Icon(Icons.Default.Person, contentDescription = "Character Sheet") },
@@ -212,26 +219,26 @@ fun RpgGameScreen(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 6.dp),
+                        .padding(horizontal = Dimens.SpacingL, vertical = Dimens.SpacingS),
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)
                     ),
-                    shape = RoundedCornerShape(8.dp),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
+                    shape = RoundedCornerShape(Dimens.RadiusS),
+                    border = BorderStroke(Dimens.BorderThin, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
                 ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(10.dp),
+                            .padding(Dimens.SpacingS),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
                             imageVector = Icons.Default.Info,
                             contentDescription = "Notification",
                             tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(18.dp)
+                            modifier = Modifier.size(Dimens.IconS)
                         )
-                        Spacer(modifier = Modifier.width(10.dp))
+                        Spacer(modifier = Modifier.width(Dimens.SpacingS))
                         Text(
                             text = if (activeLang == "TR") actionMessageTr else actionMessageEn,
                             style = MaterialTheme.typography.bodySmall.copy(
@@ -289,6 +296,12 @@ fun RpgGameScreen(
                         viewModel = viewModel,
                         activeLang = activeLang
                     )
+                    "LEGACY" -> LegacyTab(
+                        player = player,
+                        activeLang = activeLang,
+                        onUpgradePurchased = { viewModel.purchaseUpgrade(it) },
+                        onClaimQuestReward = { viewModel.claimDailyQuestReward(it) }
+                    )
                     "JOURNAL" -> JournalTab(
                         journal = journal,
                         activeLang = activeLang,
@@ -311,7 +324,7 @@ fun RpgGameScreen(
             },
             title = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("⚡ ", fontSize = 24.sp)
+                    Text("⚡ ", fontSize = Dimens.TextXl)
                     Text(
                         text = if (activeLang == "TR") "İRADEYİ YENİLE" else "RECHARGE WILLPOWER",
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
@@ -322,7 +335,7 @@ fun RpgGameScreen(
             text = {
                 Column(
                     modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    verticalArrangement = Arrangement.spacedBy(Dimens.SpacingM)
                 ) {
                     Text(
                         text = if (activeLang == "TR") {
@@ -340,16 +353,16 @@ fun RpgGameScreen(
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)),
-                        shape = RoundedCornerShape(12.dp),
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
+                        shape = RoundedCornerShape(Dimens.RadiusM),
+                        border = BorderStroke(Dimens.BorderThin, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
                     ) {
-                        Column(modifier = Modifier.padding(12.dp)) {
+                        Column(modifier = Modifier.padding(Dimens.SpacingM)) {
                             Text(
                                 text = if (activeLang == "TR") "🎬 MİNİ REKLAM BÖLÜMÜ" else "🎬 SPONSOR REWARDED AD",
                                 style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
                                 color = MaterialTheme.colorScheme.primary
                             )
-                            Spacer(modifier = Modifier.height(4.dp))
+                            Spacer(modifier = Modifier.height(Dimens.SpacingXs))
                             Text(
                                 text = if (activeLang == "TR") {
                                     "Kısa sponsor klibini izleyin ve hediye +5 İrade kazanın! (60sn bekleme süresi vardır)"
@@ -360,7 +373,7 @@ fun RpgGameScreen(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
 
-                            Spacer(modifier = Modifier.height(10.dp))
+                            Spacer(modifier = Modifier.height(Dimens.SpacingM))
 
                             if (isAdWatching) {
                                 Row(
@@ -369,11 +382,11 @@ fun RpgGameScreen(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     CircularProgressIndicator(
-                                        modifier = Modifier.size(20.dp),
-                                        strokeWidth = 2.dp,
+                                        modifier = Modifier.size(Dimens.IconM),
+                                        strokeWidth = Dimens.BorderThick,
                                         color = MaterialTheme.colorScheme.primary
                                     )
-                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Spacer(modifier = Modifier.width(Dimens.SpacingS))
                                     Text(
                                         text = if (activeLang == "TR") "Sponsor reklam izleniyor (5sn)..." else "Watching sponsor clip (5s)...",
                                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
@@ -408,18 +421,18 @@ fun RpgGameScreen(
                     Text(
                         text = if (activeLang == "TR") "💎 PREMIUM MARKET TEKLİFLERİ" else "💎 PREMIUM STORE OFFERS",
                         style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                        color = SanctumGold
+                        color = ColorSanctumPrimary
                     )
 
                     // Offer 1: Pack Small
                     Card(
                         modifier = Modifier.fillMaxWidth().clickable { simulatedBillingSku = "pack_elixir" },
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
-                        shape = RoundedCornerShape(10.dp),
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+                        shape = RoundedCornerShape(Dimens.RadiusS),
+                        border = BorderStroke(Dimens.BorderThin, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
                     ) {
                         Row(
-                            modifier = Modifier.padding(12.dp),
+                            modifier = Modifier.padding(Dimens.SpacingM),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -436,8 +449,8 @@ fun RpgGameScreen(
                             }
                             Text(
                                 text = "$1.99",
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = SanctumGold),
-                                modifier = Modifier.padding(start = 8.dp)
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = ColorSanctumPrimary),
+                                modifier = Modifier.padding(start = Dimens.SpacingS)
                             )
                         }
                     }
@@ -446,11 +459,11 @@ fun RpgGameScreen(
                     Card(
                         modifier = Modifier.fillMaxWidth().clickable { simulatedBillingSku = "pack_chest" },
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
-                        shape = RoundedCornerShape(10.dp),
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+                        shape = RoundedCornerShape(Dimens.RadiusS),
+                        border = BorderStroke(Dimens.BorderThin, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
                     ) {
                         Row(
-                            modifier = Modifier.padding(12.dp),
+                            modifier = Modifier.padding(Dimens.SpacingM),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -467,8 +480,8 @@ fun RpgGameScreen(
                             }
                             Text(
                                 text = "$3.99",
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = SanctumGold),
-                                modifier = Modifier.padding(start = 8.dp)
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = ColorSanctumPrimary),
+                                modifier = Modifier.padding(start = Dimens.SpacingS)
                             )
                         }
                     }
@@ -476,22 +489,22 @@ fun RpgGameScreen(
                     // Offer 3: Lifetime / Season Pass!
                     Card(
                         modifier = Modifier.fillMaxWidth().clickable { simulatedBillingSku = "season_pass" },
-                        colors = CardDefaults.cardColors(containerColor = VoidNeonPurple.copy(alpha = 0.15f)),
-                        shape = RoundedCornerShape(12.dp),
-                        border = BorderStroke(2.dp, VoidNeonPurple)
+                        colors = CardDefaults.cardColors(containerColor = ColorCovenantGlow.copy(alpha = 0.15f)),
+                        shape = RoundedCornerShape(Dimens.RadiusM),
+                        border = BorderStroke(Dimens.BorderThick, ColorCovenantGlow)
                     ) {
                         Row(
-                            modifier = Modifier.padding(14.dp),
+                            modifier = Modifier.padding(Dimens.SpacingM),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text("👑 ", fontSize = 16.sp)
+                                    Text("👑 ", fontSize = Dimens.TextL)
                                     Text(
                                         text = if (activeLang == "TR") "SEZONLUK HÜKÜMDAR KARTI" else "SEASONAL SOVEREIGN PASS",
                                         style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.ExtraBold),
-                                        color = VoidNeonPurple
+                                        color = ColorCovenantGlow
                                     )
                                 }
                                 Text(
@@ -506,8 +519,8 @@ fun RpgGameScreen(
                             }
                             Text(
                                 text = "$4.99",
-                                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black, color = VoidNeonPurple),
-                                modifier = Modifier.padding(start = 8.dp)
+                                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black, color = ColorCovenantGlow),
+                                modifier = Modifier.padding(start = Dimens.SpacingS)
                             )
                         }
                     }
@@ -538,7 +551,7 @@ fun RpgGameScreen(
                         viewModel.purchaseProduct(activeSku)
                         simulatedBillingSku = null
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = SpiritHealColor)
+                    colors = ButtonDefaults.buttonColors(containerColor = ColorHeal)
                 ) {
                     Text(if (activeLang == "TR") "Simüle Satın Alımı Tamamla" else "Simulate Approved Purchase")
                 }
@@ -554,7 +567,7 @@ fun RpgGameScreen(
                 }
             },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(Dimens.SpacingM)) {
                     Text(
                         text = if (activeLang == "TR") {
                             "Güvenli Google Play ödemesi simüle ediliyor. Kart onay veya Google Pay arayüzü başlatıldı."
@@ -567,17 +580,17 @@ fun RpgGameScreen(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
                     ) {
-                        Column(modifier = Modifier.padding(12.dp)) {
+                        Column(modifier = Modifier.padding(Dimens.SpacingM)) {
                             Text(
                                 text = productName,
                                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
                             )
-                            Spacer(modifier = Modifier.height(4.dp))
+                            Spacer(modifier = Modifier.height(Dimens.SpacingXs))
                             Text(
                                 text = "${if (activeLang == "TR") "Fiyat: " else "Price: "} $productPrice",
                                 style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold)
                             )
-                            Spacer(modifier = Modifier.height(6.dp))
+                            Spacer(modifier = Modifier.height(Dimens.SpacingS))
                             Text(
                                 text = if (activeLang == "TR") "Satıcı: AI Studio Game Studio s.r.o." else "Merchant: AI Studio Game Studio s.r.o.",
                                 style = MaterialTheme.typography.labelSmall,
@@ -686,7 +699,7 @@ fun RpgGameScreen(
                                         text = if (activeLang == "TR") alignTextTr else alignText,
                                         style = MaterialTheme.typography.bodySmall.copy(
                                             fontWeight = FontWeight.SemiBold,
-                                            color = if (p.momentum > 50) SanctumGold else if (p.momentum < 50) VoidNeonPurple else MaterialTheme.colorScheme.onSurface
+                                            color = if (p.momentum > 50) ColorSanctumPrimary else if (p.momentum < 50) ColorCovenantGlow else MaterialTheme.colorScheme.onSurface
                                         )
                                     )
                                 }
@@ -716,7 +729,7 @@ fun RpgGameScreen(
                                         style = MaterialTheme.typography.bodySmall.copy(fontStyle = FontStyle.Italic)
                                     )
                                 }
-                            }
+                             }
                         }
                     }
 
@@ -729,7 +742,7 @@ fun RpgGameScreen(
                         color = MaterialTheme.colorScheme.primary
                     )
 
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(Dimens.SpacingS)) {
                         Text(
                             text = if (activeLang == "TR") {
                                 "Nasıl bir kule ambiyansı istersiniz? Hizalanmaya Göre seçeneği, hizalanma puanınıza göre temayı otomatik belirler."
@@ -746,14 +759,14 @@ fun RpgGameScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable { viewModel.setThemeSelection("ALIGNMENT") }
-                                .padding(vertical = 4.dp)
+                                .padding(vertical = Dimens.SpacingXs)
                         ) {
                             RadioButton(
                                 selected = themeSelection == "ALIGNMENT",
                                 onClick = { viewModel.setThemeSelection("ALIGNMENT") },
                                 modifier = Modifier.testTag("theme_radio_alignment")
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
+                            Spacer(modifier = Modifier.width(Dimens.SpacingS))
                             Text(
                                 text = if (activeLang == "TR") "Hizalanmaya Göre (Dinamik)" else "Alignment Driven (Dynamic)",
                                 style = MaterialTheme.typography.bodyMedium
@@ -766,14 +779,14 @@ fun RpgGameScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable { viewModel.setThemeSelection("LIGHT") }
-                                .padding(vertical = 4.dp)
+                                .padding(vertical = Dimens.SpacingXs)
                         ) {
                             RadioButton(
                                 selected = themeSelection == "LIGHT",
                                 onClick = { viewModel.setThemeSelection("LIGHT") },
                                 modifier = Modifier.testTag("theme_radio_light")
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
+                            Spacer(modifier = Modifier.width(Dimens.SpacingS))
                             Text(
                                 text = if (activeLang == "TR") "Işık Teması (Celestial Sanctum)" else "Light Theme (Celestial Sanctum)",
                                 style = MaterialTheme.typography.bodyMedium
@@ -786,14 +799,14 @@ fun RpgGameScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable { viewModel.setThemeSelection("ABYSS") }
-                                .padding(vertical = 4.dp)
+                                .padding(vertical = Dimens.SpacingXs)
                         ) {
                             RadioButton(
                                 selected = themeSelection == "ABYSS",
                                 onClick = { viewModel.setThemeSelection("ABYSS") },
                                 modifier = Modifier.testTag("theme_radio_abyss")
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
+                            Spacer(modifier = Modifier.width(Dimens.SpacingS))
                             Text(
                                 text = if (activeLang == "TR") "Boşluk Teması (Abyss Covenant)" else "Abyss Theme (Void Covenant)",
                                 style = MaterialTheme.typography.bodyMedium
@@ -838,7 +851,7 @@ fun RpgGameScreen(
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(Dimens.SpacingXs))
 
                     // Prefix Equipped Title Switch
                     Row(
@@ -864,7 +877,7 @@ fun RpgGameScreen(
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(Dimens.SpacingXs))
 
                     // Sound Effects Switch
                     Row(
@@ -906,12 +919,12 @@ fun HeaderStatsBlock(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp, 8.dp, 16.dp, 2.dp),
+            .padding(Dimens.SpacingL, Dimens.SpacingS, Dimens.SpacingL, Dimens.SpacingXxs),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        shape = RoundedCornerShape(Dimens.RadiusM),
+        elevation = CardDefaults.cardElevation(defaultElevation = Dimens.ElevationLow)
     ) {
-        Column(modifier = Modifier.padding(10.dp)) {
+        Column(modifier = Modifier.padding(Dimens.SpacingS)) {
             // Profile top row containing Name/Level and Faction/Store controls side-by-side
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -927,11 +940,11 @@ fun HeaderStatsBlock(
                         )
                         val titleObj = com.example.data.engine.QuestTitleSystem.getTitleDef(player.equippedTitle)
                         if (titleObj != null && showTitlePrefix) {
-                            Spacer(modifier = Modifier.width(4.dp))
+                            Spacer(modifier = Modifier.width(Dimens.SpacingXs))
                             Text(
                                 text = "(${if (activeLang == "TR") titleObj.nameTr else titleObj.nameEn})",
                                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Black),
-                                color = SanctumGold
+                                color = ColorSanctumPrimary
                             )
                         }
                     }
@@ -941,53 +954,53 @@ fun HeaderStatsBlock(
                             style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                             color = MaterialTheme.colorScheme.primary
                         )
-                        Spacer(modifier = Modifier.width(6.dp))
+                        Spacer(modifier = Modifier.width(Dimens.SpacingS))
                         Text(
                             text = "•  ${LocalizationManager.getString(activeLang, "label_level")} ${player.level}",
                             style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.secondary)
                         )
-                        Spacer(modifier = Modifier.width(6.dp))
+                        Spacer(modifier = Modifier.width(Dimens.SpacingS))
                         Text(
                             text = "[${player.exp}/${player.maxExp} XP]",
-                            style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Monospace, fontSize = 9.sp),
+                            style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Monospace, fontSize = Dimens.TextXxs),
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                         )
                     }
                 }
 
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingS)) {
                     // Store button
                     Button(
                         onClick = { onStoreClick() },
-                        contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp),
-                        modifier = Modifier.height(24.dp).testTag("recharge_will_btn"),
+                        contentPadding = PaddingValues(horizontal = Dimens.SpacingS, vertical = Dimens.SpacingXxs),
+                        modifier = Modifier.height(Dimens.BottomNavHeight / 2.5f).testTag("recharge_will_btn"),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = if (isSovereignPassActive) VoidNeonPurple else SanctumGold,
+                            containerColor = if (isSovereignPassActive) ColorCovenantGlow else ColorSanctumPrimary,
                             contentColor = if (isSovereignPassActive) Color.White else Color.Black
                         )
                     ) {
                         Text(
                             text = if (isSovereignPassActive) (if (activeLang == "TR") "PASS" else "PASS") else (if (activeLang == "TR") "MAĞAZA ⚡" else "STORE ⚡"),
-                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                            style = MaterialTheme.typography.labelSmall.copy(fontSize = Dimens.TextXxs, fontWeight = FontWeight.Bold)
                         )
                     }
 
                     // Faction badge
                     Surface(
                         color = when (player.side) {
-                            "SANCTUM" -> SanctumGold.copy(alpha = 0.15f)
-                            "COVENANT" -> VoidNeonPurple.copy(alpha = 0.15f)
+                            "SANCTUM" -> ColorSanctumPrimary.copy(alpha = 0.15f)
+                            "COVENANT" -> ColorCovenantGlow.copy(alpha = 0.15f)
                             else -> MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
                         },
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(Dimens.RadiusM),
                         modifier = Modifier.border(
-                            1.dp,
+                            Dimens.BorderThin,
                             when (player.side) {
-                                "SANCTUM" -> SanctumGold
-                                "COVENANT" -> VoidNeonPurple
+                                "SANCTUM" -> ColorSanctumPrimary
+                                "COVENANT" -> ColorCovenantGlow
                                 else -> MaterialTheme.colorScheme.primary
                             },
-                            RoundedCornerShape(12.dp)
+                            RoundedCornerShape(Dimens.RadiusM)
                         )
                     ) {
                         Text(
@@ -996,11 +1009,11 @@ fun HeaderStatsBlock(
                                 "COVENANT" -> if (activeLang == "TR") "Kara Ahit" else "Covenant"
                                 else -> if (activeLang == "TR") "Sürgün" else "Neutral"
                             },
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, fontSize = 9.sp),
+                            modifier = Modifier.padding(horizontal = Dimens.SpacingS, vertical = Dimens.SpacingXxs),
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, fontSize = Dimens.TextXxs),
                             color = when (player.side) {
-                                "SANCTUM" -> SanctumGold
-                                "COVENANT" -> VoidNeonPurple
+                                "SANCTUM" -> ColorSanctumPrimary
+                                "COVENANT" -> ColorCovenantGlow
                                 else -> MaterialTheme.colorScheme.onSurface
                             }
                         )
@@ -1008,12 +1021,12 @@ fun HeaderStatsBlock(
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(Dimens.SpacingS))
 
             // Vitality & Willpower progress bars side-by-side
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingM)
             ) {
                 // Vitality (HP)
                 Column(modifier = Modifier.weight(1f)) {
@@ -1025,21 +1038,21 @@ fun HeaderStatsBlock(
                         Text(
                             text = "♥ HP",
                             style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                            color = BlightDamageColor
+                            color = ColorDanger
                         )
                         Text(
                             text = "${player.currentHp}/${player.maxHp}",
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, fontSize = 10.sp)
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, fontSize = Dimens.TextXxs)
                         )
                     }
-                    Spacer(modifier = Modifier.height(2.dp))
+                    Spacer(modifier = Modifier.height(Dimens.SpacingXxs))
                     LinearProgressIndicator(
                         progress = { player.currentHp.toFloat() / player.maxHp.toFloat() },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(6.dp)
-                            .clip(RoundedCornerShape(3.dp)),
-                        color = if (player.currentHp < 30) BlightDamageColor else SpiritHealColor,
+                            .height(Dimens.SpacingXs)
+                            .clip(RoundedCornerShape(Dimens.RadiusXs)),
+                        color = if (player.currentHp < 30) ColorDanger else ColorHeal,
                         trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
                     )
                 }
@@ -1054,29 +1067,29 @@ fun HeaderStatsBlock(
                         Text(
                             text = "⚡ WILL",
                             style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                            color = SanctumGold
+                            color = ColorSanctumPrimary
                         )
                         Text(
                             text = if (isSovereignPassActive) "∞" else "${player.currentWill}/${player.maxWill}",
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, fontSize = 10.sp),
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, fontSize = Dimens.TextXxs),
                             modifier = Modifier.clickable { onStoreClick() }
                         )
                     }
-                    Spacer(modifier = Modifier.height(2.dp))
+                    Spacer(modifier = Modifier.height(Dimens.SpacingXxs))
                     LinearProgressIndicator(
                         progress = { if (isSovereignPassActive) 1.0f else player.currentWill.toFloat() / player.maxWill.toFloat() },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(6.dp)
-                            .clip(RoundedCornerShape(3.dp))
+                            .height(Dimens.SpacingXs)
+                            .clip(RoundedCornerShape(Dimens.RadiusXs))
                             .clickable { onStoreClick() },
-                        color = if (isSovereignPassActive) VoidNeonPurple else SanctumGold,
+                        color = if (isSovereignPassActive) ColorCovenantGlow else ColorSanctumPrimary,
                         trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(Dimens.SpacingS))
 
             // Resources values inside a single horizontal spaced row
             Row(
@@ -1092,7 +1105,7 @@ fun HeaderStatsBlock(
                     icon = "✨",
                     value = "${player.aether}",
                     label = "Aether",
-                    accentColor = GleamGold
+                    accentColor = ColorStatGold
                 )
             }
         }
@@ -1107,17 +1120,17 @@ fun ResourceChip(
     accentColor: Color = Color.Unspecified
 ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Text(text = icon, fontSize = 14.sp)
-        Spacer(modifier = Modifier.width(4.dp))
+        Text(text = icon, fontSize = Dimens.TextM)
+        Spacer(modifier = Modifier.width(Dimens.SpacingXs))
         Text(
             text = value,
             style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
             color = if (accentColor != Color.Unspecified) accentColor else MaterialTheme.colorScheme.onSurface
         )
-        Spacer(modifier = Modifier.width(3.dp))
+        Spacer(modifier = Modifier.width(Dimens.SpacingXs))
         Text(
             text = "($label)",
-            style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
+            style = MaterialTheme.typography.labelSmall.copy(fontSize = Dimens.TextXxs),
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f)
         )
     }

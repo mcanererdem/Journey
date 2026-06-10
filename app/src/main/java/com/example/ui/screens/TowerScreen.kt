@@ -46,9 +46,9 @@ import com.example.ui.theme.*
 fun StatusEffectsRow(statuses: List<CombatStatus>, activeLang: String) {
     if (statuses.isEmpty()) return
     Row(
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingS),
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(vertical = 4.dp)
+        modifier = Modifier.padding(vertical = Dimens.SpacingXs)
     ) {
         statuses.forEach { status ->
             val statusColor = when (status.type) {
@@ -65,13 +65,13 @@ fun StatusEffectsRow(statuses: List<CombatStatus>, activeLang: String) {
             }
             Box(
                 modifier = Modifier
-                    .background(statusColor.copy(alpha = 0.12f), RoundedCornerShape(4.dp))
-                    .border(1.dp, statusColor.copy(alpha = 0.6f), RoundedCornerShape(4.dp))
-                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                    .background(statusColor.copy(alpha = 0.12f), RoundedCornerShape(Dimens.SpacingXs))
+                    .border(Dimens.BorderThin, statusColor.copy(alpha = 0.6f), RoundedCornerShape(Dimens.SpacingXs))
+                    .padding(horizontal = Dimens.SpacingS, vertical = Dimens.BorderThick)
             ) {
                 Text(
                     text = "${statusText} (${status.durationTurns}t)",
-                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, fontSize = 9.sp),
+                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, fontSize = Dimens.TextXxs),
                     color = statusColor
                 )
             }
@@ -104,12 +104,12 @@ fun TowerClimbTab(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = Dimens.SpacingL),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Subtle top spacing
         item {
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(Dimens.SpacingM))
         }
 
         // Checkpoint indicator
@@ -119,7 +119,7 @@ fun TowerClimbTab(
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
             )
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(Dimens.SpacingM))
         }
 
         // Handcrafted Spires Cartography & Navigation Radar
@@ -140,18 +140,18 @@ fun TowerClimbTab(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 14.dp),
-                shape = RoundedCornerShape(12.dp),
+                    .padding(bottom = Dimens.SpacingM),
+                shape = RoundedCornerShape(Dimens.SpacingM),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.15f))
+                border = BorderStroke(Dimens.BorderThin, MaterialTheme.colorScheme.primary.copy(alpha = 0.15f))
             ) {
-                Column(modifier = Modifier.padding(12.dp)) {
+                Column(modifier = Modifier.padding(Dimens.SpacingM)) {
                     Text(
                         text = LocalizationManager.getString(activeLang, "label_nodes"),
-                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, letterSpacing = 1.sp),
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, letterSpacing = Dimens.LetterSpacingNormal),
                         color = MaterialTheme.colorScheme.primary
                     )
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(Dimens.SpacingM))
                     
                     val currentIndex = player.currentNodeIndex
                     Row(
@@ -173,17 +173,17 @@ fun TowerClimbTab(
                             ) {
                                 Box(
                                     modifier = Modifier
-                                        .size(34.dp)
+                                        .size(Dimens.BadgeSize)
                                         .clip(CircleShape)
                                         .background(
                                             if (isActive) MaterialTheme.colorScheme.primaryContainer
-                                            else if (isCompleted) SpiritHealColor.copy(alpha = 0.15f)
+                                            else if (isCompleted) ColorHeal.copy(alpha = 0.15f)
                                             else MaterialTheme.colorScheme.surfaceVariant
                                         )
                                         .border(
-                                            width = if (isActive) 2.dp else 1.dp,
+                                            width = if (isActive) Dimens.BorderThick else Dimens.BorderThin,
                                             color = if (isActive) MaterialTheme.colorScheme.primary
-                                            else if (isCompleted) SpiritHealColor
+                                            else if (isCompleted) ColorHeal
                                             else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
                                             shape = CircleShape
                                         ),
@@ -198,16 +198,16 @@ fun TowerClimbTab(
                                             NodeType.MERCHANT -> "⚱️"
                                             NodeType.NARRATIVE -> "📜"
                                         },
-                                        fontSize = 13.sp
+                                        fontSize = Dimens.TextS
                                     )
                                 }
-                                Spacer(modifier = Modifier.height(3.dp))
+                                Spacer(modifier = Modifier.height(Dimens.BorderGlow))
                                 Text(
                                     text = "${idx + 1}",
                                     style = MaterialTheme.typography.labelSmall.copy(
                                         fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal,
                                         fontFamily = FontFamily.Monospace,
-                                        fontSize = 10.sp
+                                        fontSize = Dimens.TextXxs
                                     ),
                                     color = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                                 )
@@ -225,33 +225,33 @@ fun TowerClimbTab(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 16.dp),
+                        .padding(bottom = Dimens.SpacingL),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    shape = RoundedCornerShape(16.dp),
-                    border = BorderStroke(3.dp, SanctumGold)
+                    shape = RoundedCornerShape(Dimens.SpacingL),
+                    border = BorderStroke(Dimens.BorderGlow, ColorSanctumPrimary)
                 ) {
                     Column(
                         modifier = Modifier
-                            .padding(24.dp)
+                            .padding(Dimens.SpacingXxl)
                             .fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
                             text = "👑 SOVEREIGN CONQUEROR 👑",
                             style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
-                            color = SanctumGold,
+                            color = ColorSanctumPrimary,
                             textAlign = TextAlign.Center
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(Dimens.SpacingL))
                         Text(
                             text = "You have climbed all 100 floors of the Cosmic Spires! The universe is forever saved and your name is written in stars.",
                             style = MaterialTheme.typography.bodyLarge,
                             textAlign = TextAlign.Center
                         )
-                        Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(Dimens.SpacingXxl))
                         Button(
                             onClick = onResetClick,
-                            colors = ButtonDefaults.buttonColors(containerColor = SanctumGold),
+                            colors = ButtonDefaults.buttonColors(containerColor = ColorSanctumPrimary),
                             modifier = Modifier.testTag("ascend_victory_reset")
                         ) {
                             Text(LocalizationManager.getString(activeLang, "ascend_victory_reset"))
@@ -268,23 +268,23 @@ fun TowerClimbTab(
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(bottom = 16.dp),
-                            shape = RoundedCornerShape(12.dp),
+                                .padding(bottom = Dimens.SpacingL),
+                            shape = RoundedCornerShape(Dimens.SpacingM),
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                            border = BorderStroke(1.5.dp, SpiritHealColor)
+                            border = BorderStroke(Dimens.BorderNormal, ColorHeal)
                         ) {
                             Column(
                                 modifier = Modifier
-                                    .padding(18.dp)
+                                    .padding(Dimens.SpacingL)
                                     .fillMaxWidth(),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Text(
                                     text = if (activeLang == "TR") "Sektörü Tamamladınız! 🎉" else "Sector Cleared! 🎉",
                                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                                    color = SpiritHealColor
+                                    color = ColorHeal
                                 )
-                                Spacer(modifier = Modifier.height(8.dp))
+                                Spacer(modifier = Modifier.height(Dimens.SpacingS))
                                 Text(
                                     text = if (activeLang == "TR") {
                                         "Bu bölgedeki sınamalar başarıyla aşıldı. Kule'nin bir sonraki katına çıkmaya veya derindeki diğer olay sektörüne sızmaya hazırsınız."
@@ -295,7 +295,7 @@ fun TowerClimbTab(
                                     textAlign = TextAlign.Center,
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
                                 )
-                                Spacer(modifier = Modifier.height(18.dp))
+                                Spacer(modifier = Modifier.height(Dimens.SpacingL))
 
                                 if (activeNode.type == NodeType.BOSS) {
                                     // Ascend to the next floor
@@ -303,9 +303,9 @@ fun TowerClimbTab(
                                         onClick = onAscendFloorClick,
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .height(50.dp)
+                                            .height(Dimens.AvatarSize)
                                             .testTag("btn_ascend_floor"),
-                                        colors = ButtonDefaults.buttonColors(containerColor = SpiritHealColor)
+                                        colors = ButtonDefaults.buttonColors(containerColor = ColorHeal)
                                     ) {
                                         Text(
                                             text = LocalizationManager.getString(activeLang, "btn_ascend_floor"),
@@ -319,7 +319,7 @@ fun TowerClimbTab(
                                         enabled = false,
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .height(50.dp),
+                                            .height(Dimens.AvatarSize),
                                         colors = ButtonDefaults.buttonColors(
                                             disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                                             disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
@@ -340,15 +340,15 @@ fun TowerClimbTab(
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(bottom = 12.dp),
-                            shape = RoundedCornerShape(14.dp),
+                                .padding(bottom = Dimens.SpacingM),
+                            shape = RoundedCornerShape(Dimens.SpacingM),
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                             border = BorderStroke(
-                                width = if (activeNode.type == NodeType.BOSS) 2.dp else 1.dp,
-                                color = if (activeNode.type == NodeType.BOSS) SanctumGold else BlightDamageColor.copy(alpha = 0.4f)
+                                width = if (activeNode.type == NodeType.BOSS) Dimens.BorderThick else Dimens.BorderThin,
+                                color = if (activeNode.type == NodeType.BOSS) ColorSanctumPrimary else ColorDanger.copy(alpha = 0.4f)
                             )
                         ) {
-                            Column(modifier = Modifier.padding(16.dp)) {
+                            Column(modifier = Modifier.padding(Dimens.SpacingL)) {
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -378,9 +378,9 @@ fun TowerClimbTab(
                                     }
                                     Box(
                                         modifier = Modifier
-                                            .background(intentBadgeColor.copy(alpha = 0.15f), RoundedCornerShape(4.dp))
-                                            .border(1.5.dp, intentBadgeColor, RoundedCornerShape(4.dp))
-                                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                                            .background(intentBadgeColor.copy(alpha = 0.15f), RoundedCornerShape(Dimens.SpacingXs))
+                                            .border(Dimens.BorderNormal, intentBadgeColor, RoundedCornerShape(Dimens.SpacingXs))
+                                            .padding(horizontal = Dimens.SpacingS, vertical = Dimens.SpacingXs)
                                     ) {
                                         Text(
                                             text = intentBadgeText,
@@ -391,36 +391,36 @@ fun TowerClimbTab(
                                     
                                     if (activeNode.type == NodeType.BOSS) {
                                         Surface(
-                                            color = SanctumGold.copy(alpha = 0.15f),
-                                            shape = RoundedCornerShape(4.dp)
+                                            color = ColorSanctumPrimary.copy(alpha = 0.15f),
+                                            shape = RoundedCornerShape(Dimens.SpacingXs)
                                         ) {
                                             Text(
                                                 text = "BOSS",
-                                                modifier = Modifier.padding(6.dp, 2.dp),
+                                                modifier = Modifier.padding(Dimens.SpacingS, Dimens.BorderThick),
                                                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                                color = SanctumGold
+                                                color = ColorSanctumPrimary
                                             )
                                         }
                                     }
                                 }
                                 
-                                Spacer(modifier = Modifier.height(10.dp))
+                                Spacer(modifier = Modifier.height(Dimens.SpacingM))
                                 
                                 val mobHp = activeEnemyHp ?: activeNode.enemyHp
                                 // Enemy Status Effects
                                 StatusEffectsRow(statuses = enemyStatuses, activeLang = activeLang)
-                                Spacer(modifier = Modifier.height(4.dp))
+                                Spacer(modifier = Modifier.height(Dimens.SpacingXs))
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     LinearProgressIndicator(
                                         progress = { mobHp.toFloat() / activeNode.enemyHp.toFloat() },
                                         modifier = Modifier
                                             .weight(1f)
-                                            .height(10.dp)
-                                            .clip(RoundedCornerShape(5.dp)),
-                                        color = BlightDamageColor,
+                                            .height(Dimens.SpacingM)
+                                            .clip(RoundedCornerShape(Dimens.SpacingXs)),
+                                        color = ColorDanger,
                                         trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                                     )
-                                    Spacer(modifier = Modifier.width(10.dp))
+                                    Spacer(modifier = Modifier.width(Dimens.SpacingM))
                                     Text(
                                         text = "$mobHp/${activeNode.enemyHp}",
                                         style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
@@ -440,9 +440,9 @@ fun TowerClimbTab(
                                     com.example.data.model.EnemyFaction.BLIGHTED_AMALGAM -> if (activeLang == "TR") "KADİM MUSİBET" else "CORRUPTED BLIGHT"
                                 }
                                 val badgeColor = when (enemyFaction) {
-                                    com.example.data.model.EnemyFaction.SANCTUM_WRATH -> SanctumGold
-                                    com.example.data.model.EnemyFaction.VOID_CORRUPTION -> VoidNeonPurple
-                                    com.example.data.model.EnemyFaction.BLIGHTED_AMALGAM -> BlightDamageColor
+                                    com.example.data.model.EnemyFaction.SANCTUM_WRATH -> ColorSanctumPrimary
+                                    com.example.data.model.EnemyFaction.VOID_CORRUPTION -> ColorCovenantGlow
+                                    com.example.data.model.EnemyFaction.BLIGHTED_AMALGAM -> ColorDanger
                                 }
                                 val descText = when (enemyFaction) {
                                     com.example.data.model.EnemyFaction.SANCTUM_WRATH -> if (activeLang == "TR") "Karanlık/Boşluk saldırılarına karşı zayıf, Kutsal inançlılara dirençli." else "Weak to Void alignment, resistant to Sanctum holy radiance."
@@ -450,36 +450,36 @@ fun TowerClimbTab(
                                     com.example.data.model.EnemyFaction.BLIGHTED_AMALGAM -> if (activeLang == "TR") "Nötr ve dengeli savaşçılara karşı zayıftır." else "Weak to Neutral alignment and steady balanced strikes."
                                 }
 
-                                Spacer(modifier = Modifier.height(12.dp))
+                                Spacer(modifier = Modifier.height(Dimens.SpacingM))
 
                                 // Faction badge and Weakness details flow
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingS),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Box(
                                         modifier = Modifier
-                                            .background(badgeColor.copy(alpha = 0.15f), RoundedCornerShape(4.dp))
-                                            .border(1.dp, badgeColor.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
-                                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                                            .background(badgeColor.copy(alpha = 0.15f), RoundedCornerShape(Dimens.SpacingXs))
+                                            .border(Dimens.BorderThin, badgeColor.copy(alpha = 0.5f), RoundedCornerShape(Dimens.SpacingXs))
+                                            .padding(horizontal = Dimens.SpacingS, vertical = Dimens.SpacingXs)
                                     ) {
                                         Text(
                                             text = textText,
-                                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp, fontWeight = FontWeight.Bold),
+                                            style = MaterialTheme.typography.labelSmall.copy(fontSize = Dimens.TextXxs, fontWeight = FontWeight.Bold),
                                             color = badgeColor
                                         )
                                     }
 
                                     Text(
                                         text = descText,
-                                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, fontWeight = FontWeight.Normal),
+                                        style = MaterialTheme.typography.labelSmall.copy(fontSize = Dimens.TextXxs, fontWeight = FontWeight.Normal),
                                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                                         modifier = Modifier.weight(1f)
                                     )
                                 }
 
-                                Spacer(modifier = Modifier.height(10.dp))
+                                Spacer(modifier = Modifier.height(Dimens.SpacingM))
 
                                 // Detailed tactical modifiers description card
                                 Card(
@@ -487,21 +487,21 @@ fun TowerClimbTab(
                                     colors = CardDefaults.cardColors(
                                         containerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.03f)
                                     ),
-                                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f)),
-                                    shape = RoundedCornerShape(8.dp)
+                                    border = BorderStroke(Dimens.BorderThin, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f)),
+                                    shape = RoundedCornerShape(Dimens.SpacingS)
                                 ) {
-                                    Column(modifier = Modifier.padding(10.dp)) {
+                                    Column(modifier = Modifier.padding(Dimens.SpacingM)) {
                                         Text(
                                             text = if (activeLang == "TR") "⚔️ SAVAŞ ETKİNLİĞİ VE DURUM ETKİLERİ" else "⚔️ COMBAT EFFECTIVENESS & MODIFIERS",
                                             style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, letterSpacing = 0.5.sp),
                                             color = MaterialTheme.colorScheme.primary
                                         )
 
-                                        Spacer(modifier = Modifier.height(6.dp))
+                                        Spacer(modifier = Modifier.height(Dimens.SpacingS))
 
                                         // Row 1: Faction effectiveness
                                         Row(
-                                            modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+                                            modifier = Modifier.fillMaxWidth().padding(vertical = Dimens.BorderThick),
                                             horizontalArrangement = Arrangement.SpaceBetween
                                         ) {
                                             Text(
@@ -513,20 +513,20 @@ fun TowerClimbTab(
                                             val (matchText, matchColor) = when {
                                                 isSanctum && enemyFaction == com.example.data.model.EnemyFaction.VOID_CORRUPTION -> {
                                                      val bonus = 20 + ((player.momentum - 50) / 4)
-                                                    Pair(if (activeLang == "TR") "✨ Avantaj: +$bonus% (Işık)" else "✨ Advantage: +$bonus% (Light)", SanctumGold)
+                                                    Pair(if (activeLang == "TR") "✨ Avantaj: +$bonus% (Işık)" else "✨ Advantage: +$bonus% (Light)", ColorSanctumPrimary)
                                                 }
                                                 isCovenant && enemyFaction == com.example.data.model.EnemyFaction.SANCTUM_WRATH -> {
                                                     val bonus = 20 + (Math.abs(player.momentum - 50) / 4)
-                                                    Pair(if (activeLang == "TR") "🔮 Avantaj: +$bonus% (Boşluk)" else "🔮 Advantage: +$bonus% (Void)", VoidNeonPurple)
+                                                    Pair(if (activeLang == "TR") "🔮 Avantaj: +$bonus% (Boşluk)" else "🔮 Advantage: +$bonus% (Void)", ColorCovenantGlow)
                                                 }
                                                 isSanctum && enemyFaction == com.example.data.model.EnemyFaction.SANCTUM_WRATH -> {
-                                                    Pair(if (activeLang == "TR") "⚠️ Direnç: -15% Azalmış Hasar" else "⚠️ Resisted: -15% Holy Kinship", BlightDamageColor)
+                                                    Pair(if (activeLang == "TR") "⚠️ Direnç: -15% Azalmış Hasar" else "⚠️ Resisted: -15% Holy Kinship", ColorDanger)
                                                 }
                                                 isCovenant && enemyFaction == com.example.data.model.EnemyFaction.VOID_CORRUPTION -> {
-                                                    Pair(if (activeLang == "TR") "⚠️ Direnç: -15% Azalmış Hasar" else "⚠️ Resisted: -15% Shadow Kinship", BlightDamageColor)
+                                                    Pair(if (activeLang == "TR") "⚠️ Direnç: -15% Azalmış Hasar" else "⚠️ Resisted: -15% Shadow Kinship", ColorDanger)
                                                 }
                                                 (!isSanctum && !isCovenant) && enemyFaction == com.example.data.model.EnemyFaction.BLIGHTED_AMALGAM -> {
-                                                    Pair(if (activeLang == "TR") "⚖️ Nötr Odak: +20% Hasar" else "⚖️ Neutral Focus: +20% Dmg", SanctumGold)
+                                                    Pair(if (activeLang == "TR") "⚖️ Nötr Odak: +20% Hasar" else "⚖️ Neutral Focus: +20% Dmg", ColorSanctumPrimary)
                                                 }
                                                 else -> {
                                                     Pair(if (activeLang == "TR") "⚖️ Dengeli: Standart" else "⚖️ Balanced: Standard", MaterialTheme.colorScheme.onSurface)
@@ -542,7 +542,7 @@ fun TowerClimbTab(
 
                                         // Row 2: Willpower critical rate
                                         Row(
-                                            modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+                                            modifier = Modifier.fillMaxWidth().padding(vertical = Dimens.BorderThick),
                                             horizontalArrangement = Arrangement.SpaceBetween
                                         ) {
                                             Text(
@@ -555,13 +555,13 @@ fun TowerClimbTab(
                                             Text(
                                                 text = "🔥 $critText",
                                                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
-                                                color = if (player.currentWill >= 7) SanctumGold else if (player.currentWill == 0) BlightDamageColor else MaterialTheme.colorScheme.onSurface
+                                                color = if (player.currentWill >= 7) ColorSanctumPrimary else if (player.currentWill == 0) ColorDanger else MaterialTheme.colorScheme.onSurface
                                             )
                                         }
 
                                         // Row 3: Mind state
                                         Row(
-                                            modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+                                            modifier = Modifier.fillMaxWidth().padding(vertical = Dimens.BorderThick),
                                             horizontalArrangement = Arrangement.SpaceBetween
                                         ) {
                                             Text(
@@ -571,8 +571,8 @@ fun TowerClimbTab(
                                             )
 
                                             val (stateText, stateColor) = when {
-                                                player.currentWill == 0 -> Pair(if (activeLang == "TR") "Zihinsel Sürsaj (-%25 Hasar)" else "Mental Fatigue (-25% Dmg)", BlightDamageColor)
-                                                player.currentWill >= 7 -> Pair(if (activeLang == "TR") "Berrak Zihin (+%15 Hasar)" else "Inspired State (+15% Dmg)", SanctumGold)
+                                                player.currentWill == 0 -> Pair(if (activeLang == "TR") "Zihinsel Sürsaj (-%25 Hasar)" else "Mental Fatigue (-25% Dmg)", ColorDanger)
+                                                player.currentWill >= 7 -> Pair(if (activeLang == "TR") "Berrak Zihin (+%15 Hasar)" else "Inspired State (+15% Dmg)", ColorSanctumPrimary)
                                                 else -> Pair(if (activeLang == "TR") "Odaklanmış" else "Standard Focus", MaterialTheme.colorScheme.onSurface)
                                             }
 
@@ -586,26 +586,26 @@ fun TowerClimbTab(
                                         // Row 4: Low HP adren surge
                                         if (hpPercentage < 0.3f && hpPercentage > 0.0f) {
                                             Row(
-                                                modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+                                                modifier = Modifier.fillMaxWidth().padding(vertical = Dimens.BorderThick),
                                                 horizontalArrangement = Arrangement.SpaceBetween
                                             ) {
                                                 Text(
                                                     text = if (activeLang == "TR") "🩸 Cam Havli (Öfke):" else "🩸 Low HP Survival Fury:",
                                                     style = MaterialTheme.typography.labelSmall,
-                                                    color = BlightDamageColor
+                                                    color = ColorDanger
                                                 )
 
                                                 Text(
                                                     text = if (activeLang == "TR") "+%30 Hasar / %25 Karşı Saldırı" else "+30% Damage / +25% Recoil",
                                                     style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                                    color = BlightDamageColor
+                                                    color = ColorDanger
                                                 )
                                             }
                                         }
                                     }
                                 }
 
-                                Spacer(modifier = Modifier.height(14.dp))
+                                Spacer(modifier = Modifier.height(Dimens.SpacingM))
 
                                 // Player Status Effects
                                 Text(
@@ -615,19 +615,19 @@ fun TowerClimbTab(
                                 )
                                 StatusEffectsRow(statuses = playerStatuses, activeLang = activeLang)
                                 
-                                Spacer(modifier = Modifier.height(10.dp))
+                                Spacer(modifier = Modifier.height(Dimens.SpacingM))
 
                                 // Turn action buttons grid
-                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Column(verticalArrangement = Arrangement.spacedBy(Dimens.SpacingS)) {
                                     Row(
                                         modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                        horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingS)
                                     ) {
                                         Button(
                                             onClick = { onCombatAction("LIGHT_STRIKE") },
                                             modifier = Modifier
                                                 .weight(1f)
-                                                .height(44.dp)
+                                                .height(Dimens.AvatarSize)
                                                 .testTag("btn_combat_attack"),
                                             colors = ButtonDefaults.buttonColors(containerColor = ColorDanger)
                                         ) {
@@ -642,7 +642,7 @@ fun TowerClimbTab(
                                             enabled = player.aether >= 15,
                                             modifier = Modifier
                                                 .weight(1f)
-                                                .height(44.dp)
+                                                .height(Dimens.AvatarSize)
                                                 .testTag("btn_combat_heavy_blow"),
                                             colors = ButtonDefaults.buttonColors(
                                                 containerColor = ColorWarning,
@@ -659,13 +659,13 @@ fun TowerClimbTab(
 
                                     Row(
                                         modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                        horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingS)
                                     ) {
                                         Button(
                                             onClick = { onCombatAction("BARRIER") },
                                             modifier = Modifier
                                                 .weight(1f)
-                                                .height(44.dp)
+                                                .height(Dimens.AvatarSize)
                                                 .testTag("btn_combat_barrier"),
                                             colors = ButtonDefaults.buttonColors(containerColor = ColorHeal)
                                         ) {
@@ -679,7 +679,7 @@ fun TowerClimbTab(
                                             onClick = { onCombatAction("ESCAPE") },
                                             modifier = Modifier
                                                 .weight(1f)
-                                                .height(44.dp)
+                                                .height(Dimens.AvatarSize)
                                                 .testTag("btn_combat_flee"),
                                             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant, contentColor = MaterialTheme.colorScheme.onSurfaceVariant)
                                         ) {
@@ -693,24 +693,24 @@ fun TowerClimbTab(
 
                                 // Combat logs console
                                 if (combatLog.isNotEmpty()) {
-                                    Spacer(modifier = Modifier.height(14.dp))
+                                    Spacer(modifier = Modifier.height(Dimens.SpacingM))
                                     Text(
                                         text = if (activeLang == "TR") "Savaş Günlüğü:" else "Combat Console Log:",
                                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                                     )
-                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Spacer(modifier = Modifier.height(Dimens.SpacingXs))
                                     Card(
                                         modifier = Modifier.fillMaxWidth(),
                                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
                                     ) {
-                                        Column(modifier = Modifier.padding(10.dp)) {
+                                        Column(modifier = Modifier.padding(Dimens.SpacingM)) {
                                             combatLog.takeLast(4).forEach { log ->
                                                 Text(
                                                     text = log,
-                                                    style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Monospace, fontSize = 9.sp),
-                                                    color = if (log.contains("Critical") || log.contains("Kritik") || log.contains("Sovereign")) SanctumGold 
-                                                            else if (log.contains("defeat") || log.contains("hasar aldı") || log.contains("hit")) BlightDamageColor 
+                                                    style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Monospace, fontSize = Dimens.TextXxs),
+                                                    color = if (log.contains("Critical") || log.contains("Kritik") || log.contains("Sovereign")) ColorSanctumPrimary 
+                                                            else if (log.contains("defeat") || log.contains("hasar aldı") || log.contains("hit")) ColorDanger 
                                                             else MaterialTheme.colorScheme.onSurface
                                                 )
                                             }
@@ -726,12 +726,12 @@ fun TowerClimbTab(
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(bottom = 16.dp),
-                            shape = RoundedCornerShape(14.dp),
+                                .padding(bottom = Dimens.SpacingL),
+                            shape = RoundedCornerShape(Dimens.SpacingM),
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
+                            border = BorderStroke(Dimens.BorderThin, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
                         ) {
-                            Column(modifier = Modifier.padding(16.dp)) {
+                            Column(modifier = Modifier.padding(Dimens.SpacingL)) {
                                 Text(
                                     text = if (activeLang == "TR") activeNode.titleTr else activeNode.title,
                                     style = MaterialTheme.typography.titleMedium.copy(
@@ -739,17 +739,17 @@ fun TowerClimbTab(
                                         fontFamily = FontFamily.Serif
                                     ),
                                     color = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.padding(bottom = 10.dp)
+                                    modifier = Modifier.padding(bottom = Dimens.SpacingM)
                                 )
 
                                 Divider(color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f))
 
-                                Spacer(modifier = Modifier.height(12.dp))
+                                Spacer(modifier = Modifier.height(Dimens.SpacingM))
 
                                 Text(
                                     text = if (activeLang == "TR") activeNode.descriptionTr else activeNode.description,
                                     style = MaterialTheme.typography.bodyLarge.copy(
-                                        lineHeight = 24.sp,
+                                        lineHeight = Dimens.TextXxl,
                                         fontFamily = FontFamily.Serif
                                     ),
                                     color = MaterialTheme.colorScheme.onSurface
@@ -763,11 +763,11 @@ fun TowerClimbTab(
                             text = LocalizationManager.getString(activeLang, "declare_choice"),
                             style = MaterialTheme.typography.labelMedium.copy(
                                 fontWeight = FontWeight.Bold,
-                                letterSpacing = 1.sp
+                                letterSpacing = Dimens.LetterSpacingNormal
                             ),
                             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
                         )
-                        Spacer(modifier = Modifier.height(10.dp))
+                        Spacer(modifier = Modifier.height(Dimens.SpacingM))
                     }
 
                     // Choices
@@ -778,7 +778,7 @@ fun TowerClimbTab(
                                 NodeChoiceButton(
                                     choice = choice,
                                     activeLang = activeLang,
-                                    highlightColor = SanctumGold,
+                                    highlightColor = ColorSanctumPrimary,
                                     testTagValue = "choice_a_btn",
                                     onClick = { onChoiceSelected(choice) }
                                 )
@@ -793,7 +793,7 @@ fun TowerClimbTab(
                                 NodeChoiceButton(
                                     choice = choice,
                                     activeLang = activeLang,
-                                    highlightColor = VoidNeonPurple,
+                                    highlightColor = ColorCovenantGlow,
                                     testTagValue = "choice_b_btn",
                                     onClick = { onChoiceSelected(choice) }
                                 )
@@ -808,7 +808,7 @@ fun TowerClimbTab(
                                 NodeChoiceButton(
                                     choice = choice,
                                     activeLang = activeLang,
-                                    highlightColor = SlateBronze,
+                                    highlightColor = ColorNeutralPrimary,
                                     testTagValue = "choice_c_btn",
                                     onClick = { onChoiceSelected(choice) }
                                 )
@@ -820,7 +820,7 @@ fun TowerClimbTab(
         }
 
         item {
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(Dimens.SpacingXl))
         }
     }
 }
@@ -836,14 +836,14 @@ fun NodeChoiceButton(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 5.dp)
+            .padding(vertical = Dimens.SpacingXs)
             .clickable { onClick() }
             .testTag(testTagValue),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(Dimens.SpacingM),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = BorderStroke(1.5.dp, highlightColor.copy(alpha = 0.5f))
+        border = BorderStroke(Dimens.BorderNormal, highlightColor.copy(alpha = 0.5f))
     ) {
-        Column(modifier = Modifier.padding(14.dp)) {
+        Column(modifier = Modifier.padding(Dimens.SpacingM)) {
             Text(
                 text = if (activeLang == "TR") choice.textTr else choice.textEn,
                 style = MaterialTheme.typography.bodyMedium.copy(
@@ -853,7 +853,7 @@ fun NodeChoiceButton(
                 color = MaterialTheme.colorScheme.onSurface
             )
 
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(Dimens.SpacingS))
 
             // Micro rewards list indicators
             Row(
@@ -867,8 +867,8 @@ fun NodeChoiceButton(
                     Text(
                         text = shiftLabel,
                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                        color = if (choice.alignmentShift > 0) SanctumGold else VoidNeonPurple,
-                        modifier = Modifier.padding(end = 10.dp)
+                        color = if (choice.alignmentShift > 0) ColorSanctumPrimary else ColorCovenantGlow,
+                        modifier = Modifier.padding(end = Dimens.SpacingM)
                     )
                 }
 
@@ -877,8 +877,8 @@ fun NodeChoiceButton(
                     Text(
                         text = goldLabel,
                         style = MaterialTheme.typography.labelSmall,
-                        color = GoldYellow,
-                        modifier = Modifier.padding(end = 10.dp)
+                        color = ColorWarning,
+                        modifier = Modifier.padding(end = Dimens.SpacingM)
                     )
                 }
 
@@ -887,8 +887,8 @@ fun NodeChoiceButton(
                     Text(
                         text = aetherLabel,
                         style = MaterialTheme.typography.labelSmall,
-                        color = GleamGold,
-                        modifier = Modifier.padding(end = 10.dp)
+                        color = ColorStatGold,
+                        modifier = Modifier.padding(end = Dimens.SpacingM)
                     )
                 }
 
@@ -897,8 +897,8 @@ fun NodeChoiceButton(
                     Text(
                         text = willLabel,
                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                        color = SanctumGold,
-                        modifier = Modifier.padding(end = 10.dp)
+                        color = ColorSanctumPrimary,
+                        modifier = Modifier.padding(end = Dimens.SpacingM)
                     )
                 }
 
@@ -907,8 +907,8 @@ fun NodeChoiceButton(
                     Text(
                         text = hpLabel,
                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                        color = if (choice.hpChange > 0) SpiritHealColor else BlightDamageColor,
-                        modifier = Modifier.padding(end = 10.dp)
+                        color = if (choice.hpChange > 0) ColorHeal else ColorDanger,
+                        modifier = Modifier.padding(end = Dimens.SpacingM)
                     )
                 }
 
@@ -916,7 +916,7 @@ fun NodeChoiceButton(
                     Text(
                         text = "🎁 Eşya",
                         style = MaterialTheme.typography.labelSmall,
-                        color = SpiritHealColor
+                        color = ColorHeal
                     )
                 }
             }
@@ -951,12 +951,12 @@ fun FloorProgressCartographyMap(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 12.dp),
-        shape = RoundedCornerShape(12.dp),
+            .padding(bottom = Dimens.SpacingM),
+        shape = RoundedCornerShape(Dimens.SpacingM),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
+        border = BorderStroke(Dimens.BorderThin, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
     ) {
-        Column(modifier = Modifier.padding(12.dp)) {
+        Column(modifier = Modifier.padding(Dimens.SpacingM)) {
             // Compact Header Title Row with Scouting triggers
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -964,8 +964,8 @@ fun FloorProgressCartographyMap(
             ) {
                 Text(
                     text = "🧭",
-                    fontSize = 18.sp,
-                    modifier = Modifier.padding(end = 6.dp)
+                    fontSize = Dimens.TextXl,
+                    modifier = Modifier.padding(end = Dimens.SpacingS)
                 )
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
@@ -987,18 +987,18 @@ fun FloorProgressCartographyMap(
                 OutlinedButton(
                     onClick = onScoutClick,
                     modifier = Modifier.height(30.dp).testTag("scout_action_btn"),
-                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = SanctumGold),
-                    border = BorderStroke(1.dp, SanctumGold.copy(alpha = 0.7f))
+                    contentPadding = PaddingValues(horizontal = Dimens.SpacingS, vertical = 0.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = ColorSanctumPrimary),
+                    border = BorderStroke(Dimens.BorderThin, ColorSanctumPrimary.copy(alpha = 0.7f))
                 ) {
                     Text(
                         text = if (isTr) "Gözle (-1 ⚡)" else "Scout (-1 ⚡)",
-                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                        style = MaterialTheme.typography.labelSmall.copy(fontSize = Dimens.TextXxs, fontWeight = FontWeight.Bold)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(Dimens.SpacingM))
 
             // Compact Horizontally Scrollable Road Path
             val scrollState = rememberScrollState()
@@ -1006,15 +1006,15 @@ fun FloorProgressCartographyMap(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.12f), RoundedCornerShape(8.dp))
-                    .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.03f), RoundedCornerShape(8.dp))
-                    .padding(horizontal = 8.dp, vertical = 10.dp)
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.12f), RoundedCornerShape(Dimens.SpacingS))
+                    .border(Dimens.BorderThin, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.03f), RoundedCornerShape(Dimens.SpacingS))
+                    .padding(horizontal = Dimens.SpacingS, vertical = Dimens.SpacingM)
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .horizontalScroll(scrollState)
-                        .padding(vertical = 12.dp),
+                        .padding(vertical = Dimens.SpacingM),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     for (d in 0..19) {
@@ -1094,7 +1094,7 @@ fun FloorProgressCartographyMap(
                                         )
                                     }
 
-                                    Spacer(modifier = Modifier.height(24.dp))
+                                    Spacer(modifier = Modifier.height(Dimens.SpacingXxl))
 
                                     if (bottomNode != null) {
                                         val isSelected = selectedNodeIdx == bottomNode.index
@@ -1133,11 +1133,11 @@ fun FloorProgressCartographyMap(
 
                         if (d < 19) {
                             val pathCleared = player.currentFloor > selectedFloor || (player.currentFloor == selectedFloor && d < currentDepth)
-                            val pathColor = if (pathCleared) SpiritHealColor else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.15f)
-                            val pathHeight = if (pathCleared) 2.dp else 1.dp
+                            val pathColor = if (pathCleared) ColorHeal else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.15f)
+                            val pathHeight = if (pathCleared) Dimens.BorderThick else Dimens.BorderThin
                             
                             Column(
-                                modifier = Modifier.width(20.dp),
+                                modifier = Modifier.width(Dimens.SpacingXl),
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.Center
                             ) {
@@ -1157,11 +1157,11 @@ fun FloorProgressCartographyMap(
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(Dimens.SpacingS))
 
             // Beautiful Compact Legend of diverse node types (Combat, Narrative, Treasure, Mystery)
             Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = Dimens.BorderThick),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -1171,7 +1171,7 @@ fun FloorProgressCartographyMap(
                 LegendItem("🔮", if (isTr) "Gizem" else "Mystery")
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(Dimens.SpacingM))
 
             // Inspection Panel with cleaner shorter info
             val inspectBlueprint = com.example.data.engine.FloorBlueprintSystem.getBlueprintForFloor(selectedFloor, player)
@@ -1238,18 +1238,18 @@ fun FloorProgressCartographyMap(
 
                 Surface(
                     color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.22f),
-                    shape = RoundedCornerShape(10.dp),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)),
+                    shape = RoundedCornerShape(Dimens.SpacingM),
+                    border = BorderStroke(Dimens.BorderThin, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Column(modifier = Modifier.padding(10.dp)) {
+                    Column(modifier = Modifier.padding(Dimens.SpacingM)) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .size(32.dp)
+                                    .size(Dimens.SpacingXxxl)
                                     .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), CircleShape),
                                 contentAlignment = Alignment.Center
                             ) {
@@ -1262,11 +1262,11 @@ fun FloorProgressCartographyMap(
                                         NodeType.MERCHANT -> "🔮"
                                         NodeType.NARRATIVE -> "📜"
                                     },
-                                    fontSize = 14.sp
+                                    fontSize = Dimens.TextM
                                 )
                             }
                             
-                            Spacer(modifier = Modifier.width(8.dp))
+                            Spacer(modifier = Modifier.width(Dimens.SpacingS))
                             
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
@@ -1276,12 +1276,12 @@ fun FloorProgressCartographyMap(
                                 )
                                 Text(
                                     text = if (isSelectTypeHidden) (if (isTr) "Keşfedilmemiş" else "Unexplored") else "${if (isTr) nodeCategoryTr else nodeCategoryEn} • ${if (isTr) "Sektör ${selectedNodeIdx + 1}" else "Sector ${selectedNodeIdx + 1}"}",
-                                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                                    style = MaterialTheme.typography.labelSmall.copy(fontSize = Dimens.TextXxs),
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                                 )
                             }
 
-                            Spacer(modifier = Modifier.width(6.dp))
+                            Spacer(modifier = Modifier.width(Dimens.SpacingS))
 
                             // Status Tag
                             val statusTagText = when {
@@ -1290,8 +1290,8 @@ fun FloorProgressCartographyMap(
                                 else -> if (isTr) "🔒 KİLİTLİ" else "🔒 LOCKED"
                             }
                             val statusBgColor = when {
-                                inspectIsCurrent -> SanctumGold.copy(alpha = 0.15f)
-                                inspectIsCleared -> SpiritHealColor.copy(alpha = 0.15f)
+                                inspectIsCurrent -> ColorSanctumPrimary.copy(alpha = 0.15f)
+                                inspectIsCleared -> ColorHeal.copy(alpha = 0.15f)
                                 else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
                             }
                             val statusTextColor = when {
@@ -1302,14 +1302,14 @@ fun FloorProgressCartographyMap(
 
                             Box(
                                 modifier = Modifier
-                                    .background(statusBgColor, RoundedCornerShape(4.dp))
-                                    .padding(horizontal = 5.dp, vertical = 2.dp)
+                                    .background(statusBgColor, RoundedCornerShape(Dimens.SpacingXs))
+                                    .padding(horizontal = Dimens.SpacingXs, vertical = Dimens.BorderThick)
                             ) {
                                 Text(
                                     text = statusTagText,
                                     style = MaterialTheme.typography.labelSmall.copy(
                                         fontWeight = FontWeight.Bold,
-                                        fontSize = 8.sp,
+                                        fontSize = Dimens.TextXxs,
                                         letterSpacing = 0.5.sp
                                     ),
                                     color = statusTextColor
@@ -1317,27 +1317,27 @@ fun FloorProgressCartographyMap(
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(6.dp))
+                        Spacer(modifier = Modifier.height(Dimens.SpacingS))
                         
                         Text(
                             text = if (isSelectTypeHidden) (if (isTr) "Bu sektör gelecekteki yolda yer alıyor. Türünü ve tehlikesini görmek için Gözlem (Scout) yeteneğini çalıştırın." else "This sector is hidden further along the path. Use the Scout skill to reveal its contents.") else nodeDesc,
-                            style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                            style = MaterialTheme.typography.bodySmall.copy(fontSize = Dimens.TextXs),
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                         )
 
-                        Spacer(modifier = Modifier.height(6.dp))
+                        Spacer(modifier = Modifier.height(Dimens.SpacingS))
                         HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
-                        Spacer(modifier = Modifier.height(6.dp))
+                        Spacer(modifier = Modifier.height(Dimens.SpacingS))
 
                         // Brief dynamic hover details: Danger assessment and energy costs
                         Text(
                             text = if (isTr) "⚠️ Tehdit Seviyesi: $dangerLevelTr" else "⚠️ Threat Profile: $dangerLevelEn",
-                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, fontWeight = FontWeight.Bold),
-                            color = if (inspectNode.type == NodeType.BOSS || inspectNode.type == NodeType.COMBAT) BlightDamageColor else MaterialTheme.colorScheme.primary
+                            style = MaterialTheme.typography.labelSmall.copy(fontSize = Dimens.TextXxs, fontWeight = FontWeight.Bold),
+                            color = if (inspectNode.type == NodeType.BOSS || inspectNode.type == NodeType.COMBAT) ColorDanger else MaterialTheme.colorScheme.primary
                         )
                         Text(
                             text = if (isTr) costTextTr else costTextEn,
-                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
+                            style = MaterialTheme.typography.labelSmall.copy(fontSize = Dimens.TextXxs),
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                         )
 
@@ -1350,8 +1350,8 @@ fun FloorProgressCartographyMap(
                                 } else {
                                     "✨ Hostile: $enemyName | HP: ${inspectNode.enemyHp} | Atk: +${inspectNode.enemyAtk}"
                                 },
-                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, fontStyle = FontStyle.Italic, fontWeight = FontWeight.SemiBold),
-                                color = if (inspectNode.type == NodeType.BOSS) BlightDamageColor else MaterialTheme.colorScheme.secondary
+                                style = MaterialTheme.typography.labelSmall.copy(fontSize = Dimens.TextXxs, fontStyle = FontStyle.Italic, fontWeight = FontWeight.SemiBold),
+                                color = if (inspectNode.type == NodeType.BOSS) ColorDanger else MaterialTheme.colorScheme.secondary
                             )
                         }
                     }
@@ -1397,10 +1397,10 @@ fun NodeDetailModal(
     val nodeDesc = if (isTr) node.descriptionTr else node.description
 
     val primaryColor = when (node.type) {
-        NodeType.COMBAT, NodeType.BOSS -> BlightDamageColor
+        NodeType.COMBAT, NodeType.BOSS -> ColorDanger
         NodeType.NARRATIVE -> MaterialTheme.colorScheme.primary
-        NodeType.CHEST -> SanctumGold
-        NodeType.SHRINE, NodeType.MERCHANT -> VoidNeonPurple
+        NodeType.CHEST -> ColorSanctumPrimary
+        NodeType.SHRINE, NodeType.MERCHANT -> ColorCovenantGlow
     }
 
     val typeIcon = when (node.type) {
@@ -1433,7 +1433,7 @@ fun NodeDetailModal(
         onDismissRequest = onDismiss,
         title = {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = typeIcon, fontSize = 20.sp, modifier = Modifier.padding(end = 8.dp))
+                Text(text = typeIcon, fontSize = 20.sp, modifier = Modifier.padding(end = Dimens.SpacingS))
                 Text(
                     text = if (isTr) typeLabelTr else typeLabelEn,
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
@@ -1444,7 +1444,7 @@ fun NodeDetailModal(
         text = {
             Column(
                 modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+                verticalArrangement = Arrangement.spacedBy(Dimens.SpacingM)
             ) {
                 Text(
                     text = nodeName,
@@ -1456,26 +1456,26 @@ fun NodeDetailModal(
                 
                 Text(
                     text = nodeDesc,
-                    style = MaterialTheme.typography.bodySmall.copy(lineHeight = 18.sp),
+                    style = MaterialTheme.typography.bodySmall.copy(lineHeight = Dimens.TextXl),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
                 // Render decision history outcomes if this node was previously visited
                 val matchEntry = journal.find { it.floor == floor && it.nodeIndex == node.index }
                 if (matchEntry != null) {
-                    Spacer(modifier = Modifier.height(6.dp))
+                    Spacer(modifier = Modifier.height(Dimens.SpacingS))
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = SpiritHealColor.copy(alpha = 0.1f)),
-                        border = BorderStroke(1.dp, SpiritHealColor.copy(alpha = 0.25f))
+                        colors = CardDefaults.cardColors(containerColor = ColorHeal.copy(alpha = 0.1f)),
+                        border = BorderStroke(Dimens.BorderThin, ColorHeal.copy(alpha = 0.25f))
                     ) {
-                        Column(modifier = Modifier.padding(10.dp)) {
+                        Column(modifier = Modifier.padding(Dimens.SpacingM)) {
                             Text(
                                 text = if (isTr) "GÜNLÜK KAYIT DETAYI:" else "JOURNAL EXPLORE RECORD:",
-                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, fontSize = 8.sp),
-                                color = SpiritHealColor
+                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, fontSize = Dimens.TextXxs),
+                                color = ColorHeal
                             )
-                            Spacer(modifier = Modifier.height(4.dp))
+                            Spacer(modifier = Modifier.height(Dimens.SpacingXs))
                             Text(
                                 text = if (isTr) matchEntry.actionTakenTr else matchEntry.actionTakenEs,
                                 style = MaterialTheme.typography.bodySmall.copy(fontStyle = FontStyle.Italic),
@@ -1486,17 +1486,17 @@ fun NodeDetailModal(
                 }
 
                 if (!isCleared && !isCurrent) {
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(Dimens.SpacingS))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingS),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = "⚡", fontSize = 12.sp)
+                        Text(text = "⚡", fontSize = Dimens.TextS)
                         Text(
                             text = if (isTr) "Keşif İrade Maliyeti: ${node.willCost} İrade" else "Exploration Will Cost: ${node.willCost} Will",
                             style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium),
-                            color = SanctumGold
+                            color = ColorSanctumPrimary
                         )
                     }
                 }
@@ -1546,8 +1546,8 @@ fun NodeDetailModal(
 @Composable
 fun LegendItem(emoji: String, text: String) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Text(text = emoji, fontSize = 11.sp, modifier = Modifier.padding(end = 2.dp))
-        Text(text = text, style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f))
+        Text(text = emoji, fontSize = Dimens.TextXs, modifier = Modifier.padding(end = Dimens.BorderThick))
+        Text(text = text, style = MaterialTheme.typography.labelSmall.copy(fontSize = Dimens.TextXxs), color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f))
     }
 }
 
@@ -1561,103 +1561,103 @@ fun NarrativeEventView(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(Dimens.SpacingL),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(1.5.dp, SanctumGold)
+        shape = RoundedCornerShape(Dimens.SpacingL),
+        border = BorderStroke(Dimens.BorderNormal, ColorSanctumPrimary)
     ) {
-        Column(modifier = Modifier.padding(18.dp)) {
+        Column(modifier = Modifier.padding(Dimens.SpacingL)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Surface(
-                    color = SanctumGold.copy(alpha = 0.15f),
-                    shape = RoundedCornerShape(6.dp)
+                    color = ColorSanctumPrimary.copy(alpha = 0.15f),
+                    shape = RoundedCornerShape(Dimens.SpacingS)
                 ) {
                     Text(
                         text = if (activeLang == "TR") "🔮 BOYUTSAL GİZEM" else "🔮 SPATIAL MYSTERY",
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        modifier = Modifier.padding(horizontal = Dimens.SpacingS, vertical = Dimens.SpacingXs),
                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                        color = SanctumGold
+                        color = ColorSanctumPrimary
                     )
                 }
                 IconButton(onClick = onCancel) {
                     Icon(Icons.Default.Close, contentDescription = "Close", tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
                 }
             }
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(Dimens.SpacingM))
             Text(
                 text = if (activeLang == "TR") event.titleTr else event.titleEn,
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold, fontFamily = FontFamily.Serif),
                 color = MaterialTheme.colorScheme.primary
             )
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(Dimens.SpacingM))
             Text(
                 text = if (activeLang == "TR") event.descriptionTr else event.descriptionEn,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.85f)
             )
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(Dimens.SpacingXl))
             Text(
                 text = if (activeLang == "TR") "KADERSEL SEÇİMİNİZ:" else "CHOOSE YOUR DESTINY:",
-                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, letterSpacing = 1.sp),
-                color = VoidNeonPurple
+                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, letterSpacing = Dimens.LetterSpacingNormal),
+                color = ColorCovenantGlow
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(Dimens.SpacingS))
             event.options.forEach { option ->
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 6.dp)
+                        .padding(vertical = Dimens.SpacingS)
                         .clickable { onChoiceMade(option) },
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)),
-                    shape = RoundedCornerShape(10.dp)
+                    border = BorderStroke(Dimens.BorderThin, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)),
+                    shape = RoundedCornerShape(Dimens.SpacingM)
                 ) {
-                    Column(modifier = Modifier.padding(14.dp)) {
+                    Column(modifier = Modifier.padding(Dimens.SpacingM)) {
                         Text(
                             text = if (activeLang == "TR") option.textTr else option.textEn,
                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                             color = MaterialTheme.colorScheme.onSurface
                         )
-                        Spacer(modifier = Modifier.height(4.dp))
+                        Spacer(modifier = Modifier.height(Dimens.SpacingXs))
                         Text(
                             text = if (activeLang == "TR") "Olası Sonuç: ${option.outcomeTr}" else "Outcome: ${option.outcomeEn}",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                         )
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Spacer(modifier = Modifier.height(Dimens.SpacingS))
+                        Row(horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingS)) {
                             if (option.alignmentImpact != 0) {
                                 val alignLabel = if (option.alignmentImpact > 0) "+${option.alignmentImpact} Sanctum" else "${option.alignmentImpact} Covenant"
-                                val alignCol = if (option.alignmentImpact > 0) SanctumGold else VoidNeonPurple
-                                Surface(color = alignCol.copy(alpha = 0.1f), shape = RoundedCornerShape(4.dp)) {
+                                val alignCol = if (option.alignmentImpact > 0) ColorSanctumPrimary else ColorCovenantGlow
+                                Surface(color = alignCol.copy(alpha = 0.1f), shape = RoundedCornerShape(Dimens.SpacingXs)) {
                                     Text(
                                         text = alignLabel,
-                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp, fontWeight = FontWeight.Bold),
+                                        modifier = Modifier.padding(horizontal = Dimens.SpacingS, vertical = Dimens.BorderThick),
+                                        style = MaterialTheme.typography.labelSmall.copy(fontSize = Dimens.TextXxs, fontWeight = FontWeight.Bold),
                                         color = alignCol
                                     )
                                 }
                             }
                             if (option.goldChange != 0) {
-                                Surface(color = Color(0xFFFFD700).copy(alpha = 0.1f), shape = RoundedCornerShape(4.dp)) {
+                                Surface(color = Color(0xFFFFD700).copy(alpha = 0.1f), shape = RoundedCornerShape(Dimens.SpacingXs)) {
                                     Text(
                                         text = if (option.goldChange > 0) "+${option.goldChange} Gold" else "${option.goldChange} Gold",
-                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp, fontWeight = FontWeight.Bold),
+                                        modifier = Modifier.padding(horizontal = Dimens.SpacingS, vertical = Dimens.BorderThick),
+                                        style = MaterialTheme.typography.labelSmall.copy(fontSize = Dimens.TextXxs, fontWeight = FontWeight.Bold),
                                         color = Color(0xFFFFD700)
                                     )
                                 }
                             }
                             if (option.itemReward.isNotEmpty()) {
-                                Surface(color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), shape = RoundedCornerShape(4.dp)) {
+                                Surface(color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), shape = RoundedCornerShape(Dimens.SpacingXs)) {
                                     Text(
                                         text = "🎒 ${option.itemReward}",
-                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp, fontWeight = FontWeight.Bold),
+                                        modifier = Modifier.padding(horizontal = Dimens.SpacingS, vertical = Dimens.BorderThick),
+                                        style = MaterialTheme.typography.labelSmall.copy(fontSize = Dimens.TextXxs, fontWeight = FontWeight.Bold),
                                         color = MaterialTheme.colorScheme.primary
                                     )
                                 }
@@ -1683,12 +1683,12 @@ fun SecretBossCombatView(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(Dimens.SpacingL),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(2.dp, BlightDamageColor)
+        shape = RoundedCornerShape(Dimens.SpacingL),
+        border = BorderStroke(Dimens.BorderThick, ColorDanger)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(Dimens.SpacingL)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -1698,7 +1698,7 @@ fun SecretBossCombatView(
                     Text(
                         text = if (activeLang == "TR") boss.nameTr else boss.nameEn,
                         style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold, fontFamily = FontFamily.Serif),
-                        color = BlightDamageColor
+                        color = ColorDanger
                     )
                     Text(
                         text = if (activeLang == "TR") "Kozmik Zirve Ejderhası" else "Celestial Overlord Dragon",
@@ -1708,19 +1708,19 @@ fun SecretBossCombatView(
                 }
                 
                 Surface(
-                    color = BlightDamageColor.copy(alpha = 0.15f),
-                    shape = RoundedCornerShape(4.dp)
+                    color = ColorDanger.copy(alpha = 0.15f),
+                    shape = RoundedCornerShape(Dimens.SpacingXs)
                 ) {
                     Text(
                         text = "BOSS",
-                        modifier = Modifier.padding(8.dp, 4.dp),
+                        modifier = Modifier.padding(Dimens.SpacingS, Dimens.SpacingXs),
                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                        color = BlightDamageColor
+                        color = ColorDanger
                     )
                 }
             }
             
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(Dimens.SpacingM))
             
             // HP Bar
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -1728,19 +1728,19 @@ fun SecretBossCombatView(
                     progress = { bossHp.toFloat() / boss.hp.toFloat() },
                     modifier = Modifier
                         .weight(1f)
-                        .height(12.dp)
-                        .clip(RoundedCornerShape(6.dp)),
-                    color = BlightDamageColor,
+                        .height(Dimens.SpacingM)
+                        .clip(RoundedCornerShape(Dimens.SpacingS)),
+                    color = ColorDanger,
                     trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                 )
-                Spacer(modifier = Modifier.width(10.dp))
+                Spacer(modifier = Modifier.width(Dimens.SpacingM))
                 Text(
                     text = "$bossHp/${boss.hp}",
                     style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
                 )
             }
             
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(Dimens.SpacingM))
             
             // Dragon's Phase indicator
             val isPhase2 = bossHp < (boss.hp / 2)
@@ -1748,10 +1748,10 @@ fun SecretBossCombatView(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
-                        if (isPhase2) BlightDamageColor.copy(alpha = 0.08f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.05f),
-                        RoundedCornerShape(6.dp)
+                        if (isPhase2) ColorDanger.copy(alpha = 0.08f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.05f),
+                        RoundedCornerShape(Dimens.SpacingS)
                     )
-                    .padding(8.dp)
+                    .padding(Dimens.SpacingS)
             ) {
                 Text(
                     text = if (isPhase2) {
@@ -1760,30 +1760,30 @@ fun SecretBossCombatView(
                         if (activeLang == "TR") "🛡️ FAZ 1: Kozmik Hüküm Zırhı Aktif" else "🛡️ PHASE 1: Cosmic Decrees Armor Active"
                     },
                     style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                    color = if (isPhase2) BlightDamageColor else MaterialTheme.colorScheme.primary
+                    color = if (isPhase2) ColorDanger else MaterialTheme.colorScheme.primary
                 )
             }
 
             // Combat Log
             if (combatLog.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(14.dp))
+                Spacer(modifier = Modifier.height(Dimens.SpacingM))
                 Text(
                     text = if (activeLang == "TR") "Savaş Console Logları:" else "Combat Console Log:",
                     style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(Dimens.SpacingXs))
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
                 ) {
-                    Column(modifier = Modifier.padding(10.dp)) {
+                    Column(modifier = Modifier.padding(Dimens.SpacingM)) {
                         combatLog.takeLast(3).forEach { log ->
                             Text(
                                 text = log,
-                                style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Monospace, fontSize = 9.sp),
-                                color = if (log.contains("Sovereign") || log.contains("Vanquished")) SanctumGold 
-                                        else if (log.contains("defeat") || log.contains("hasar aldı")) BlightDamageColor 
+                                style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Monospace, fontSize = Dimens.TextXxs),
+                                color = if (log.contains("Sovereign") || log.contains("Vanquished")) ColorSanctumPrimary 
+                                        else if (log.contains("defeat") || log.contains("hasar aldı")) ColorDanger 
                                         else MaterialTheme.colorScheme.onSurface
                             )
                         }
@@ -1791,17 +1791,17 @@ fun SecretBossCombatView(
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(Dimens.SpacingL))
 
             // Action grid
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingS)
             ) {
                 Button(
                     onClick = { onAction("ATTACK") },
                     modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(containerColor = BlightDamageColor)
+                    colors = ButtonDefaults.buttonColors(containerColor = ColorDanger)
                 ) {
                     Text(if (activeLang == "TR") "HÜCUM ET ⚔️" else "STRIKE ⚔️", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
                 }
@@ -1815,16 +1815,16 @@ fun SecretBossCombatView(
                 }
             }
             
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(Dimens.SpacingS))
             
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingS)
             ) {
                 Button(
                     onClick = { onAction("POTION") },
                     modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(containerColor = SanctumGold)
+                    colors = ButtonDefaults.buttonColors(containerColor = ColorSanctumPrimary)
                 ) {
                     Text(if (activeLang == "TR") "ŞİFA İKSİRİ 🧪" else "HEAL FLASK 🧪", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
                 }
@@ -1851,17 +1851,17 @@ fun NodeCircle(
     onClick: () -> Unit
 ) {
     val circleBorderColor = when {
-        isSelected -> SanctumGold
+        isSelected -> ColorSanctumPrimary
         isCurrent -> MaterialTheme.colorScheme.primary
-        isCleared -> SpiritHealColor
+        isCleared -> ColorHeal
         isAccessible -> MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
         else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.25f)
     }
 
     val circleBgColor = when {
         isCurrent -> MaterialTheme.colorScheme.primaryContainer
-        isCleared -> SpiritHealColor.copy(alpha = 0.08f)
-        isSelected -> SanctumGold.copy(alpha = 0.08f)
+        isCleared -> ColorHeal.copy(alpha = 0.08f)
+        isSelected -> ColorSanctumPrimary.copy(alpha = 0.08f)
         isAccessible -> MaterialTheme.colorScheme.primary.copy(alpha = 0.04f)
         else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
     }
@@ -1872,7 +1872,7 @@ fun NodeCircle(
             .clip(CircleShape)
             .background(circleBgColor)
             .border(
-                width = if (isSelected) 2.dp else if (isCurrent) 1.5.dp else 1.dp,
+                width = if (isSelected) Dimens.BorderThick else if (isCurrent) Dimens.BorderNormal else Dimens.BorderThin,
                 color = circleBorderColor,
                 shape = CircleShape
             )
@@ -1880,9 +1880,9 @@ fun NodeCircle(
         contentAlignment = Alignment.Center
     ) {
         if (isCleared && !isCurrent) {
-            Text("✓", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = SpiritHealColor)
+            Text("✓", fontSize = Dimens.TextXs, fontWeight = FontWeight.Bold, color = ColorHeal)
         } else if (isTypeHidden) {
-            Text("❓", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f))
+            Text("❓", fontSize = Dimens.TextXs, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f))
         } else {
             Text(
                 text = when (node.type) {
@@ -1893,7 +1893,7 @@ fun NodeCircle(
                     NodeType.MERCHANT -> "🔮"
                     NodeType.NARRATIVE -> "📜"
                 },
-                fontSize = 11.sp,
+                fontSize = Dimens.TextXs,
                 color = if (isCleared || isCurrent) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
             )
         }

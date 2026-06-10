@@ -80,7 +80,7 @@ fun JournalTab(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(Dimens.SpacingL)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -104,7 +104,7 @@ fun JournalTab(
                     },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
-                    modifier = Modifier.padding(top = 4.dp, bottom = 14.dp)
+                    modifier = Modifier.padding(top = Dimens.SpacingXs, bottom = Dimens.SpacingM)
                 )
             }
 
@@ -118,7 +118,7 @@ fun JournalTab(
                 Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = if (activeLang == "TR") "Geçmişi Sıfırla" else "Clear History",
-                    tint = BlightDamageColor
+                    tint = ColorDanger
                 )
             }
         }
@@ -127,16 +127,16 @@ fun JournalTab(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 14.dp),
+                .padding(bottom = Dimens.SpacingM),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
             ),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.15f))
+            border = BorderStroke(Dimens.BorderThin, MaterialTheme.colorScheme.outline.copy(alpha = 0.15f))
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(12.dp),
+                    .padding(Dimens.SpacingM),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -184,8 +184,8 @@ fun JournalTab(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     val netColor = when {
-                        totalNet > 0 -> SanctumGold
-                        totalNet < 0 -> VoidNeonPurple
+                        totalNet > 0 -> ColorSanctumPrimary
+                        totalNet < 0 -> ColorCovenantGlow
                         else -> MaterialTheme.colorScheme.onSurface
                     }
                     Text(
@@ -205,7 +205,7 @@ fun JournalTab(
             placeholder = { Text(if (activeLang == "TR") "Macerada ara..." else "Search chronicles...") },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 12.dp)
+                .padding(bottom = Dimens.SpacingM)
                 .testTag("journal_search_input"),
             singleLine = true,
             leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
@@ -226,8 +226,8 @@ fun JournalTab(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                .padding(bottom = Dimens.SpacingL),
+            horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingS),
             verticalAlignment = Alignment.CenterVertically
         ) {
             val filters = listOf(
@@ -241,8 +241,8 @@ fun JournalTab(
                 val isSelected = selectedFilter == filterVal
                 val chipBg = if (isSelected) {
                     when (filterVal) {
-                        "SANCTUM" -> SanctumGold.copy(alpha = 0.2f)
-                        "COVENANT" -> VoidNeonPurple.copy(alpha = 0.2f)
+                        "SANCTUM" -> ColorSanctumPrimary.copy(alpha = 0.2f)
+                        "COVENANT" -> ColorCovenantGlow.copy(alpha = 0.2f)
                         else -> MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
                     }
                 } else {
@@ -251,8 +251,8 @@ fun JournalTab(
 
                 val chipBorder = if (isSelected) {
                     when (filterVal) {
-                        "SANCTUM" -> SanctumGold
-                        "COVENANT" -> VoidNeonPurple
+                        "SANCTUM" -> ColorSanctumPrimary
+                        "COVENANT" -> ColorCovenantGlow
                         else -> MaterialTheme.colorScheme.primary
                     }
                 } else {
@@ -261,8 +261,8 @@ fun JournalTab(
 
                 val chipTextColor = if (isSelected) {
                     when (filterVal) {
-                        "SANCTUM" -> SanctumGold
-                        "COVENANT" -> VoidNeonPurple
+                        "SANCTUM" -> ColorSanctumPrimary
+                        "COVENANT" -> ColorCovenantGlow
                         else -> MaterialTheme.colorScheme.primary
                     }
                 } else {
@@ -271,10 +271,10 @@ fun JournalTab(
 
                 Box(
                     modifier = Modifier
-                        .background(chipBg, RoundedCornerShape(16.dp))
-                        .border(1.dp, chipBorder, RoundedCornerShape(16.dp))
+                        .background(chipBg, RoundedCornerShape(Dimens.SpacingL))
+                        .border(Dimens.BorderThin, chipBorder, RoundedCornerShape(Dimens.SpacingL))
                         .clickable { selectedFilter = filterVal }
-                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                        .padding(horizontal = Dimens.SpacingM, vertical = Dimens.SpacingS)
                         .testTag("filter_chip_$filterVal"),
                     contentAlignment = Alignment.Center
                 ) {
@@ -296,7 +296,7 @@ fun JournalTab(
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("📜", fontSize = 48.sp, modifier = Modifier.padding(bottom = 8.dp))
+                    Text("📜", fontSize = 48.sp, modifier = Modifier.padding(bottom = Dimens.SpacingS))
                     Text(
                         text = if (activeLang == "TR") {
                             if (searchQuery.isNotEmpty() || selectedFilter != "ALL") "Aranan kriterlere uygun kayıt bulunamadı." else "Hala tırmanışa devam ediyorsun. Kronolojide bir kayıt yok."
@@ -306,7 +306,7 @@ fun JournalTab(
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                        modifier = Modifier.padding(horizontal = 24.dp)
+                        modifier = Modifier.padding(horizontal = Dimens.SpacingXxl)
                     )
                 }
             }
@@ -320,8 +320,8 @@ fun JournalTab(
                     val density = androidx.compose.ui.platform.LocalDensity.current
                     
                     val nodeColor = when {
-                        entry.alignmentImpact > 0 -> SanctumGold
-                        entry.alignmentImpact < 0 -> VoidNeonPurple
+                        entry.alignmentImpact > 0 -> ColorSanctumPrimary
+                        entry.alignmentImpact < 0 -> ColorCovenantGlow
                         else -> MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)
                     }
 
@@ -331,9 +331,9 @@ fun JournalTab(
                             .drawBehind {
                                 // Draw continuous connect track to the next node if we're not the last index
                                 if (index < filteredJournal.lastIndex) {
-                                    val lineX = with(density) { 16.dp.toPx() } // Align exactly under our timeline dot
-                                    val stemWidth = with(density) { 2.dp.toPx() }
-                                    val startY = with(density) { 24.dp.toPx() }
+                                    val lineX = with(density) { Dimens.SpacingL.toPx() } // Align exactly under our timeline dot
+                                    val stemWidth = with(density) { Dimens.BorderThick.toPx() }
+                                    val startY = with(density) { Dimens.SpacingXxl.toPx() }
                                     drawLine(
                                         color = nodeColor.copy(alpha = 0.25f),
                                         start = androidx.compose.ui.geometry.Offset(lineX, startY),
@@ -342,15 +342,15 @@ fun JournalTab(
                                     )
                                 }
                             }
-                            .padding(vertical = 4.dp),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                            .padding(vertical = Dimens.SpacingXs),
+                        horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingL),
                         verticalAlignment = Alignment.Top
                     ) {
                         // Timeline Connector Left Panel
                         Box(
                             modifier = Modifier
-                                .width(32.dp)
-                                .padding(top = 10.dp),
+                                .width(Dimens.SpacingXxxl)
+                                .padding(top = Dimens.SpacingM),
                             contentAlignment = Alignment.TopCenter
                         ) {
                             val nodeSymbol = when {
@@ -360,16 +360,16 @@ fun JournalTab(
                             }
                             Box(
                                 modifier = Modifier
-                                    .size(24.dp)
+                                    .size(Dimens.SpacingXxl)
                                     .background(nodeColor.copy(alpha = 0.15f), CircleShape)
-                                    .border(2.2.dp, nodeColor, CircleShape),
+                                    .border(Dimens.BorderThick, nodeColor, CircleShape),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     text = nodeSymbol,
                                     color = nodeColor,
                                     style = MaterialTheme.typography.labelSmall.copy(
-                                        fontSize = 12.sp,
+                                        fontSize = Dimens.TextS,
                                         fontWeight = FontWeight.Bold
                                     )
                                 )
@@ -381,20 +381,20 @@ fun JournalTab(
                             modifier = Modifier
                                 .weight(1f)
                                 .testTag("journal_item_${entry.floor}"),
-                            shape = RoundedCornerShape(12.dp),
+                            shape = RoundedCornerShape(Dimens.SpacingM),
                             colors = CardDefaults.cardColors(
                                 containerColor = MaterialTheme.colorScheme.surface
                             ),
                             border = BorderStroke(
-                                1.dp,
+                                Dimens.BorderThin,
                                 when {
-                                    entry.alignmentImpact > 0 -> SanctumGold.copy(alpha = 0.35f)
-                                    entry.alignmentImpact < 0 -> VoidNeonPurple.copy(alpha = 0.35f)
+                                    entry.alignmentImpact > 0 -> ColorSanctumPrimary.copy(alpha = 0.35f)
+                                    entry.alignmentImpact < 0 -> ColorCovenantGlow.copy(alpha = 0.35f)
                                     else -> MaterialTheme.colorScheme.outline.copy(alpha = 0.15f)
                                 }
                             )
                         ) {
-                            Column(modifier = Modifier.padding(14.dp)) {
+                            Column(modifier = Modifier.padding(Dimens.SpacingM)) {
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -419,20 +419,20 @@ fun JournalTab(
                                     Text(
                                         text = if (activeLang == "TR") shiftSymbolTr else shiftSymbol,
                                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                        color = if (entry.alignmentImpact > 0) SanctumGold else if (entry.alignmentImpact < 0) VoidNeonPurple else MaterialTheme.colorScheme.onSurfaceVariant
+                                        color = if (entry.alignmentImpact > 0) ColorSanctumPrimary else if (entry.alignmentImpact < 0) ColorCovenantGlow else MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
-                                Spacer(modifier = Modifier.height(8.dp))
+                                Spacer(modifier = Modifier.height(Dimens.SpacingS))
                                 Text(
                                     text = if (activeLang == "TR") entry.actionTakenTr else entry.actionTakenEs,
-                                    style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Serif, lineHeight = 16.sp),
+                                    style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Serif, lineHeight = Dimens.TextL),
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
-                                Spacer(modifier = Modifier.height(4.dp))
+                                Spacer(modifier = Modifier.height(Dimens.SpacingXs))
                                 // Localized elapsed/formatted timestamp indicator
                                 Text(
                                     text = formatTimestamp(entry.timestamp, activeLang),
-                                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, fontWeight = FontWeight.Light),
+                                    style = MaterialTheme.typography.labelSmall.copy(fontSize = Dimens.TextXxs, fontWeight = FontWeight.Light),
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
                                     modifier = Modifier.fillMaxWidth(),
                                     textAlign = androidx.compose.ui.text.style.TextAlign.End
