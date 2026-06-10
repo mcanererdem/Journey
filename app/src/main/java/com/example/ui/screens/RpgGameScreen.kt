@@ -2282,7 +2282,7 @@ fun FloorProgressCartographyMap(
                                 else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
                             }
                             val statusTextColor = when {
-                                inspectIsCurrent -> SanctumSecondary
+                                inspectIsCurrent -> ColorSanctumSecondary
                                 inspectIsCleared -> Color(0xFF2E7D32)
                                 else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                             }
@@ -2460,7 +2460,7 @@ fun NodeDetailModal(
                     else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f)
                 }
                 val statusTextColor = when {
-                    isCurrent -> SanctumSecondary
+                    isCurrent -> ColorSanctumSecondary
                     isCleared -> Color(0xFF2E7D32)
                     else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                 }
@@ -2914,9 +2914,9 @@ fun CharacterSheetTab(
                     .background(
                         Brush.horizontalGradient(
                             colors = listOf(
-                                VoidNeonPurple,
-                                SlateSecondary,
-                                SanctumGold
+                                ColorCovenantPrimary,
+                                ColorNeutralPrimary,
+                                ColorSanctumPrimary
                             )
                         )
                     )

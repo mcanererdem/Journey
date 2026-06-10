@@ -4,6 +4,7 @@ plugins {
   alias(libs.plugins.google.devtools.ksp)
   alias(libs.plugins.roborazzi)
   alias(libs.plugins.secrets)
+  // alias(libs.plugins.google.services) // Firebase için google-services.json gerekli — sonra ekle
 }
 
 android {
@@ -99,6 +100,9 @@ dependencies {
   implementation(libs.moshi.kotlin)
   implementation(libs.okhttp)
   // implementation(libs.play.services.location)
+  implementation(libs.play.services.auth)
+  implementation(libs.firebase.auth)
+  implementation(libs.firebase.firestore)
   implementation(libs.retrofit)
   testImplementation(libs.androidx.compose.ui.test.junit4)
   testImplementation(libs.androidx.core)

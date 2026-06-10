@@ -2,62 +2,114 @@ package com.example.ui.theme
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
 
-private val SanctumColorScheme = lightColorScheme(
-    primary = SanctumGold,
-    secondary = SanctumSecondary,
-    background = SanctumBackground,
-    surface = SanctumSurface,
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onBackground = SanctumOnBackground,
-    onSurface = SanctumOnSurface
+// ══════════════════════════════════════════════════════════════════════════════
+// Journey Dark Fantasy — Tema Sistemi
+// Tüm temalar koyu (dark) tabanlıdır — dark fantasy atmosferi için.
+// Momentum değerine göre dinamik tema geçişi desteklenir.
+// ══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Sanctum Teması — Celestial Gold.
+ * Işık, düzen ve kutsallık. Altın kenarlıklar, sıcak koyu arka plan.
+ */
+private val SanctumColorScheme = darkColorScheme(
+    primary               = ColorSanctumPrimary,
+    onPrimary             = ColorBackground,
+    primaryContainer      = ColorSanctumSurface,
+    onPrimaryContainer    = ColorSanctumText,
+    secondary             = ColorSanctumSecondary,
+    onSecondary           = ColorBackground,
+    background            = ColorBackground,
+    onBackground          = ColorOnBackground,
+    surface               = ColorSurface,
+    onSurface             = ColorOnSurface,
+    surfaceVariant        = ColorSurfaceVariant,
+    onSurfaceVariant      = ColorOnSurfaceMuted,
+    outline               = ColorSanctumBorder,
+    outlineVariant        = ColorBorderMuted,
+    error                 = ColorDanger,
+    onError               = ColorOnBackground,
+    scrim                 = ColorScrimDark
 )
 
+/**
+ * Covenant Teması — Void Purple.
+ * Karanlık, kaos ve güç. Mor parıltılar, obsidyen arkaplan.
+ */
 private val CovenantColorScheme = darkColorScheme(
-    primary = VoidNeonPurple,
-    secondary = VoidSecondary,
-    background = VoidBackground,
-    surface = VoidSurface,
-    onPrimary = Color.Black,
-    onSecondary = Color.White,
-    onBackground = VoidOnBackground,
-    onSurface = VoidOnSurface
+    primary               = ColorCovenantPrimary,
+    onPrimary             = ColorOnBackground,
+    primaryContainer      = ColorCovenantSurface,
+    onPrimaryContainer    = ColorCovenantText,
+    secondary             = ColorCovenantSecondary,
+    onSecondary           = ColorOnBackground,
+    background            = ColorBackground,
+    onBackground          = ColorOnBackground,
+    surface               = ColorSurface,
+    onSurface             = ColorOnSurface,
+    surfaceVariant        = ColorSurfaceVariant,
+    onSurfaceVariant      = ColorOnSurfaceMuted,
+    outline               = ColorCovenantBorder,
+    outlineVariant        = ColorBorderMuted,
+    error                 = ColorDanger,
+    onError               = ColorOnBackground,
+    scrim                 = ColorScrimDark
 )
 
-private val IronColorScheme = darkColorScheme(
-    primary = SlateBronze,
-    secondary = SlateSecondary,
-    background = SlateBackground,
-    surface = SlateSurface,
-    onPrimary = Color.Black,
-    onSecondary = Color.White,
-    onBackground = SlateOnBackground,
-    onSurface = SlateOnSurface
+/**
+ * Nötr / Demir Teması — Iron Gray.
+ * Bağımsız, pragmatik, savaşçı. Koyu demir ve bronz tonları.
+ */
+private val NeutralColorScheme = darkColorScheme(
+    primary               = ColorNeutralPrimary,
+    onPrimary             = ColorBackground,
+    primaryContainer      = ColorSurfaceVariant,
+    onPrimaryContainer    = ColorNeutralText,
+    secondary             = ColorNeutralSecondary,
+    onSecondary           = ColorBackground,
+    background            = ColorBackground,
+    onBackground          = ColorOnBackground,
+    surface               = ColorSurface,
+    onSurface             = ColorOnSurface,
+    surfaceVariant        = ColorSurfaceVariant,
+    onSurfaceVariant      = ColorOnSurfaceMuted,
+    outline               = ColorBorder,
+    outlineVariant        = ColorBorderMuted,
+    error                 = ColorDanger,
+    onError               = ColorOnBackground,
+    scrim                 = ColorScrimDark
 )
 
+/**
+ * Ana Tema composable.
+ *
+ * @param side "SANCTUM", "COVENANT" veya "NEUTRAL" — renk şemasını belirler
+ * @param content İçerik lambda
+ */
 @Composable
 fun RpgTheme(
-    side: String = "NEUTRAL", // "SANCTUM", "COVENANT", "NEUTRAL"
+    side: String = "NEUTRAL",
     content: @Composable () -> Unit
 ) {
     val colorScheme = when (side) {
-        "SANCTUM" -> SanctumColorScheme
+        "SANCTUM"  -> SanctumColorScheme
         "COVENANT" -> CovenantColorScheme
-        else -> IronColorScheme
+        else       -> NeutralColorScheme
     }
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography,
-        content = content
+        typography  = JourneyTypography,
+        content     = content
     )
 }
 
-// Keep the old MyApplicationTheme for backwards compatibility if referenced by tests
+/**
+ * Geriye dönük uyumluluk için.
+ * Testler ve eski referanslar bu composable'ı kullanabilir.
+ */
 @Composable
 fun MyApplicationTheme(
     darkTheme: Boolean = true,
