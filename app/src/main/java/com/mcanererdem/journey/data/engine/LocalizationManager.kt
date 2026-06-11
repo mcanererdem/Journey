@@ -27,6 +27,16 @@ object LocalizationManager {
         return loadJsonFromAsset(ctx, "blueprints/floor_$floor.json")
     }
 
+    fun loadGlobalEnemies(): JSONObject? {
+        val ctx = appContext ?: return null
+        return loadJsonFromAsset(ctx, "blueprints/global_enemies.json")
+    }
+
+    fun loadGlobalItems(): JSONObject? {
+        val ctx = appContext ?: return null
+        return loadJsonFromAsset(ctx, "blueprints/global_items.json")
+    }
+
     private fun loadJsonFromAsset(context: Context, fileName: String): JSONObject? {
         return try {
             val inputStream: InputStream = context.assets.open(fileName)

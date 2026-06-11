@@ -1,0 +1,88 @@
+{
+  "infested_rat": {
+    "enemyId": "infested_rat",
+    "nameKey": "enemy_infested_rat_name",
+    "hp": 42,
+    "maxHp": 42,
+    "atk": 4,
+    "skills": []
+  },
+  "blighted_acid_crawler": {
+    "enemyId": "blighted_acid_crawler",
+    "nameKey": "enemy_blighted_acid_crawler_name",
+    "hp": 48,
+    "maxHp": 48,
+    "atk": 5,
+    "skills": [
+      {
+        "id": "acid_spray",
+        "nameKey": "skill_acid_spray_name",
+        "descriptionKey": "skill_acid_spray_desc",
+        "damage": 6,
+        "statusEffect": "POISON",
+        "effectDuration": 3,
+        "effectValue": 2
+      }
+    ]
+  },
+  "spore_host": {
+    "enemyId": "spore_host",
+    "nameKey": "enemy_spore_host_name",
+    "hp": 50,
+    "maxHp": 50,
+    "atk": 5,
+    "skills": []
+  },
+  "rat_swarm": {
+    "enemyId": "rat_swarm",
+    "nameKey": "enemy_rat_swarm_name",
+    "hp": 55,
+    "maxHp": 55,
+    "atk": 5,
+    "skills": []
+  },
+  "blight_abomination": {
+    "enemyId": "blight_abomination",
+    "nameKey": "enemy_blight_abomination_name",
+    "hp": 105,
+    "maxHp": 105,
+    "atk": 9,
+    "skills": [
+      {
+        "id": "toxic_slam",
+        "nameKey": "skill_toxic_slam_name",
+        "descriptionKey": "skill_toxic_slam_desc",
+        "damage": 12,
+        "statusEffect": "POISON",
+        "effectDuration": 2,
+        "effectValue": 4
+      }
+    ]
+  },
+  "tunnel_hound": {
+    "enemyId": "tunnel_hound",
+    "nameKey": "enemy_tunnel_hound_name",
+    "hp": 62,
+    "maxHp": 62,
+    "atk": 6,
+    "skills": []
+  },
+  "rat_king": {
+    "enemyId": "rat_king",
+    "nameKey": "enemy_rat_king_name",
+    "hp": 150,
+    "maxHp": 150,
+    "atk": 8,
+    "skills": [
+      {
+        "id": "plague_bite",
+        "nameKey": "skill_plague_bite_name",
+        "descriptionKey": "skill_plague_bite_desc",
+        "damage": 10,
+        "statusEffect": "POISON",
+        "effectDuration": 2,
+        "effectValue": 3
+      }
+    ]
+  }
+}

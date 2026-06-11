@@ -548,18 +548,24 @@ object FloorBlueprintSystem {
     private fun loadBlueprintFromJson(floorNum: Int): FloorBlueprint? {
         try {
             val floorObj = LocalizationManager.loadFloorBlueprint(floorNum) ?: return null
-            // Title and Description
-            val titleEn = floorObj.optString("titleEn", "")
-            val titleTr = floorObj.optString("titleTr", "")
-            val descriptionEn = floorObj.optString("descriptionEn", "")
-            val descriptionTr = floorObj.optString("descriptionTr", "")
+            // Title and Description keys
+            val titleKey = floorObj.optString("titleKey", "")
+            val titleEn = if (titleKey.isNotEmpty()) LocalizationManager.getString("EN", titleKey) else floorObj.optString("titleEn", "")
+            val titleTr = if (titleKey.isNotEmpty()) LocalizationManager.getString("TR", titleKey) else floorObj.optString("titleTr", "")
+            
+            val descKey = floorObj.optString("descriptionKey", "")
+            val descriptionEn = if (descKey.isNotEmpty()) LocalizationManager.getString("EN", descKey) else floorObj.optString("descriptionEn", "")
+            val descriptionTr = if (descKey.isNotEmpty()) LocalizationManager.getString("TR", descKey) else floorObj.optString("descriptionTr", "")
 
-            // Intro Scenario
+            // Intro Scenario keys
             val introScenarioObj = floorObj.optJSONObject("introScenario") ?: return null
-            val scenarioTitleEn = introScenarioObj.optString("titleEn", "")
-            val scenarioTitleTr = introScenarioObj.optString("titleTr", "")
-            val scenarioDescEn = introScenarioObj.optString("descriptionEn", "")
-            val scenarioDescTr = introScenarioObj.optString("descriptionTr", "")
+            val scenarioTitleKey = introScenarioObj.optString("titleKey", "")
+            val scenarioTitleEn = if (scenarioTitleKey.isNotEmpty()) LocalizationManager.getString("EN", scenarioTitleKey) else introScenarioObj.optString("titleEn", "")
+            val scenarioTitleTr = if (scenarioTitleKey.isNotEmpty()) LocalizationManager.getString("TR", scenarioTitleKey) else introScenarioObj.optString("titleTr", "")
+            
+            val scenarioDescKey = introScenarioObj.optString("descriptionKey", "")
+            val scenarioDescEn = if (scenarioDescKey.isNotEmpty()) LocalizationManager.getString("EN", scenarioDescKey) else introScenarioObj.optString("descriptionEn", "")
+            val scenarioDescTr = if (scenarioDescKey.isNotEmpty()) LocalizationManager.getString("TR", scenarioDescKey) else introScenarioObj.optString("descriptionTr", "")
 
             val optionAObj = introScenarioObj.optJSONObject("optionA") ?: return null
             val optionBObj = introScenarioObj.optJSONObject("optionB") ?: return null
@@ -588,19 +594,37 @@ object FloorBlueprintSystem {
                 val idx = nodeObj.optInt("index", 0)
                 val typeStr = nodeObj.optString("type", "NARRATIVE")
                 val type = try { NodeType.valueOf(typeStr) } catch(e: Exception) { NodeType.NARRATIVE }
-                val title = nodeObj.optString("title", "")
-                val titleTr = nodeObj.optString("titleTr", "")
-                val description = nodeObj.optString("description", "")
-                val descriptionTr = nodeObj.optString("descriptionTr", "")
+                
+                val nodeTitleKey = nodeObj.optString("titleKey", "")
+                val title = if (nodeTitleKey.isNotEmpty()) LocalizationManager.getString("EN", nodeTitleKey) else nodeObj.optString("title", "")
+                val titleTr = if (nodeTitleKey.isNotEmpty()) LocalizationManager.getString("TR", nodeTitleKey) else nodeObj.optString("titleTr", "")
+                
+                val nodeDescKey = nodeObj.optString("descriptionKey", "")
+                val description = if (nodeDescKey.isNotEmpty()) LocalizationManager.getString("EN", nodeDescKey) else nodeObj.optString("description", "")
+                val descriptionTr = if (nodeDescKey.isNotEmpty()) LocalizationManager.getString("TR", nodeDescKey) else nodeObj.optString("descriptionTr", "")
 
                 val depth = nodeObj.optInt("depth", idx)
                 val column = nodeObj.optInt("column", 0)
 
-                val enemyNameEn = nodeObj.optString("enemyNameEn", "")
-                val enemyNameTr = nodeObj.optString("enemyNameTr", "")
-                val enemyHp = nodeObj.optInt("enemyHp", 0)
-                val enemyMaxHp = nodeObj.optInt("enemyMaxHp", 0)
-                val enemyAtk = nodeObj.optInt("enemyAtk", 0)
+                var enemyNameEn = nodeObj.optString("enemyNameEn", "")
+                var enemyNameTr = nodeObj.optString("enemyNameTr", "")
+                var enemyHp = nodeObj.optInt("enemyHp", 0)
+                var enemyMaxHp = nodeObj.optInt("enemyMaxHp", 0)
+                var enemyAtk = nodeObj.optInt("enemyAtk", 0)
+
+                val enemyId = nodeObj.optString("enemyId", "")
+                if (enemyId.isNotEmpty()) {
+                    val globalEnemies = LocalizationManager.loadGlobalEnemies()
+                    val enemyTmpl = globalEnemies?.optJSONObject(enemyId)
+                    if (enemyTmpl != null) {
+                        val nameKey = enemyTmpl.optString("nameKey", "")
+                        enemyNameEn = if (nameKey.isNotEmpty()) LocalizationManager.getString("EN", nameKey) else enemyTmpl.optString("nameEn", enemyNameEn)
+                        enemyNameTr = if (nameKey.isNotEmpty()) LocalizationManager.getString("TR", nameKey) else enemyTmpl.optString("nameTr", enemyNameTr)
+                        enemyHp = enemyTmpl.optInt("hp", enemyHp)
+                        enemyMaxHp = enemyTmpl.optInt("maxHp", enemyMaxHp)
+                        enemyAtk = enemyTmpl.optInt("atk", enemyAtk)
+                    }
+                }
 
                 val nodeOptAObj = nodeObj.optJSONObject("optionA")
                 val nodeOptBObj = nodeObj.optJSONObject("optionB")
@@ -651,24 +675,28 @@ object FloorBlueprintSystem {
     }
 
     private fun parseGameOption(obj: JSONObject): GameOption {
+        val textKey = obj.optString("textKey", "")
+        val journalKey = obj.optString("journalKey", "")
         return GameOption(
-            textEn = obj.optString("textEn", ""),
-            textTr = obj.optString("textTr", ""),
+            textEn = if (textKey.isNotEmpty()) LocalizationManager.getString("EN", textKey) else obj.optString("textEn", ""),
+            textTr = if (textKey.isNotEmpty()) LocalizationManager.getString("TR", textKey) else obj.optString("textTr", ""),
             alignmentShift = obj.optInt("alignmentShift", 0),
             goldChange = obj.optInt("goldChange", 0),
             aetherChange = obj.optInt("aetherChange", 0),
             hpChange = obj.optInt("hpChange", 0),
-            journalEn = obj.optString("journalEn", ""),
-            journalTr = obj.optString("journalTr", "")
+            journalEn = if (journalKey.isNotEmpty()) LocalizationManager.getString("EN", journalKey) else obj.optString("journalEn", ""),
+            journalTr = if (journalKey.isNotEmpty()) LocalizationManager.getString("TR", journalKey) else obj.optString("journalTr", "")
         )
     }
 
     private fun parseNodeChoice(obj: JSONObject): NodeChoice {
+        val textKey = obj.optString("textKey", "")
+        val journalKey = obj.optString("journalKey", "")
         return NodeChoice(
-            textEn = obj.optString("textEn", ""),
-            textTr = obj.optString("textTr", ""),
-            journalEn = obj.optString("journalEn", ""),
-            journalTr = obj.optString("journalTr", ""),
+            textEn = if (textKey.isNotEmpty()) LocalizationManager.getString("EN", textKey) else obj.optString("textEn", ""),
+            textTr = if (textKey.isNotEmpty()) LocalizationManager.getString("TR", textKey) else obj.optString("textTr", ""),
+            journalEn = if (journalKey.isNotEmpty()) LocalizationManager.getString("EN", journalKey) else obj.optString("journalEn", ""),
+            journalTr = if (journalKey.isNotEmpty()) LocalizationManager.getString("TR", journalKey) else obj.optString("journalTr", ""),
             hpChange = obj.optInt("hpChange", 0),
             goldChange = obj.optInt("goldChange", 0),
             aetherChange = obj.optInt("aetherChange", 0),

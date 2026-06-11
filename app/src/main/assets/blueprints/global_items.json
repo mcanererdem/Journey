@@ -1,0 +1,15 @@
+{
+  "adventurers_ring": {
+    "itemId": "adventurers_ring",
+    "nameKey": "item_adventurers_ring_name",
+    "descKey": "item_adventurers_ring_desc",
+    "hpBonus": 10,
+    "willBonus": 1
+  },
+  "scout_dagger": {
+    "itemId": "scout_dagger",
+    "nameKey": "item_scout_dagger_name",
+    "descKey": "item_scout_dagger_desc",
+    "atkBonus": 3
+  }
+}
