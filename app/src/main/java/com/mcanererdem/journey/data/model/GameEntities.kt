@@ -3,6 +3,31 @@ package com.mcanererdem.journey.data.model
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
+enum class NavigationTab {
+    TOWER,
+    OUTER_WORLD,
+    CHAR_SHEET,
+    QUESTS,
+    LEGACY,
+    JOURNAL
+}
+
+enum class Faction {
+    SANCTUM,
+    COVENANT,
+    NEUTRAL;
+
+    companion object {
+        fun fromString(side: String?): Faction {
+            return when (side?.uppercase()) {
+                "SANCTUM" -> SANCTUM
+                "COVENANT" -> COVENANT
+                else -> NEUTRAL
+            }
+        }
+    }
+}
+
 enum class EnemyFaction {
     SANCTUM_WRATH,
     VOID_CORRUPTION,

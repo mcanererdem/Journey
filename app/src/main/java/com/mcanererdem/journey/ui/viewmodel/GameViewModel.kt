@@ -8,6 +8,7 @@ import com.mcanererdem.journey.data.engine.*
 import com.mcanererdem.journey.data.model.JournalEntry
 import com.mcanererdem.journey.data.model.PlayerProfile
 import com.mcanererdem.journey.data.model.EnemyFaction
+import com.mcanererdem.journey.data.model.NavigationTab
 import com.mcanererdem.journey.data.repository.GameRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -62,8 +63,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val _lastActionMessageTr = MutableStateFlow("Hoş geldin, kahraman. Yükselişin başlıyor.")
     val lastActionMessageTr: StateFlow<String> = _lastActionMessageTr.asStateFlow()
 
-    private val _currentTab = MutableStateFlow("TOWER") // "TOWER", "OUTER_WORLD", "CHAR_SHEET", "JOURNAL"
-    val currentTab: StateFlow<String> = _currentTab.asStateFlow()
+    private val _currentTab = MutableStateFlow(NavigationTab.TOWER) // "TOWER", "OUTER_WORLD", "CHAR_SHEET", "JOURNAL"
+    val currentTab: StateFlow<NavigationTab> = _currentTab.asStateFlow()
 
     // Interactive adventure and combat nodes
     private val _currentFloorNodes = MutableStateFlow<List<AdventureNode>>(emptyList())
@@ -239,7 +240,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun selectTab(tab: String) {
+    fun selectTab(tab: NavigationTab) {
         _currentTab.value = tab
     }
 
@@ -323,7 +324,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 
                 _lastActionMessageEn.value = "💀 Spirit Fracture triggered! Slipped from Tower back to checkpoint Floor $rollbackFloor."
                 _lastActionMessageTr.value = "💀 Ruh Kırılması Yaşandı! Kule'den güvenli koridor kontrol noktası Kat $rollbackFloor seviyesine savruldun."
-                _currentTab.value = "OUTER_WORLD" // Go to outer world to rest/heal
+                _currentTab.value = NavigationTab.OUTER_WORLD // Go to outer world to rest/heal
             } else {
                 // Clean progression
                 val nextFloor = profile.currentFloor + 1
@@ -513,7 +514,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             
             _lastActionMessageEn.value = "Game restarted. Gained +$earnedPoints Legacy Points! Upgrades retained."
             _lastActionMessageTr.value = "Zaman döngüsü sıfırlandı. +$earnedPoints Miras Puanı kazanıldı! Kalıcı yükseltmeler korundu."
-            _currentTab.value = "TOWER"
+            _currentTab.value = NavigationTab.TOWER
         }
     }
 
@@ -1256,7 +1257,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
         _lastActionMessageEn.value = "💀 Spirit Fracture triggered! Slipped from Tower back to checkpoint Floor $rollbackFloor."
         _lastActionMessageTr.value = "💀 Ruh Kırılması Yaşandı! Kule'den güvenli koridor kontrol noktası Kat $rollbackFloor seviyesine savruldun."
-        _currentTab.value = "OUTER_WORLD"
+        _currentTab.value = NavigationTab.OUTER_WORLD
         _activeEnemyHp.value = null
         _combatLog.value = emptyList()
     }
@@ -1853,7 +1854,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     _activeSecretBossCombat.value = null
                     _activeSecretBossHp.value = null
                     _combatLog.value = emptyList()
-                    _currentTab.value = "OUTER_WORLD"
+                    _currentTab.value = NavigationTab.OUTER_WORLD
                 } else {
                     val updated = profile.copy(
                         currentHp = playerHp,

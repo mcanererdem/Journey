@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mcanererdem.journey.data.engine.LocalizationManager
 import com.mcanererdem.journey.data.model.PlayerProfile
+import com.mcanererdem.journey.data.model.NavigationTab
 import com.mcanererdem.journey.ui.theme.*
 import com.mcanererdem.journey.ui.viewmodel.GameViewModel
 
@@ -161,7 +162,7 @@ fun RpgGameScreen(
                     .fillMaxWidth()
             ) {
                 when (tab) {
-                    "TOWER" -> TowerClimbTab(
+                    NavigationTab.TOWER -> TowerClimbTab(
                         player = player,
                         nodes = currentFloorNodes,
                         activeEnemyHp = activeEnemyHp,
@@ -180,14 +181,14 @@ fun RpgGameScreen(
                         onCombatAction = { viewModel.executeCombatTurn(it) },
                         onResetClick = { viewModel.resetGame() }
                     )
-                    "OUTER_WORLD" -> OuterWorldTab(
+                    NavigationTab.OUTER_WORLD -> OuterWorldTab(
                         player = player,
                         activeLang = activeLang,
                         onHeal = { viewModel.healAndRest(it) },
                         onScout = { viewModel.performAbyssScouting() },
                         onTrade = { viewModel.tradeCurrency(it) }
                     )
-                    "CHAR_SHEET" -> CharacterSheetTab(
+                    NavigationTab.CHAR_SHEET -> CharacterSheetTab(
                         player = player,
                         activeLang = activeLang,
                         firebaseSyncState = firebaseSyncState,
@@ -197,18 +198,18 @@ fun RpgGameScreen(
                         onSyncCloud = { viewModel.syncProfileToFirebase() },
                         onRestoreCloud = { viewModel.restoreProfileFromFirebase() }
                     )
-                    "QUESTS" -> QuestsTab(
+                    NavigationTab.QUESTS -> QuestsTab(
                         player = player,
                         viewModel = viewModel,
                         activeLang = activeLang
                     )
-                    "LEGACY" -> LegacyTab(
+                    NavigationTab.LEGACY -> LegacyTab(
                         player = player,
                         activeLang = activeLang,
                         onUpgradePurchased = { viewModel.purchaseUpgrade(it) },
                         onClaimQuestReward = { viewModel.claimDailyQuestReward(it) }
                     )
-                    "JOURNAL" -> JournalTab(
+                    NavigationTab.JOURNAL -> JournalTab(
                         journal = journal,
                         activeLang = activeLang,
                         onClear = { viewModel.resetGame() }
@@ -1195,22 +1196,22 @@ fun PathTimeline(
 
 @Composable
 fun CustomBottomNavigationBar(
-    currentTab: String,
+    currentTab: NavigationTab,
     isPlayerInCombat: Boolean,
-    onTabSelected: (String) -> Unit,
+    onTabSelected: (NavigationTab) -> Unit,
     activeLang: String
 ) {
     val tabs = listOf(
-        "TOWER" to if (isPlayerInCombat) {
+        NavigationTab.TOWER to if (isPlayerInCombat) {
             if (activeLang == "TR") "DÖVÜŞ" to "⚔️" else "COMBAT" to "⚔️"
         } else {
             if (activeLang == "TR") "KAT" to "🏰" else "FLOOR" to "🏰"
         },
-        "OUTER_WORLD" to (if (activeLang == "TR") "DÜNYA" to "🌍" else "WORLD" to "🌍"),
-        "QUESTS" to (if (activeLang == "TR") "GÖREV" to "📜" else "QUEST" to "📜"),
-        "CHAR_SHEET" to (if (activeLang == "TR") "KAHRAMAN" to "👤" else "HERO" to "👤"),
-        "LEGACY" to (if (activeLang == "TR") "MİRAS" to "💎" else "LEGACY" to "💎"),
-        "JOURNAL" to (if (activeLang == "TR") "GÜNLÜK" to "📖" else "JOURNAL" to "📖")
+        NavigationTab.OUTER_WORLD to (if (activeLang == "TR") "DÜNYA" to "🌍" else "WORLD" to "🌍"),
+        NavigationTab.QUESTS to (if (activeLang == "TR") "GÖREV" to "📜" else "QUEST" to "📜"),
+        NavigationTab.CHAR_SHEET to (if (activeLang == "TR") "KAHRAMAN" to "👤" else "HERO" to "👤"),
+        NavigationTab.LEGACY to (if (activeLang == "TR") "MİRAS" to "💎" else "LEGACY" to "💎"),
+        NavigationTab.JOURNAL to (if (activeLang == "TR") "GÜNLÜK" to "📖" else "JOURNAL" to "📖")
     )
 
     Surface(
@@ -1230,13 +1231,12 @@ fun CustomBottomNavigationBar(
                 val (label, icon) = pair
                 val isSelected = currentTab == tabId
                 val activeColor = when (tabId) {
-                    "TOWER" -> if (isPlayerInCombat) ColorDanger else ColorSanctumPrimary
-                    "OUTER_WORLD" -> ColorHeal
-                    "QUESTS" -> ColorWarning
-                    "CHAR_SHEET" -> ColorCovenantGlow
-                    "LEGACY" -> ColorStatGold
-                    "JOURNAL" -> ColorInfo
-                    else -> ColorOnSurface
+                    NavigationTab.TOWER -> if (isPlayerInCombat) ColorDanger else ColorSanctumPrimary
+                    NavigationTab.OUTER_WORLD -> ColorHeal
+                    NavigationTab.QUESTS -> ColorWarning
+                    NavigationTab.CHAR_SHEET -> ColorCovenantGlow
+                    NavigationTab.LEGACY -> ColorStatGold
+                    NavigationTab.JOURNAL -> ColorInfo
                 }
                 val tintColor = if (isSelected) activeColor else ColorOnSurfaceSubtle
 
