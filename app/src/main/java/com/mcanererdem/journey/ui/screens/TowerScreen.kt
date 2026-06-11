@@ -329,394 +329,392 @@ fun TowerClimbTab(
                                             text = if (activeLang == "TR") "İlerlemek için haritadan bir sektör seçin" else "Select a sector on map to advance",
                                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
                                         )
-                                    }
                                 }
                             }
                         }
                     }
-                } else if (activeNode.type == NodeType.COMBAT || activeNode.type == NodeType.BOSS) {
+                }
+            } else if (activeNode.type == NodeType.COMBAT || activeNode.type == NodeType.BOSS) {
                     // Turn-Based Combat UI
+                    val mobHp = activeEnemyHp ?: activeNode.enemyHp
+                    val isBoss = activeNode.type == NodeType.BOSS
+                    
                     item {
-                        Card(
+                        Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(bottom = Dimens.SpacingM),
-                            shape = RoundedCornerShape(Dimens.SpacingM),
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                            border = BorderStroke(
-                                width = if (activeNode.type == NodeType.BOSS) Dimens.BorderThick else Dimens.BorderThin,
-                                color = if (activeNode.type == NodeType.BOSS) ColorSanctumPrimary else ColorDanger.copy(alpha = 0.4f)
-                            )
+                                .padding(bottom = Dimens.SpacingL)
                         ) {
-                            Column(modifier = Modifier.padding(Dimens.SpacingL)) {
+                            // 1. Sector Header & Turn Badge
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "— SECTOR ${activeNode.depth + 1} · COMBAT —".uppercase(),
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        color = ColorDanger,
+                                        fontWeight = FontWeight.Bold,
+                                        letterSpacing = 1.sp
+                                    )
+                                )
+                                
+                                Box(
+                                    modifier = Modifier
+                                        .background(ColorSanctumPrimary.copy(alpha = 0.15f), RoundedCornerShape(4.dp))
+                                        .border(0.5.dp, ColorSanctumPrimary, RoundedCornerShape(4.dp))
+                                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                                ) {
+                                    Text(
+                                        text = if (activeLang == "TR") "SIRA SENDE" else "YOUR TURN",
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontSize = 8.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = ColorSanctumPrimary
+                                        )
+                                    )
+                                }
+                            }
+                            
+                            Spacer(modifier = Modifier.height(8.dp))
+                            
+                            // 2. Boss/Hostile Info Row
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(50.dp)
+                                        .border(1.dp, ColorDanger.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
+                                        .background(ColorSurface, RoundedCornerShape(8.dp)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = if (isBoss) "💀" else "⚔️",
+                                        fontSize = 20.sp
+                                    )
+                                }
+                                
+                                Spacer(modifier = Modifier.width(12.dp))
+                                
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = (if (activeLang == "TR") activeNode.enemyNameTr else activeNode.enemyNameEn).uppercase(),
+                                        style = MaterialTheme.typography.titleLarge.copy(
+                                            fontFamily = FontFamily.Serif,
+                                            fontWeight = FontWeight.Bold
+                                        ),
+                                        color = ColorOnBackground
+                                    )
+                                    
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .background(ColorDanger.copy(alpha = 0.15f), RoundedCornerShape(4.dp))
+                                                .padding(horizontal = 4.dp, vertical = 1.dp)
+                                        ) {
+                                            Text(
+                                                text = if (isBoss) "BOSS" else "HOSTILE",
+                                                style = MaterialTheme.typography.labelSmall.copy(
+                                                    fontSize = 8.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = ColorDanger
+                                                )
+                                            )
+                                        }
+                                        
+                                        Text(
+                                            text = "Lv ${player.level} • Neutral",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = ColorOnSurfaceMuted
+                                        )
+                                    }
+                                }
+                            }
+                            
+                            Spacer(modifier = Modifier.height(16.dp))
+                            
+                            // 3. Hostility progress bar
+                            Column(modifier = Modifier.fillMaxWidth()) {
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = if (activeLang == "TR") activeNode.enemyNameTr else activeNode.enemyNameEn,
-                                        style = MaterialTheme.typography.titleMedium.copy(
+                                        text = if (activeLang == "TR") "DÜŞMANLIK" else "HOSTILITY",
+                                        style = MaterialTheme.typography.labelSmall.copy(
                                             fontWeight = FontWeight.Bold,
-                                            fontFamily = FontFamily.Serif
+                                            color = ColorDanger
                                         ),
-                                        color = if (activeNode.type == NodeType.BOSS) ColorSanctumPrimary else ColorDanger
+                                        modifier = Modifier.padding(bottom = 2.dp)
                                     )
-                                    
-                                    // Enemy Intent Badge
-                                    val intentBadgeText = when (currentEnemyIntent) {
-                                        EnemyIntent.ATTACK -> if (activeLang == "TR") "SaldÄ±rÄ± âš”ï¸" else "Attack âš”ï¸"
-                                        EnemyIntent.DEFEND -> if (activeLang == "TR") "Savunma ğŸ›¡ï¸" else "Defend ğŸ›¡ï¸"
-                                        EnemyIntent.DEBUFF -> if (activeLang == "TR") "Zehirleme ğŸ§ª" else "Debuff ğŸ§ª"
-                                        EnemyIntent.BUFF -> if (activeLang == "TR") "Kutsama âœ¨" else "Buff âœ¨"
-                                    }
-                                    val intentBadgeColor = when (currentEnemyIntent) {
-                                        EnemyIntent.ATTACK -> ColorDanger
-                                        EnemyIntent.DEFEND -> ColorSanctumPrimary
-                                        EnemyIntent.DEBUFF -> ColorWarning
-                                        EnemyIntent.BUFF -> ColorStatGold
-                                    }
-                                    Box(
-                                        modifier = Modifier
-                                            .background(intentBadgeColor.copy(alpha = 0.15f), RoundedCornerShape(Dimens.SpacingXs))
-                                            .border(Dimens.BorderNormal, intentBadgeColor, RoundedCornerShape(Dimens.SpacingXs))
-                                            .padding(horizontal = Dimens.SpacingS, vertical = Dimens.SpacingXs)
-                                    ) {
-                                        Text(
-                                            text = intentBadgeText,
-                                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                            color = intentBadgeColor
-                                        )
-                                    }
-                                    
-                                    if (activeNode.type == NodeType.BOSS) {
-                                        Surface(
-                                            color = ColorSanctumPrimary.copy(alpha = 0.15f),
-                                            shape = RoundedCornerShape(Dimens.SpacingXs)
-                                        ) {
-                                            Text(
-                                                text = "BOSS",
-                                                modifier = Modifier.padding(Dimens.SpacingS, Dimens.BorderThick),
-                                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                                color = ColorSanctumPrimary
-                                            )
-                                        }
-                                    }
-                                }
-                                
-                                Spacer(modifier = Modifier.height(Dimens.SpacingM))
-                                
-                                val mobHp = activeEnemyHp ?: activeNode.enemyHp
-                                // Enemy Status Effects
-                                StatusEffectsRow(statuses = enemyStatuses, activeLang = activeLang)
-                                Spacer(modifier = Modifier.height(Dimens.SpacingXs))
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    LinearProgressIndicator(
-                                        progress = { mobHp.toFloat() / activeNode.enemyHp.toFloat() },
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .height(Dimens.SpacingM)
-                                            .clip(RoundedCornerShape(Dimens.SpacingXs)),
-                                        color = ColorDanger,
-                                        trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
-                                    )
-                                    Spacer(modifier = Modifier.width(Dimens.SpacingM))
                                     Text(
-                                        text = "$mobHp/${activeNode.enemyHp}",
-                                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
+                                        text = "$mobHp / ${activeNode.enemyHp}",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = ColorOnSurface
                                     )
                                 }
-
-                                // Advanced turn-based stats and alignment-influenced tactical modifiers panel
-                                val enemyFaction = com.mcanererdem.journey.data.model.EnemyFaction.fromName(activeNode.enemyNameEn)
-                                val isSanctum = player.side == "SANCTUM" || player.momentum > 70
-                                val isCovenant = player.side == "COVENANT" || player.momentum < 30
-                                val critChance = (10 + player.currentWill * 4).coerceIn(10, 50)
-                                val hpPercentage = player.currentHp.toFloat() / player.maxHp.toFloat()
-
-                                val textText = when (enemyFaction) {
-                                    com.mcanererdem.journey.data.model.EnemyFaction.SANCTUM_WRATH -> if (activeLang == "TR") "KUTSAL ORDU" else "HOLY WRATH"
-                                    com.mcanererdem.journey.data.model.EnemyFaction.VOID_CORRUPTION -> if (activeLang == "TR") "ABIS MUSİBETİ" else "VOID CORRUPTION"
-                                    com.mcanererdem.journey.data.model.EnemyFaction.BLIGHTED_AMALGAM -> if (activeLang == "TR") "KADİM MUSİBET" else "CORRUPTED BLIGHT"
-                                }
-                                val badgeColor = when (enemyFaction) {
-                                    com.mcanererdem.journey.data.model.EnemyFaction.SANCTUM_WRATH -> ColorSanctumPrimary
-                                    com.mcanererdem.journey.data.model.EnemyFaction.VOID_CORRUPTION -> ColorCovenantGlow
-                                    com.mcanererdem.journey.data.model.EnemyFaction.BLIGHTED_AMALGAM -> ColorDanger
-                                }
-                                val descText = when (enemyFaction) {
-                                    com.mcanererdem.journey.data.model.EnemyFaction.SANCTUM_WRATH -> if (activeLang == "TR") "Karanlık/Boşluk saldırılarına karşı zayıf, Kutsal inançlılara dirençli." else "Weak to Void alignment, resistant to Sanctum holy radiance."
-                                    com.mcanererdem.journey.data.model.EnemyFaction.VOID_CORRUPTION -> if (activeLang == "TR") "Kutsal Işıltıya karşı son derece zayıf, Abis saldırılarına dirençli." else "Weak to Sanctum holy radiance, resistant to Void corruption."
-                                    com.mcanererdem.journey.data.model.EnemyFaction.BLIGHTED_AMALGAM -> if (activeLang == "TR") "Nötr ve dengeli savaşçılara karşı zayıftır." else "Weak to Neutral alignment and steady balanced strikes."
-                                }
-
-                                Spacer(modifier = Modifier.height(Dimens.SpacingM))
-
-                                // Faction badge and Weakness details flow
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingS),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .background(badgeColor.copy(alpha = 0.15f), RoundedCornerShape(Dimens.SpacingXs))
-                                            .border(Dimens.BorderThin, badgeColor.copy(alpha = 0.5f), RoundedCornerShape(Dimens.SpacingXs))
-                                            .padding(horizontal = Dimens.SpacingS, vertical = Dimens.SpacingXs)
-                                    ) {
-                                        Text(
-                                            text = textText,
-                                            style = MaterialTheme.typography.labelSmall.copy(fontSize = Dimens.TextXxs, fontWeight = FontWeight.Bold),
-                                            color = badgeColor
-                                        )
-                                    }
-
-                                    Text(
-                                        text = descText,
-                                        style = MaterialTheme.typography.labelSmall.copy(fontSize = Dimens.TextXxs, fontWeight = FontWeight.Normal),
-                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                                        modifier = Modifier.weight(1f)
-                                    )
-                                }
-
-                                Spacer(modifier = Modifier.height(Dimens.SpacingM))
-
-                                // Detailed tactical modifiers description card
-                                Card(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    colors = CardDefaults.cardColors(
-                                        containerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.03f)
-                                    ),
-                                    border = BorderStroke(Dimens.BorderThin, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f)),
-                                    shape = RoundedCornerShape(Dimens.SpacingS)
-                                ) {
-                                    Column(modifier = Modifier.padding(Dimens.SpacingM)) {
-                                        Text(
-                                            text = if (activeLang == "TR") "⚔️ SAVAŞ ETKİNLİĞİ VE DURUM ETKİLERİ" else "⚔️ COMBAT EFFECTIVENESS & MODIFIERS",
-                                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, letterSpacing = 0.5.sp),
-                                            color = MaterialTheme.colorScheme.primary
-                                        )
-
-                                        Spacer(modifier = Modifier.height(Dimens.SpacingS))
-
-                                        // Row 1: Faction effectiveness
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth().padding(vertical = Dimens.BorderThick),
-                                            horizontalArrangement = Arrangement.SpaceBetween
-                                        ) {
-                                            Text(
-                                                text = if (activeLang == "TR") "🛡️ İnanç-Düşman Uyumu:" else "🛡️ Faction Matchup:",
-                                                style = MaterialTheme.typography.labelSmall,
-                                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                                            )
-
-                                            val (matchText, matchColor) = when {
-                                                isSanctum && enemyFaction == com.mcanererdem.journey.data.model.EnemyFaction.VOID_CORRUPTION -> {
-                                                     val bonus = 20 + ((player.momentum - 50) / 4)
-                                                    Pair(if (activeLang == "TR") "✨ Avantaj: +$bonus% (Işık)" else "✨ Advantage: +$bonus% (Light)", ColorSanctumPrimary)
-                                                }
-                                                isCovenant && enemyFaction == com.mcanererdem.journey.data.model.EnemyFaction.SANCTUM_WRATH -> {
-                                                    val bonus = 20 + (Math.abs(player.momentum - 50) / 4)
-                                                    Pair(if (activeLang == "TR") "🔮 Avantaj: +$bonus% (Boşluk)" else "🔮 Advantage: +$bonus% (Void)", ColorCovenantGlow)
-                                                }
-                                                isSanctum && enemyFaction == com.mcanererdem.journey.data.model.EnemyFaction.SANCTUM_WRATH -> {
-                                                    Pair(if (activeLang == "TR") "⚠️ Direnç: -15% Azalmış Hasar" else "⚠️ Resisted: -15% Holy Kinship", ColorDanger)
-                                                }
-                                                isCovenant && enemyFaction == com.mcanererdem.journey.data.model.EnemyFaction.VOID_CORRUPTION -> {
-                                                    Pair(if (activeLang == "TR") "⚠️ Direnç: -15% Azalmış Hasar" else "⚠️ Resisted: -15% Shadow Kinship", ColorDanger)
-                                                }
-                                                (!isSanctum && !isCovenant) && enemyFaction == com.mcanererdem.journey.data.model.EnemyFaction.BLIGHTED_AMALGAM -> {
-                                                    Pair(if (activeLang == "TR") "⚖️ Nötr Odak: +20% Hasar" else "⚖️ Neutral Focus: +20% Dmg", ColorSanctumPrimary)
-                                                }
-                                                else -> {
-                                                    Pair(if (activeLang == "TR") "⚖️ Dengeli: Standart" else "⚖️ Balanced: Standard", MaterialTheme.colorScheme.onSurface)
-                                                }
-                                            }
-
-                                            Text(
-                                                text = matchText,
-                                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
-                                                color = matchColor
-                                            )
-                                        }
-
-                                        // Row 2: Willpower critical rate
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth().padding(vertical = Dimens.BorderThick),
-                                            horizontalArrangement = Arrangement.SpaceBetween
-                                        ) {
-                                            Text(
-                                                text = if (activeLang == "TR") "🧠 Konsantrasyon (İrade):" else "🧠 Focus & Critical Chance:",
-                                                style = MaterialTheme.typography.labelSmall,
-                                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                                            )
-
-                                            val critText = if (activeLang == "TR") "%$critChance Kritik Şans (x1.5 Hasar)" else "$critChance% Crit Rate (x1.5 Dmg)"
-                                            Text(
-                                                text = "🔥 $critText",
-                                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
-                                                color = if (player.currentWill >= 7) ColorSanctumPrimary else if (player.currentWill == 0) ColorDanger else MaterialTheme.colorScheme.onSurface
-                                            )
-                                        }
-
-                                        // Row 3: Mind state
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth().padding(vertical = Dimens.BorderThick),
-                                            horizontalArrangement = Arrangement.SpaceBetween
-                                        ) {
-                                            Text(
-                                                text = if (activeLang == "TR") "⚡ Zihin Durumu:" else "⚡ Cognitive State:",
-                                                style = MaterialTheme.typography.labelSmall,
-                                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                                            )
-
-                                            val (stateText, stateColor) = when {
-                                                player.currentWill == 0 -> Pair(if (activeLang == "TR") "Zihinsel Sürsaj (-%25 Hasar)" else "Mental Fatigue (-25% Dmg)", ColorDanger)
-                                                player.currentWill >= 7 -> Pair(if (activeLang == "TR") "Berrak Zihin (+%15 Hasar)" else "Inspired State (+15% Dmg)", ColorSanctumPrimary)
-                                                else -> Pair(if (activeLang == "TR") "Odaklanmış" else "Standard Focus", MaterialTheme.colorScheme.onSurface)
-                                            }
-
-                                            Text(
-                                                text = stateText,
-                                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
-                                                color = stateColor
-                                            )
-                                        }
-
-                                        // Row 4: Low HP adren surge
-                                        if (hpPercentage < 0.3f && hpPercentage > 0.0f) {
-                                            Row(
-                                                modifier = Modifier.fillMaxWidth().padding(vertical = Dimens.BorderThick),
-                                                horizontalArrangement = Arrangement.SpaceBetween
-                                            ) {
-                                                Text(
-                                                    text = if (activeLang == "TR") "🩸 Cam Havli (Öfke):" else "🩸 Low HP Survival Fury:",
-                                                    style = MaterialTheme.typography.labelSmall,
-                                                    color = ColorDanger
-                                                )
-
-                                                Text(
-                                                    text = if (activeLang == "TR") "+%30 Hasar / %25 Karşı Saldırı" else "+30% Damage / +25% Recoil",
-                                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                                    color = ColorDanger
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
-
-                                Spacer(modifier = Modifier.height(Dimens.SpacingM))
-
-                                // Player Status Effects
-                                Text(
-                                    text = if (activeLang == "TR") "Aktif Durum Etkileriniz:" else "Your Active Status Effects:",
-                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                LinearProgressIndicator(
+                                    progress = { mobHp.toFloat() / activeNode.enemyHp.toFloat() },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(4.dp)
+                                        .clip(RoundedCornerShape(2.dp)),
+                                    color = ColorDanger,
+                                    trackColor = ColorBorderMuted
                                 )
-                                StatusEffectsRow(statuses = playerStatuses, activeLang = activeLang)
-                                
-                                Spacer(modifier = Modifier.height(Dimens.SpacingM))
-
-                                // Turn action buttons grid
-                                Column(verticalArrangement = Arrangement.spacedBy(Dimens.SpacingS)) {
+                            }
+                            
+                            Spacer(modifier = Modifier.height(16.dp))
+                            
+                            // 4. Vitality and Essence progress bars
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
                                     Row(
                                         modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingS)
+                                        horizontalArrangement = Arrangement.SpaceBetween
                                     ) {
-                                        Button(
-                                            onClick = { onCombatAction("LIGHT_STRIKE") },
-                                            modifier = Modifier
-                                                .weight(1f)
-                                                .height(Dimens.AvatarSize)
-                                                .testTag("btn_combat_attack"),
-                                            colors = ButtonDefaults.buttonColors(containerColor = ColorDanger)
-                                        ) {
-                                            Text(
-                                                text = if (activeLang == "TR") "HAMLE YAP ⚔️" else "STRIKE ⚔️",
-                                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
+                                        Text(
+                                            text = if (activeLang == "TR") "YAŞAMSAL GÜÇ" else "VITALITY",
+                                            style = MaterialTheme.typography.labelSmall.copy(
+                                                fontWeight = FontWeight.Bold,
+                                                color = ColorDanger
                                             )
-                                        }
-
-                                        Button(
-                                            onClick = { onCombatAction("HEAVY_BLOW") },
-                                            enabled = player.aether >= 15,
-                                            modifier = Modifier
-                                                .weight(1f)
-                                                .height(Dimens.AvatarSize)
-                                                .testTag("btn_combat_heavy_blow"),
-                                            colors = ButtonDefaults.buttonColors(
-                                                containerColor = ColorWarning,
-                                                disabledContainerColor = ColorWarning.copy(alpha = 0.3f),
-                                                disabledContentColor = Color.White.copy(alpha = 0.5f)
-                                            )
-                                        ) {
-                                            Text(
-                                                text = if (activeLang == "TR") "AĞIR DARBE 🔥 (15)" else "HEAVY BLOW 🔥 (15)",
-                                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, color = if (player.aether >= 15) Color.Black else Color.White.copy(alpha = 0.5f))
-                                            )
-                                        }
+                                        )
+                                        Text(
+                                            text = "${player.currentHp}/${player.maxHp}",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = ColorOnSurfaceMuted
+                                        )
                                     }
-
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingS)
-                                    ) {
-                                        Button(
-                                            onClick = { onCombatAction("BARRIER") },
-                                            modifier = Modifier
-                                                .weight(1f)
-                                                .height(Dimens.AvatarSize)
-                                                .testTag("btn_combat_barrier"),
-                                            colors = ButtonDefaults.buttonColors(containerColor = ColorHeal)
-                                        ) {
-                                            Text(
-                                                text = if (activeLang == "TR") "BARİYER 🛡️" else "BARRIER 🛡️",
-                                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
-                                            )
-                                        }
-
-                                        Button(
-                                            onClick = { onCombatAction("ESCAPE") },
-                                            modifier = Modifier
-                                                .weight(1f)
-                                                .height(Dimens.AvatarSize)
-                                                .testTag("btn_combat_flee"),
-                                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant, contentColor = MaterialTheme.colorScheme.onSurfaceVariant)
-                                        ) {
-                                            Text(
-                                                text = if (activeLang == "TR") "KAÇIŞ 🏃" else "ESCAPE 🏃",
-                                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
-                                            )
-                                        }
-                                    }
-                                }
-
-                                // Combat logs console
-                                if (combatLog.isNotEmpty()) {
-                                    Spacer(modifier = Modifier.height(Dimens.SpacingM))
-                                    Text(
-                                        text = if (activeLang == "TR") "Savaş Günlüğü:" else "Combat Console Log:",
-                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    LinearProgressIndicator(
+                                        progress = { player.currentHp.toFloat() / player.maxHp.toFloat() },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(2.dp)
+                                            .clip(RoundedCornerShape(1.dp)),
+                                        color = ColorDanger,
+                                        trackColor = ColorBorderMuted
                                     )
-                                    Spacer(modifier = Modifier.height(Dimens.SpacingXs))
-                                    Card(
+                                }
+                                
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Row(
                                         modifier = Modifier.fillMaxWidth(),
-                                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
+                                        horizontalArrangement = Arrangement.SpaceBetween
                                     ) {
-                                        Column(modifier = Modifier.padding(Dimens.SpacingM)) {
-                                            combatLog.takeLast(4).forEach { log ->
+                                        Text(
+                                            text = if (activeLang == "TR") "ÖZ ENERJİ" else "ESSENCE",
+                                            style = MaterialTheme.typography.labelSmall.copy(
+                                                fontWeight = FontWeight.Bold,
+                                                color = ColorCovenantGlow
+                                            )
+                                        )
+                                        Text(
+                                            text = "${player.currentWill}/${player.maxWill}",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = ColorOnSurfaceMuted
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    LinearProgressIndicator(
+                                        progress = { player.currentWill.toFloat() / player.maxWill.toFloat() },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(2.dp)
+                                            .clip(RoundedCornerShape(1.dp)),
+                                        color = ColorCovenantGlow,
+                                        trackColor = ColorBorderMuted
+                                    )
+                                }
+                            }
+                            
+                            Spacer(modifier = Modifier.height(20.dp))
+                            
+                            // 5. Battle Register
+                            Text(
+                                text = if (activeLang == "TR") "SAVAŞ SİCİLİ" else "BATTLE REGISTER",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = ColorOnSurfaceMuted,
+                                    letterSpacing = 0.5.sp
+                                )
+                            )
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(containerColor = ColorSurface.copy(alpha = 0.5f)),
+                                border = BorderStroke(0.5.dp, ColorBorder)
+                            ) {
+                                Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                    if (combatLog.isEmpty()) {
+                                        Text(
+                                            text = if (activeLang == "TR") "Savaş başladı..." else "Combat initiated...",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = ColorOnSurfaceMuted
+                                        )
+                                    } else {
+                                        combatLog.takeLast(5).forEach { log ->
+                                            val (logIcon, logColor) = when {
+                                                log.contains("begins") || log.contains("savaşa girdiniz") || log.contains("awakens") -> Pair("✦", ColorCovenantGlow)
+                                                log.contains("Strike") || log.contains("strike") || log.contains("Vuruş") || log.contains("Ağır Darbe") || log.contains("Heavy Blow") || log.contains("uses") -> Pair("›", ColorSanctumPrimary)
+                                                log.contains("retaliates") || log.contains("saldırdı") || log.contains("hasar aldı") || log.contains("hit") || log.contains("dmg") -> Pair("†", ColorDanger)
+                                                log.contains("defend") || log.contains("Bariyer") || log.contains("Barier") || log.contains("block") -> Pair("›", ColorHeal)
+                                                else -> Pair("•", ColorOnSurface)
+                                            }
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                            ) {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .size(14.dp)
+                                                        .background(logColor.copy(alpha = 0.15f), RoundedCornerShape(2.dp)),
+                                                    contentAlignment = Alignment.Center
+                                                ) {
+                                                    Text(
+                                                        text = logIcon,
+                                                        style = MaterialTheme.typography.labelSmall.copy(
+                                                            fontWeight = FontWeight.Bold,
+                                                            fontSize = 8.sp,
+                                                            color = logColor
+                                                        )
+                                                    )
+                                                }
                                                 Text(
                                                     text = log,
-                                                    style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Monospace, fontSize = Dimens.TextXxs),
-                                                    color = if (log.contains("Critical") || log.contains("Kritik") || log.contains("Sovereign")) ColorSanctumPrimary 
-                                                            else if (log.contains("defeat") || log.contains("hasar aldı") || log.contains("hit")) ColorDanger 
-                                                            else MaterialTheme.colorScheme.onSurface
+                                                    style = MaterialTheme.typography.bodySmall.copy(
+                                                        fontFamily = FontFamily.Serif
+                                                    ),
+                                                    color = ColorOnSurface
                                                 )
                                             }
                                         }
                                     }
                                 }
+                            }
+                            
+                            Spacer(modifier = Modifier.height(20.dp))
+                            
+                            // 6. Action selection cards
+                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                CombatActionCard(
+                                    title = if (activeLang == "TR") "HAMLE" else "STRIKE",
+                                    subtitle = if (activeLang == "TR") "Temel vuruş" else "Basic attack",
+                                    icon = "⚔️",
+                                    borderColor = ColorSanctumPrimary,
+                                    onClick = { onCombatAction("LIGHT_STRIKE") }
+                                )
+                                
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Box(modifier = Modifier.weight(1f)) {
+                                        CombatActionCard(
+                                            title = if (activeLang == "TR") "YETENEKLER" else "SKILLS",
+                                            subtitle = if (activeLang == "TR") "3 kullanılabilir" else "3 available",
+                                            icon = "✦",
+                                            borderColor = ColorCovenantGlow,
+                                            enabled = player.aether >= 15,
+                                            onClick = { onCombatAction("HEAVY_BLOW") }
+                                        )
+                                    }
+                                    
+                                    Box(modifier = Modifier.weight(1f)) {
+                                        CombatActionCard(
+                                            title = if (activeLang == "TR") "EŞYA" else "ITEM",
+                                            subtitle = if (activeLang == "TR") "Çantada 2 adet" else "2 in bag",
+                                            icon = "⚱️",
+                                            borderColor = ColorHeal,
+                                            onClick = { onCombatAction("BARRIER") }
+                                        )
+                                    }
+                                }
+                                
+                                CombatActionCard(
+                                    title = if (activeLang == "TR") "SAVUNMA" else "DEFEND",
+                                    subtitle = if (activeLang == "TR") "Sonraki blok" else "Block next",
+                                    icon = "🛡️",
+                                    borderColor = ColorOnSurfaceMuted,
+                                    onClick = { onCombatAction("BARRIER") }
+                                )
+                                
+                                val canEscape = !isBoss
+                                CombatActionCard(
+                                    title = if (activeLang == "TR") "KAÇIŞ" else "FLEE",
+                                    subtitle = if (isBoss) {
+                                        if (activeLang == "TR") "Mümkün değil — boss dövüşü" else "Unavailable — boss encounter"
+                                    } else {
+                                        if (activeLang == "TR") "Güvenli bölgeye kaç" else "Escape safely"
+                                    },
+                                    icon = "🏃",
+                                    borderColor = ColorOnSurfaceSubtle,
+                                    enabled = canEscape,
+                                    onClick = { onCombatAction("ESCAPE") }
+                                )
+                                
+                                if (isBoss) {
+                                    CombatActionCard(
+                                        title = if (activeLang == "TR") "AHİT ÇAĞRISI" else "COVENANT CALL",
+                                        subtitle = if (activeLang == "TR") "Tek seferlik boss engelleme · Semavi Koro" else "One-time boss interrupt · Lawful Choir",
+                                        icon = "✨",
+                                        borderColor = ColorSanctumPrimary,
+                                        extraRightText = "12 Essence",
+                                        onClick = { onCombatAction("HEAVY_BLOW") }
+                                    )
+                                }
+                            }
+                            
+                            Spacer(modifier = Modifier.height(20.dp))
+                            
+                            // 7. Encounter Timer and Round Counter
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = if (activeLang == "TR") "SAVAŞ ZAMANLAYICISI" else "ENCOUNTER TIMER",
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            color = ColorOnSurfaceMuted,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 8.sp,
+                                            letterSpacing = 0.5.sp
+                                        )
+                                    )
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    LinearProgressIndicator(
+                                        progress = { 0.4f },
+                                        modifier = Modifier
+                                            .fillMaxWidth(0.6f)
+                                            .height(2.dp)
+                                            .clip(RoundedCornerShape(1.dp)),
+                                        color = ColorDanger,
+                                        trackColor = ColorBorderMuted
+                                    )
+                                }
+                                
+                                Text(
+                                    text = if (activeLang == "TR") "ROUND 3" else "ROUND 3",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = ColorOnSurface
+                                    )
+                                )
                             }
                         }
                     }
@@ -773,46 +771,43 @@ fun TowerClimbTab(
                     // Choices
                     activeNode.optionA?.let { choice ->
                         val hasFlag = choice.requiredStoryFlag.isEmpty() || player.storyFlagsEncoded.split(",").contains(choice.requiredStoryFlag)
-                        if (hasFlag) {
-                            item {
-                                NodeChoiceButton(
-                                    choice = choice,
-                                    activeLang = activeLang,
-                                    highlightColor = ColorSanctumPrimary,
-                                    testTagValue = "choice_a_btn",
-                                    onClick = { onChoiceSelected(choice) }
-                                )
-                            }
+                        item {
+                            NodeChoiceButton(
+                                choice = choice,
+                                activeLang = activeLang,
+                                highlightColor = ColorSanctumPrimary,
+                                testTagValue = "choice_a_btn",
+                                enabled = hasFlag,
+                                onClick = { onChoiceSelected(choice) }
+                            )
                         }
                     }
 
                     activeNode.optionB?.let { choice ->
                         val hasFlag = choice.requiredStoryFlag.isEmpty() || player.storyFlagsEncoded.split(",").contains(choice.requiredStoryFlag)
-                        if (hasFlag) {
-                            item {
-                                NodeChoiceButton(
-                                    choice = choice,
-                                    activeLang = activeLang,
-                                    highlightColor = ColorCovenantGlow,
-                                    testTagValue = "choice_b_btn",
-                                    onClick = { onChoiceSelected(choice) }
-                                )
-                            }
+                        item {
+                            NodeChoiceButton(
+                                choice = choice,
+                                activeLang = activeLang,
+                                highlightColor = ColorCovenantGlow,
+                                testTagValue = "choice_b_btn",
+                                enabled = hasFlag,
+                                onClick = { onChoiceSelected(choice) }
+                            )
                         }
                     }
 
                     activeNode.optionC?.let { choice ->
                         val hasFlag = choice.requiredStoryFlag.isEmpty() || player.storyFlagsEncoded.split(",").contains(choice.requiredStoryFlag)
-                        if (hasFlag) {
-                            item {
-                                NodeChoiceButton(
-                                    choice = choice,
-                                    activeLang = activeLang,
-                                    highlightColor = ColorNeutralPrimary,
-                                    testTagValue = "choice_c_btn",
-                                    onClick = { onChoiceSelected(choice) }
-                                )
-                            }
+                        item {
+                            NodeChoiceButton(
+                                choice = choice,
+                                activeLang = activeLang,
+                                highlightColor = ColorNeutralPrimary,
+                                testTagValue = "choice_c_btn",
+                                enabled = hasFlag,
+                                onClick = { onChoiceSelected(choice) }
+                            )
                         }
                     }
                 }
@@ -831,94 +826,181 @@ fun NodeChoiceButton(
     activeLang: String,
     highlightColor: Color,
     testTagValue: String,
+    enabled: Boolean = true,
     onClick: () -> Unit
 ) {
+    val isTr = activeLang == "TR"
+    
+    val cardBg = if (enabled) ColorSurface else ColorSurface.copy(alpha = 0.4f)
+    val cardBorderColor = if (enabled) highlightColor.copy(alpha = 0.6f) else ColorBorderMuted
+    
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = Dimens.SpacingXs)
-            .clickable { onClick() }
+            .padding(vertical = 6.dp)
+            .clickable(enabled = enabled) { onClick() }
             .testTag(testTagValue),
-        shape = RoundedCornerShape(Dimens.SpacingM),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = BorderStroke(Dimens.BorderNormal, highlightColor.copy(alpha = 0.5f))
+        shape = RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors(containerColor = cardBg),
+        border = BorderStroke(1.dp, cardBorderColor)
     ) {
-        Column(modifier = Modifier.padding(Dimens.SpacingM)) {
-            Text(
-                text = if (activeLang == "TR") choice.textTr else choice.textEn,
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = FontFamily.Serif
-                ),
-                color = MaterialTheme.colorScheme.onSurface
-            )
-
-            Spacer(modifier = Modifier.height(Dimens.SpacingS))
-
-            // Micro rewards list indicators
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.weight(1f)
             ) {
-                // Alignment shift indicators
-                if (choice.alignmentShift != 0) {
-                    val shiftLabel = if (choice.alignmentShift > 0) "+Momentum ✨" else "-Momentum 🔥"
+                // Choice Icon based on alignment/type
+                val choiceIcon = when {
+                    !enabled -> "🔒"
+                    choice.alignmentShift > 0 -> "🙏" // Sanctum/Light
+                    choice.alignmentShift < 0 -> "🗡️" // Covenant/Void
+                    else -> "📖" // Neutral/Lore
+                }
+                
+                Box(
+                    modifier = Modifier
+                        .size(30.dp)
+                        .background(
+                            if (enabled) highlightColor.copy(alpha = 0.15f) else ColorBorderMuted,
+                            CircleShape
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
                     Text(
-                        text = shiftLabel,
-                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                        color = if (choice.alignmentShift > 0) ColorSanctumPrimary else ColorCovenantGlow,
-                        modifier = Modifier.padding(end = Dimens.SpacingM)
+                        text = choiceIcon,
+                        fontSize = 14.sp
                     )
                 }
-
-                if (choice.goldChange != 0) {
-                    val goldLabel = if (choice.goldChange > 0) "+${choice.goldChange}🪙" else "${choice.goldChange}🪙"
+                
+                Column {
                     Text(
-                        text = goldLabel,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = ColorWarning,
-                        modifier = Modifier.padding(end = Dimens.SpacingM)
+                        text = if (isTr) choice.textTr else choice.textEn,
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontFamily = FontFamily.Serif,
+                            fontWeight = FontWeight.Bold
+                        ),
+                        color = if (enabled) ColorOnBackground else ColorOnSurfaceMuted
                     )
+                    
+                    if (!enabled && choice.requiredStoryFlag.isNotEmpty()) {
+                        Text(
+                            text = if (isTr) "Gereksinim: ${choice.requiredStoryFlag}" else "Prerequisite: ${choice.requiredStoryFlag}",
+                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
+                            color = ColorDanger
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.height(4.dp))
+                    
+                    // Badges row
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // HP change badge
+                        if (choice.hpChange != 0) {
+                            val isHpPositive = choice.hpChange > 0
+                            val hpText = if (isHpPositive) "+${choice.hpChange} HP" else "${choice.hpChange} HP"
+                            val hpColor = if (isHpPositive) ColorHeal else ColorDanger
+                            Box(
+                                modifier = Modifier
+                                    .background(hpColor.copy(alpha = 0.15f), RoundedCornerShape(4.dp))
+                                    .padding(horizontal = 4.dp, vertical = 1.dp)
+                            ) {
+                                Text(
+                                    text = hpText,
+                                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 8.sp, fontWeight = FontWeight.Bold),
+                                    color = hpColor
+                                )
+                            }
+                        }
+                        
+                        // Alignment shift badge
+                        if (choice.alignmentShift != 0) {
+                            val isShiftPositive = choice.alignmentShift > 0
+                            val shiftText = if (isShiftPositive) "+Light" else "+Corruption"
+                            val shiftColor = if (isShiftPositive) ColorSanctumPrimary else ColorCovenantGlow
+                            Box(
+                                modifier = Modifier
+                                    .background(shiftColor.copy(alpha = 0.15f), RoundedCornerShape(4.dp))
+                                    .padding(horizontal = 4.dp, vertical = 1.dp)
+                            ) {
+                                Text(
+                                    text = shiftText,
+                                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 8.sp, fontWeight = FontWeight.Bold),
+                                    color = shiftColor
+                                )
+                            }
+                        }
+                        
+                        // Gleam / Gold Change badge
+                        if (choice.goldChange != 0) {
+                            val isGoldPositive = choice.goldChange > 0
+                            val goldText = if (isGoldPositive) "+${choice.goldChange} Gleam" else "${choice.goldChange} Gleam"
+                            val goldColor = ColorStatGold
+                            Box(
+                                modifier = Modifier
+                                    .background(goldColor.copy(alpha = 0.15f), RoundedCornerShape(4.dp))
+                                    .padding(horizontal = 4.dp, vertical = 1.dp)
+                            ) {
+                                Text(
+                                    text = goldText,
+                                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 8.sp, fontWeight = FontWeight.Bold),
+                                    color = goldColor
+                                )
+                            }
+                        }
+                        
+                        // Aether change badge
+                        if (choice.aetherChange != 0) {
+                            val isAetherPositive = choice.aetherChange > 0
+                            val aetherText = if (isAetherPositive) "+${choice.aetherChange} Aether" else "${choice.aetherChange} Aether"
+                            val aetherColor = ColorCovenantGlow
+                            Box(
+                                modifier = Modifier
+                                    .background(aetherColor.copy(alpha = 0.15f), RoundedCornerShape(4.dp))
+                                    .padding(horizontal = 4.dp, vertical = 1.dp)
+                            ) {
+                                Text(
+                                    text = aetherText,
+                                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 8.sp, fontWeight = FontWeight.Bold),
+                                    color = aetherColor
+                                )
+                            }
+                        }
+                        
+                        // Item reward badge
+                        if (choice.rewardItem.isNotEmpty()) {
+                            Box(
+                                modifier = Modifier
+                                    .background(ColorHeal.copy(alpha = 0.15f), RoundedCornerShape(4.dp))
+                                    .padding(horizontal = 4.dp, vertical = 1.dp)
+                            ) {
+                                Text(
+                                    text = "+Item",
+                                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 8.sp, fontWeight = FontWeight.Bold),
+                                    color = ColorHeal
+                                )
+                            }
+                        }
+                    }
                 }
-
-                if (choice.aetherChange != 0) {
-                    val aetherLabel = if (choice.aetherChange > 0) "+${choice.aetherChange}✨" else "${choice.aetherChange}✨"
-                    Text(
-                        text = aetherLabel,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = ColorStatGold,
-                        modifier = Modifier.padding(end = Dimens.SpacingM)
-                    )
-                }
-
-                if (choice.willChange != 0) {
-                    val willLabel = if (choice.willChange > 0) "+${choice.willChange}⚡" else "${choice.willChange}⚡"
-                    Text(
-                        text = willLabel,
-                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                        color = ColorSanctumPrimary,
-                        modifier = Modifier.padding(end = Dimens.SpacingM)
-                    )
-                }
-
-                if (choice.hpChange != 0) {
-                    val hpLabel = if (choice.hpChange > 0) "+${choice.hpChange} HP" else "${choice.hpChange} HP"
-                    Text(
-                        text = hpLabel,
-                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                        color = if (choice.hpChange > 0) ColorHeal else ColorDanger,
-                        modifier = Modifier.padding(end = Dimens.SpacingM)
-                    )
-                }
-
-                if (choice.rewardItem.isNotEmpty()) {
-                    Text(
-                        text = "🎁 Eşya",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = ColorHeal
-                    )
-                }
+            }
+            
+            if (enabled) {
+                Icon(
+                    imageVector = Icons.Default.KeyboardArrowRight,
+                    contentDescription = "Select",
+                    tint = ColorOnSurfaceMuted,
+                    modifier = Modifier.size(16.dp)
+                )
             }
         }
     }
@@ -1896,6 +1978,82 @@ fun NodeCircle(
                 fontSize = Dimens.TextXs,
                 color = if (isCleared || isCurrent) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
             )
+        }
+    }
+}
+
+@Composable
+fun CombatActionCard(
+    title: String,
+    subtitle: String,
+    icon: String,
+    borderColor: Color,
+    enabled: Boolean = true,
+    extraRightText: String = "",
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(enabled = enabled) { onClick() },
+        shape = RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (enabled) ColorSurface else ColorSurface.copy(alpha = 0.4f)
+        ),
+        border = BorderStroke(1.dp, if (enabled) borderColor.copy(alpha = 0.7f) else ColorBorderMuted)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(30.dp)
+                        .background(borderColor.copy(alpha = 0.15f), CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = icon,
+                        fontSize = 14.sp,
+                        color = if (enabled) borderColor else ColorOnSurfaceMuted
+                    )
+                }
+                
+                Column {
+                    Text(
+                        text = title.uppercase(),
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontFamily = FontFamily.Serif,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.5.sp
+                        ),
+                        color = if (enabled) ColorOnBackground else ColorOnSurfaceMuted
+                    )
+                    Text(
+                        text = subtitle,
+                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
+                        color = ColorOnSurfaceMuted
+                    )
+                }
+            }
+            
+            if (extraRightText.isNotEmpty()) {
+                Text(
+                    text = extraRightText,
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = ColorSanctumPrimary,
+                        fontSize = 9.sp
+                    )
+                )
+            }
         }
     }
 }

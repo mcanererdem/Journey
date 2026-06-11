@@ -9,21 +9,21 @@ import androidx.compose.ui.graphics.Color
 // ══════════════════════════════════════════════════════════════════════════════
 
 // ── Arkaplan & Yüzey ─────────────────────────────────────────────────────────
-val ColorBackground         = Color(0xFF0A0A0F)   // Void Black — ana arkaplan
-val ColorSurface            = Color(0xFF12121A)   // Dark Stone — kart/panel arkaplanı
-val ColorSurfaceVariant     = Color(0xFF1A1A26)   // Slightly lifted surface
-val ColorSurfaceHighlight   = Color(0xFF1E1E2E)   // Hover / selected surface
+val ColorBackground         = Color(0xFF0C080E)   // Plum Black — ana arkaplan
+val ColorSurface            = Color(0xFF140E19)   // Plum Stone — kart/panel arkaplanı
+val ColorSurfaceVariant     = Color(0xFF1B1322)   // Slightly lifted surface
+val ColorSurfaceHighlight   = Color(0xFF231A2C)   // Hover / selected surface
 
 // ── Kenarlık & Ayırıcılar ────────────────────────────────────────────────────
-val ColorBorder             = Color(0xFF2A2A3A)   // Iron Edge — standart kenarlık
-val ColorBorderMuted        = Color(0xFF1F1F2D)   // Subtle divider
-val ColorBorderGlow         = Color(0xFF3D3D55)   // Glowing border (active)
+val ColorBorder             = Color(0xFF2C1A32)   // Plum Border — standart kenarlık
+val ColorBorderMuted        = Color(0xFF1F1223)   // Subtle divider
+val ColorBorderGlow         = Color(0xFF452650)   // Glowing border (active)
 
 // ── Metin ────────────────────────────────────────────────────────────────────
-val ColorOnBackground       = Color(0xFFE8E0F0)   // Primary text on dark bg
-val ColorOnSurface          = Color(0xFFCCC4DC)   // Secondary text on surface
-val ColorOnSurfaceMuted     = Color(0xFF7A7090)   // Muted / disabled text
-val ColorOnSurfaceSubtle    = Color(0xFF4A4460)   // Very subtle hint text
+val ColorOnBackground       = Color(0xFFFAF6FF)   // Primary text on dark bg
+val ColorOnSurface          = Color(0xFFD3C6DF)   // Secondary text on surface
+val ColorOnSurfaceMuted     = Color(0xFF8D7C9A)   // Muted / disabled text
+val ColorOnSurfaceSubtle    = Color(0xFF5D4E67)   // Very subtle hint text
 
 // ── Sanctum / Işık Teması (Celestial Gold) ────────────────────────────────────
 val ColorSanctumPrimary     = Color(0xFFC8A94A)   // Antique Gold — Sanctum ana

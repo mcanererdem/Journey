@@ -8,8 +8,11 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import com.mcanererdem.journey.data.engine.AdventureNode
+import com.mcanererdem.journey.data.engine.NodeType
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.*
@@ -212,6 +215,12 @@ fun RpgGameScreen(
                     activeLang = activeLang,
                     showTitlePrefix = showTitlePrefix,
                     onStoreClick = { viewModel.setPurchaseDialogShown(true) }
+                )
+                
+                PathTimeline(
+                    player = p,
+                    nodes = currentFloorNodes,
+                    activeLang = activeLang
                 )
             }
 
@@ -919,197 +928,192 @@ fun HeaderStatsBlock(
     showTitlePrefix: Boolean = true,
     onStoreClick: () -> Unit
 ) {
+    val factionColor = when (player.side) {
+        "SANCTUM" -> ColorSanctumPrimary
+        "COVENANT" -> ColorCovenantGlow
+        else -> ColorNeutralPrimary
+    }
+    
+    val initial = player.playerName.take(1).uppercase()
     val isSovereignPassActive = player.itemsEncoded.split(",").any { it.trim() == "Seasonal Sovereign Pass" }
-    Card(
+    
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(Dimens.SpacingL, Dimens.SpacingS, Dimens.SpacingL, Dimens.SpacingXxs),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = RoundedCornerShape(Dimens.RadiusM),
-        elevation = CardDefaults.cardElevation(defaultElevation = Dimens.ElevationLow)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Column(modifier = Modifier.padding(Dimens.SpacingS)) {
-            // Profile top row containing Name/Level and Faction/Store controls side-by-side
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+        // Left: Avatar + Character Name & Faction
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.weight(1f)
+        ) {
+            // Circle Avatar
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .border(1.5.dp, factionColor, CircleShape)
+                    .background(ColorSurface, CircleShape),
+                contentAlignment = Alignment.Center
             ) {
-                Column {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = player.playerName,
-                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        val titleObj = com.mcanererdem.journey.data.engine.QuestTitleSystem.getTitleDef(player.equippedTitle)
-                        if (titleObj != null && showTitlePrefix) {
-                            Spacer(modifier = Modifier.width(Dimens.SpacingXs))
-                            Text(
-                                text = "(${if (activeLang == "TR") titleObj.nameTr else titleObj.nameEn})",
-                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Black),
-                                color = ColorSanctumPrimary
-                            )
-                        }
-                    }
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = player.chosenClass,
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(modifier = Modifier.width(Dimens.SpacingS))
-                        Text(
-                            text = "•  ${LocalizationManager.getString(activeLang, "label_level")} ${player.level}",
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.secondary)
-                        )
-                        Spacer(modifier = Modifier.width(Dimens.SpacingS))
-                        Text(
-                            text = "[${player.exp}/${player.maxExp} XP]",
-                            style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Monospace, fontSize = Dimens.TextXxs),
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                        )
-                    }
-                }
-
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingS)) {
-                    // Store button
-                    Button(
-                        onClick = { onStoreClick() },
-                        contentPadding = PaddingValues(horizontal = Dimens.SpacingS, vertical = Dimens.SpacingXxs),
-                        modifier = Modifier.height(Dimens.BottomNavHeight / 2.5f).testTag("recharge_will_btn"),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (isSovereignPassActive) ColorCovenantGlow else ColorSanctumPrimary,
-                            contentColor = if (isSovereignPassActive) Color.White else Color.Black
-                        )
-                    ) {
-                        Text(
-                            text = if (isSovereignPassActive) (if (activeLang == "TR") "PASS" else "PASS") else (if (activeLang == "TR") "MAĞAZA ⚡" else "STORE ⚡"),
-                            style = MaterialTheme.typography.labelSmall.copy(fontSize = Dimens.TextXxs, fontWeight = FontWeight.Bold)
-                        )
-                    }
-
-                    // Faction badge
-                    Surface(
-                        color = when (player.side) {
-                            "SANCTUM" -> ColorSanctumPrimary.copy(alpha = 0.15f)
-                            "COVENANT" -> ColorCovenantGlow.copy(alpha = 0.15f)
-                            else -> MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
-                        },
-                        shape = RoundedCornerShape(Dimens.RadiusM),
-                        modifier = Modifier.border(
-                            Dimens.BorderThin,
-                            when (player.side) {
-                                "SANCTUM" -> ColorSanctumPrimary
-                                "COVENANT" -> ColorCovenantGlow
-                                else -> MaterialTheme.colorScheme.primary
-                            },
-                            RoundedCornerShape(Dimens.RadiusM)
-                        )
-                    ) {
-                        Text(
-                            text = when (player.side) {
-                                "SANCTUM" -> if (activeLang == "TR") "Semavi" else "Sanctum"
-                                "COVENANT" -> if (activeLang == "TR") "Kara Ahit" else "Covenant"
-                                else -> if (activeLang == "TR") "Sürgün" else "Neutral"
-                            },
-                            modifier = Modifier.padding(horizontal = Dimens.SpacingS, vertical = Dimens.SpacingXxs),
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, fontSize = Dimens.TextXxs),
-                            color = when (player.side) {
-                                "SANCTUM" -> ColorSanctumPrimary
-                                "COVENANT" -> ColorCovenantGlow
-                                else -> MaterialTheme.colorScheme.onSurface
-                            }
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(Dimens.SpacingS))
-
-            // Vitality & Willpower progress bars side-by-side
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingM)
-            ) {
-                // Vitality (HP)
-                Column(modifier = Modifier.weight(1f)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "♥ HP",
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                            color = ColorDanger
-                        )
-                        Text(
-                            text = "${player.currentHp}/${player.maxHp}",
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, fontSize = Dimens.TextXxs)
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(Dimens.SpacingXxs))
-                    LinearProgressIndicator(
-                        progress = { player.currentHp.toFloat() / player.maxHp.toFloat() },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(Dimens.SpacingXs)
-                            .clip(RoundedCornerShape(Dimens.RadiusXs)),
-                        color = if (player.currentHp < 30) ColorDanger else ColorHeal,
-                        trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
-                    )
-                }
-
-                // Willpower (WILL)
-                Column(modifier = Modifier.weight(1f)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "⚡ WILL",
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                            color = ColorSanctumPrimary
-                        )
-                        Text(
-                            text = if (isSovereignPassActive) "∞" else "${player.currentWill}/${player.maxWill}",
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, fontSize = Dimens.TextXxs),
-                            modifier = Modifier.clickable { onStoreClick() }
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(Dimens.SpacingXxs))
-                    LinearProgressIndicator(
-                        progress = { if (isSovereignPassActive) 1.0f else player.currentWill.toFloat() / player.maxWill.toFloat() },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(Dimens.SpacingXs)
-                            .clip(RoundedCornerShape(Dimens.RadiusXs))
-                            .clickable { onStoreClick() },
-                        color = if (isSovereignPassActive) ColorCovenantGlow else ColorSanctumPrimary,
-                        trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(Dimens.SpacingS))
-
-            // Resources values inside a single horizontal spaced row
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                ResourceChip(
-                    icon = "🪙",
-                    value = "${player.gold}",
-                    label = if (activeLang == "TR") "Altın" else "Gold"
+                Text(
+                    text = initial,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontFamily = FontFamily.Serif,
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = factionColor
                 )
-                ResourceChip(
-                    icon = "✨",
-                    value = "${player.aether}",
-                    label = "Aether",
-                    accentColor = ColorStatGold
+            }
+            
+            Spacer(modifier = Modifier.width(10.dp))
+            
+            // Name and Details
+            Column {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = player.playerName.uppercase(),
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontFamily = FontFamily.Serif,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.5.sp
+                        ),
+                        color = ColorOnBackground
+                    )
+                }
+                
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    // Faction badge (e.g. LAWFUL CHOIR, COVENANT)
+                    val factionText = when (player.side) {
+                        "SANCTUM" -> if (activeLang == "TR") "SEMAVİ KORO" else "LAWFUL CHOIR"
+                        "COVENANT" -> if (activeLang == "TR") "KARA AHİT" else "VOID COVENANT"
+                        else -> if (activeLang == "TR") "SÜRGÜN" else "NEUTRAL"
+                    }
+                    Box(
+                        modifier = Modifier
+                            .background(factionColor.copy(alpha = 0.15f), RoundedCornerShape(4.dp))
+                            .border(0.5.dp, factionColor, RoundedCornerShape(4.dp))
+                            .padding(horizontal = 4.dp, vertical = 1.dp)
+                    ) {
+                        Text(
+                            text = factionText,
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 8.sp,
+                                letterSpacing = 0.5.sp
+                            ),
+                            color = factionColor
+                        )
+                    }
+                    
+                    Text(
+                        text = "Lv ${player.level} • ${player.chosenClass}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = ColorOnSurfaceMuted
+                    )
+                }
+            }
+        }
+        
+        // Right: HP, Essence bars and Floor
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            // Bars Stack
+            Column(
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                // HP Bar
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Favorite,
+                        contentDescription = "HP",
+                        tint = ColorDanger,
+                        modifier = Modifier.size(10.dp)
+                    )
+                    Box(
+                        modifier = Modifier
+                            .width(60.dp)
+                            .height(4.dp)
+                            .background(ColorBorderMuted, RoundedCornerShape(2.dp))
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .fillMaxWidth(fraction = (player.currentHp.toFloat() / player.maxHp.toFloat()).coerceIn(0f, 1f))
+                                .background(ColorDanger, RoundedCornerShape(2.dp))
+                        )
+                    }
+                    Text(
+                        text = "${player.currentHp}",
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, fontSize = 9.sp),
+                        color = ColorOnSurface
+                    )
+                }
+                
+                // Will/Essence Bar
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = "Essence",
+                        tint = ColorCovenantGlow,
+                        modifier = Modifier.size(10.dp)
+                    )
+                    Box(
+                        modifier = Modifier
+                            .width(60.dp)
+                            .height(4.dp)
+                            .background(ColorBorderMuted, RoundedCornerShape(2.dp))
+                    ) {
+                        val willpowerFraction = if (isSovereignPassActive) 1.0f else (player.currentWill.toFloat() / player.maxWill.toFloat()).coerceIn(0f, 1f)
+                        Box(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .fillMaxWidth(fraction = willpowerFraction)
+                                .background(ColorCovenantGlow, RoundedCornerShape(2.dp))
+                        )
+                    }
+                    Text(
+                        text = if (isSovereignPassActive) "∞" else "${player.currentWill}",
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, fontSize = 9.sp),
+                        color = ColorOnSurface
+                    )
+                }
+            }
+            
+            // Floor Divider
+            Box(
+                modifier = Modifier
+                    .width(1.dp)
+                    .height(24.dp)
+                    .background(ColorBorder)
+            )
+            
+            // Floor text
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "${player.currentFloor}",
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontFamily = FontFamily.Serif,
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = ColorOnBackground
+                )
+                Text(
+                    text = if (activeLang == "TR") "KAT" else "FLOOR",
+                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 7.sp, letterSpacing = 1.sp),
+                    color = ColorOnSurfaceMuted
                 )
             }
         }
@@ -1117,25 +1121,119 @@ fun HeaderStatsBlock(
 }
 
 @Composable
-fun ResourceChip(
-    icon: String,
-    value: String,
-    label: String,
-    accentColor: Color = Color.Unspecified
+fun PathTimeline(
+    player: PlayerProfile,
+    nodes: List<AdventureNode>,
+    activeLang: String
 ) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Text(text = icon, fontSize = Dimens.TextM)
-        Spacer(modifier = Modifier.width(Dimens.SpacingXs))
+    if (nodes.isEmpty()) return
+    
+    val currentDepth = nodes.firstOrNull { it.index == player.currentNodeIndex }?.depth ?: 0
+    
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(
+                text = if (activeLang == "TR") "YOL" else "PATH",
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontFamily = FontFamily.Serif,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp
+                ),
+                color = ColorOnSurfaceMuted
+            )
+            
+            Spacer(modifier = Modifier.width(4.dp))
+            
+            val totalDepths = 20
+            val windowSize = 7
+            val halfWindow = windowSize / 2
+            val startDepth = (currentDepth - halfWindow).coerceIn(0, (totalDepths - windowSize).coerceAtLeast(0))
+            val endDepth = (startDepth + windowSize - 1).coerceAtMost(totalDepths - 1)
+            
+            for (d in startDepth..endDepth) {
+                val nodeAtDepth = nodes.firstOrNull { it.depth == d }
+                if (nodeAtDepth != null) {
+                    val isCurrent = d == currentDepth
+                    val isCleared = d < currentDepth || (isCurrent && player.currentNodeCompleted)
+                    
+                    val (icon, color) = when {
+                        isCurrent -> {
+                            val iconStr = when (nodeAtDepth.type) {
+                                NodeType.COMBAT -> "⚔️"
+                                NodeType.BOSS -> "💀"
+                                NodeType.CHEST -> "🎁"
+                                NodeType.SHRINE -> "⛩️"
+                                NodeType.MERCHANT -> "⚱️"
+                                NodeType.NARRATIVE -> "📜"
+                                else -> "❓"
+                            }
+                            Pair(iconStr, ColorSanctumPrimary)
+                        }
+                        isCleared -> Pair("✓", ColorHeal)
+                        else -> {
+                            if (d == totalDepths - 1) {
+                                Pair("💀", ColorOnSurfaceSubtle)
+                            } else {
+                                Pair("⬡", ColorOnSurfaceSubtle)
+                            }
+                        }
+                    }
+                    
+                    Box(
+                        modifier = Modifier
+                            .size(18.dp)
+                            .background(
+                                if (isCurrent) ColorSanctumPrimary.copy(alpha = 0.15f)
+                                else if (isCleared) ColorHeal.copy(alpha = 0.15f)
+                                else ColorSurface,
+                                CircleShape
+                            )
+                            .border(
+                                width = 1.dp,
+                                color = if (isCurrent) ColorSanctumPrimary else if (isCleared) ColorHeal else ColorBorder,
+                                shape = CircleShape
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = icon,
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontSize = 8.sp,
+                                fontWeight = FontWeight.Bold
+                            ),
+                            color = if (isCurrent) ColorSanctumPrimary else if (isCleared) ColorHeal else ColorOnSurfaceMuted
+                        )
+                    }
+                    
+                    if (d < endDepth) {
+                        Box(
+                            modifier = Modifier
+                                .width(8.dp)
+                                .height(1.dp)
+                                .background(if (isCleared) ColorHeal else ColorBorder)
+                        )
+                    }
+                }
+            }
+        }
+        
         Text(
-            text = value,
-            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-            color = if (accentColor != Color.Unspecified) accentColor else MaterialTheme.colorScheme.onSurface
-        )
-        Spacer(modifier = Modifier.width(Dimens.SpacingXs))
-        Text(
-            text = "($label)",
-            style = MaterialTheme.typography.labelSmall.copy(fontSize = Dimens.TextXxs),
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f)
+            text = if (activeLang == "TR") "• HARİTA" else "• MAP",
+            style = MaterialTheme.typography.labelSmall.copy(
+                fontWeight = FontWeight.Bold,
+                fontSize = 8.sp,
+                letterSpacing = 0.5.sp
+            ),
+            color = ColorOnSurfaceMuted
         )
     }
 }
