@@ -1932,6 +1932,17 @@ fun NodeCircle(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
+    val infiniteTransition = rememberInfiniteTransition(label = "circle_pulse")
+    val pulseAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.5f,
+        targetValue = 1.0f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = EaseInOut),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "border_alpha"
+    )
+
     val circleBorderColor = when {
         isSelected -> ColorSanctumPrimary
         isCurrent -> MaterialTheme.colorScheme.primary
@@ -1955,7 +1966,7 @@ fun NodeCircle(
             .background(circleBgColor)
             .border(
                 width = if (isSelected) Dimens.BorderThick else if (isCurrent) Dimens.BorderNormal else Dimens.BorderThin,
-                color = circleBorderColor,
+                color = if (isSelected || isCurrent) circleBorderColor.copy(alpha = pulseAlpha) else circleBorderColor,
                 shape = CircleShape
             )
             .clickable { onClick() },
@@ -1992,6 +2003,21 @@ fun CombatActionCard(
     extraRightText: String = "",
     onClick: () -> Unit
 ) {
+    val infiniteTransition = rememberInfiniteTransition(label = "card_pulse")
+    val glowAlpha by if (enabled) {
+        infiniteTransition.animateFloat(
+            initialValue = 0.4f,
+            targetValue = 0.9f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(1200, easing = EaseInOut),
+                repeatMode = RepeatMode.Reverse
+            ),
+            label = "glow_alpha"
+        )
+    } else {
+        remember { mutableStateOf(0.4f) }
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -2000,7 +2026,7 @@ fun CombatActionCard(
         colors = CardDefaults.cardColors(
             containerColor = if (enabled) ColorSurface else ColorSurface.copy(alpha = 0.4f)
         ),
-        border = BorderStroke(1.dp, if (enabled) borderColor.copy(alpha = 0.7f) else ColorBorderMuted)
+        border = BorderStroke(1.dp, if (enabled) borderColor.copy(alpha = glowAlpha) else ColorBorderMuted)
     ) {
         Row(
             modifier = Modifier

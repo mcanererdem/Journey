@@ -98,89 +98,15 @@ fun RpgGameScreen(
                 .fillMaxSize()
                 .background(ColorBackground) // Plum Black
         ) {
-            // Minimal top bar row (Time and Dropdown)
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Left: 9:41 Time
-                Text(
-                    text = "9:41",
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        fontFamily = FontFamily.Monospace,
-                        fontWeight = FontWeight.Bold
-                    ),
-                    color = ColorOnSurfaceMuted
-                )
-
-                // Right: Dropdown menu trigger
-                Box {
-                    var isMenuExpanded by remember { mutableStateOf(false) }
-                    IconButton(
-                        onClick = { isMenuExpanded = true },
-                        modifier = Modifier.size(24.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.MoreVert,
-                            contentDescription = "Menu",
-                            tint = ColorOnSurfaceMuted,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-
-                    DropdownMenu(
-                        expanded = isMenuExpanded,
-                        onDismissRequest = { isMenuExpanded = false },
-                        modifier = Modifier.background(ColorSurface)
-                    ) {
-                        DropdownMenuItem(
-                            text = { 
-                                Text(
-                                    text = if (activeLang == "TR") "Dil Değiştir (EN)" else "Change Language (TR)",
-                                    color = ColorOnSurface
-                                )
-                            },
-                            onClick = {
-                                viewModel.changeLanguage(if (activeLang == "TR") "EN" else "TR")
-                                isMenuExpanded = false
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { 
-                                Text(
-                                    text = if (activeLang == "TR") "Oyunu Sıfırla" else "Reset Game",
-                                    color = ColorDanger
-                                )
-                            },
-                            onClick = {
-                                viewModel.resetGame()
-                                isMenuExpanded = false
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { 
-                                Text(
-                                    text = if (activeLang == "TR") "Ayarlar" else "Settings",
-                                    color = ColorSanctumPrimary
-                                )
-                            },
-                            onClick = {
-                                isSettingsDialogShown = true
-                                isMenuExpanded = false
-                            }
-                        )
-                    }
-                }
-            }
             // Header stats block
             player?.let { p ->
                 HeaderStatsBlock(
                     player = p,
                     activeLang = activeLang,
                     showTitlePrefix = showTitlePrefix,
+                    onLangChange = { viewModel.changeLanguage(if (activeLang == "TR") "EN" else "TR") },
+                    onResetGame = { viewModel.resetGame() },
+                    onSettingsClick = { isSettingsDialogShown = true },
                     onStoreClick = { viewModel.setPurchaseDialogShown(true) }
                 )
                 
@@ -893,6 +819,9 @@ fun HeaderStatsBlock(
     player: PlayerProfile,
     activeLang: String,
     showTitlePrefix: Boolean = true,
+    onLangChange: () -> Unit,
+    onResetGame: () -> Unit,
+    onSettingsClick: () -> Unit,
     onStoreClick: () -> Unit
 ) {
     val factionColor = when (player.side) {
@@ -1082,6 +1011,65 @@ fun HeaderStatsBlock(
                     style = MaterialTheme.typography.labelSmall.copy(fontSize = 7.sp, letterSpacing = 1.sp),
                     color = ColorOnSurfaceMuted
                 )
+            }
+
+            // Inline Settings Dropdown Menu
+            Box {
+                var isMenuExpanded by remember { mutableStateOf(false) }
+                IconButton(
+                    onClick = { isMenuExpanded = true },
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = "Settings",
+                        tint = ColorOnSurfaceMuted,
+                        modifier = Modifier.size(14.dp)
+                    )
+                }
+
+                DropdownMenu(
+                    expanded = isMenuExpanded,
+                    onDismissRequest = { isMenuExpanded = false },
+                    modifier = Modifier.background(ColorSurface)
+                ) {
+                    DropdownMenuItem(
+                        text = { 
+                            Text(
+                                text = if (activeLang == "TR") "Dil Değiştir (EN)" else "Change Language (TR)",
+                                color = ColorOnSurface
+                            )
+                        },
+                        onClick = {
+                            onLangChange()
+                            isMenuExpanded = false
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { 
+                            Text(
+                                text = if (activeLang == "TR") "Oyunu Sıfırla" else "Reset Game",
+                                color = ColorDanger
+                            )
+                        },
+                        onClick = {
+                            onResetGame()
+                            isMenuExpanded = false
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { 
+                            Text(
+                                text = if (activeLang == "TR") "Ayarlar" else "Settings",
+                                color = ColorSanctumPrimary
+                            )
+                        },
+                        onClick = {
+                            onSettingsClick()
+                            isMenuExpanded = false
+                        }
+                    )
+                }
             }
         }
     }
