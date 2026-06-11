@@ -77,137 +77,104 @@ fun RpgGameScreen(
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        topBar = {
-            TopAppBar(
-                title = {
-                    Column {
-                        Text(
-                            text = "LIGHT & DARKNESS",
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Bold,
-                                letterSpacing = 2.sp,
-                                fontFamily = FontFamily.Serif
-                              ),
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Text(
-                            text = if (p != null) {
-                                if (activeLang == "TR") "Kat ${p.currentFloor} / 100 • RYO" else "Floor ${p.currentFloor} / 100 • RPG"
-                            } else {
-                                "Text-Based Tower RPG"
-                            },
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
-                        )
-                    }
-                },
-                actions = {
-                    // Language Switcher Toggle
-                    OutlinedButton(
-                        onClick = {
-                            viewModel.changeLanguage(if (activeLang == "TR") "EN" else "TR")
-                        },
-                        modifier = Modifier
-                            .padding(end = Dimens.SpacingS)
-                            .testTag("lang_toggle"),
-                        shape = RoundedCornerShape(Dimens.RadiusS),
-                        contentPadding = PaddingValues(horizontal = Dimens.SpacingM, vertical = Dimens.SpacingXs),
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = MaterialTheme.colorScheme.primary
-                        )
-                    ) {
-                        Text(
-                            text = if (activeLang == "TR") "EN 🌐" else "TR 🌐",
-                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
-                        )
-                    }
-
-                    // Reset Button
-                    IconButton(
-                        onClick = { viewModel.resetGame() },
-                        modifier = Modifier.testTag("reset_game_button")
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Refresh,
-                            contentDescription = "Restart RPG",
-                            tint = ColorDanger
-                        )
-                    }
-
-                    // Settings Button
-                    IconButton(
-                        onClick = { isSettingsDialogShown = true },
-                        modifier = Modifier.testTag("settings_button")
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = "Settings",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface
-                )
-            )
-        },
         bottomBar = {
-            NavigationBar(
-                containerColor = MaterialTheme.colorScheme.surface,
-                windowInsets = WindowInsets.navigationBars
-            ) {
-                NavigationBarItem(
-                    selected = tab == "TOWER",
-                    onClick = { viewModel.selectTab("TOWER") },
-                    icon = { Icon(Icons.Default.PlayArrow, contentDescription = "Tower") },
-                    modifier = Modifier.testTag("nav_tower"),
-                    alwaysShowLabel = false
-                )
-                NavigationBarItem(
-                    selected = tab == "OUTER_WORLD",
-                    onClick = { viewModel.selectTab("OUTER_WORLD") },
-                    icon = { Icon(Icons.Default.LocationOn, contentDescription = "Outer World") },
-                    modifier = Modifier.testTag("nav_outer"),
-                    alwaysShowLabel = false
-                )
-                NavigationBarItem(
-                    selected = tab == "QUESTS",
-                    onClick = { viewModel.selectTab("QUESTS") },
-                    icon = { Icon(Icons.Default.Star, contentDescription = "Quests") },
-                    modifier = Modifier.testTag("nav_quests"),
-                    alwaysShowLabel = false
-                )
-                NavigationBarItem(
-                    selected = tab == "LEGACY",
-                    onClick = { viewModel.selectTab("LEGACY") },
-                    icon = { Icon(Icons.Default.Favorite, contentDescription = "Legacy") },
-                    modifier = Modifier.testTag("nav_legacy"),
-                    alwaysShowLabel = false
-                )
-                NavigationBarItem(
-                    selected = tab == "CHAR_SHEET",
-                    onClick = { viewModel.selectTab("CHAR_SHEET") },
-                    icon = { Icon(Icons.Default.Person, contentDescription = "Character Sheet") },
-                    modifier = Modifier.testTag("nav_char"),
-                    alwaysShowLabel = false
-                )
-                NavigationBarItem(
-                    selected = tab == "JOURNAL",
-                    onClick = { viewModel.selectTab("JOURNAL") },
-                    icon = { Icon(Icons.AutoMirrored.Filled.List, contentDescription = "Journal") },
-                    modifier = Modifier.testTag("nav_journal"),
-                    alwaysShowLabel = false
-                )
-            }
+            val isPlayerInCombat = player?.let { p ->
+                currentFloorNodes.getOrNull(p.currentNodeIndex)?.let { node ->
+                    (node.type == NodeType.COMBAT || node.type == NodeType.BOSS) && !p.currentNodeCompleted
+                }
+            } ?: false
+
+            CustomBottomNavigationBar(
+                currentTab = tab,
+                isPlayerInCombat = isPlayerInCombat,
+                onTabSelected = { viewModel.selectTab(it) },
+                activeLang = activeLang
+            )
         }
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
+                .background(ColorBackground) // Plum Black
         ) {
+            // Minimal top bar row (Time and Dropdown)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Left: 9:41 Time
+                Text(
+                    text = "9:41",
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = ColorOnSurfaceMuted
+                )
+
+                // Right: Dropdown menu trigger
+                Box {
+                    var isMenuExpanded by remember { mutableStateOf(false) }
+                    IconButton(
+                        onClick = { isMenuExpanded = true },
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = "Menu",
+                            tint = ColorOnSurfaceMuted,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+
+                    DropdownMenu(
+                        expanded = isMenuExpanded,
+                        onDismissRequest = { isMenuExpanded = false },
+                        modifier = Modifier.background(ColorSurface)
+                    ) {
+                        DropdownMenuItem(
+                            text = { 
+                                Text(
+                                    text = if (activeLang == "TR") "Dil Değiştir (EN)" else "Change Language (TR)",
+                                    color = ColorOnSurface
+                                )
+                            },
+                            onClick = {
+                                viewModel.changeLanguage(if (activeLang == "TR") "EN" else "TR")
+                                isMenuExpanded = false
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { 
+                                Text(
+                                    text = if (activeLang == "TR") "Oyunu Sıfırla" else "Reset Game",
+                                    color = ColorDanger
+                                )
+                            },
+                            onClick = {
+                                viewModel.resetGame()
+                                isMenuExpanded = false
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { 
+                                Text(
+                                    text = if (activeLang == "TR") "Ayarlar" else "Settings",
+                                    color = ColorSanctumPrimary
+                                )
+                            },
+                            onClick = {
+                                isSettingsDialogShown = true
+                                isMenuExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
             // Header stats block
             player?.let { p ->
                 HeaderStatsBlock(
@@ -940,7 +907,7 @@ fun HeaderStatsBlock(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(horizontal = 8.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -967,7 +934,7 @@ fun HeaderStatsBlock(
                 )
             }
             
-            Spacer(modifier = Modifier.width(10.dp))
+            Spacer(modifier = Modifier.width(6.dp))
             
             // Name and Details
             Column {
@@ -1133,7 +1100,7 @@ fun PathTimeline(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 6.dp),
+            .padding(horizontal = 8.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -1235,5 +1202,78 @@ fun PathTimeline(
             ),
             color = ColorOnSurfaceMuted
         )
+    }
+}
+
+@Composable
+fun CustomBottomNavigationBar(
+    currentTab: String,
+    isPlayerInCombat: Boolean,
+    onTabSelected: (String) -> Unit,
+    activeLang: String
+) {
+    val tabs = listOf(
+        "TOWER" to if (isPlayerInCombat) {
+            if (activeLang == "TR") "DÖVÜŞ" to "⚔️" else "COMBAT" to "⚔️"
+        } else {
+            if (activeLang == "TR") "KAT" to "🏰" else "FLOOR" to "🏰"
+        },
+        "OUTER_WORLD" to (if (activeLang == "TR") "DÜNYA" to "🌍" else "WORLD" to "🌍"),
+        "QUESTS" to (if (activeLang == "TR") "GÖREV" to "📜" else "QUEST" to "📜"),
+        "CHAR_SHEET" to (if (activeLang == "TR") "KAHRAMAN" to "👤" else "HERO" to "👤"),
+        "LEGACY" to (if (activeLang == "TR") "MİRAS" to "💎" else "LEGACY" to "💎"),
+        "JOURNAL" to (if (activeLang == "TR") "GÜNLÜK" to "📖" else "JOURNAL" to "📖")
+    )
+
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = ColorSurface,
+        border = BorderStroke(1.dp, ColorBorder)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
+                .padding(horizontal = 4.dp, vertical = 6.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            tabs.forEach { (tabId, pair) ->
+                val (label, icon) = pair
+                val isSelected = currentTab == tabId
+                val activeColor = when (tabId) {
+                    "TOWER" -> if (isPlayerInCombat) ColorDanger else ColorSanctumPrimary
+                    "OUTER_WORLD" -> ColorHeal
+                    "QUESTS" -> ColorWarning
+                    "CHAR_SHEET" -> ColorCovenantGlow
+                    "LEGACY" -> ColorStatGold
+                    "JOURNAL" -> ColorInfo
+                    else -> ColorOnSurface
+                }
+                val tintColor = if (isSelected) activeColor else ColorOnSurfaceSubtle
+
+                Column(
+                    modifier = Modifier
+                        .clickable { onTabSelected(tabId) }
+                        .padding(horizontal = 4.dp, vertical = 2.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = icon,
+                        fontSize = 18.sp,
+                        color = tintColor
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontSize = 9.sp,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                        ),
+                        color = tintColor
+                    )
+                }
+            }
+        }
     }
 }

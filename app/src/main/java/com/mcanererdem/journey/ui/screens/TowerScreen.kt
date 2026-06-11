@@ -104,7 +104,7 @@ fun TowerClimbTab(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = Dimens.SpacingL),
+            .padding(horizontal = Dimens.SpacingS),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Subtle top spacing
@@ -379,7 +379,7 @@ fun TowerClimbTab(
                                 }
                             }
                             
-                            Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height(4.dp))
                             
                             // 2. Boss/Hostile Info Row
                             Row(
@@ -399,7 +399,7 @@ fun TowerClimbTab(
                                     )
                                 }
                                 
-                                Spacer(modifier = Modifier.width(12.dp))
+                                Spacer(modifier = Modifier.width(8.dp))
                                 
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
@@ -609,7 +609,7 @@ fun TowerClimbTab(
                             Spacer(modifier = Modifier.height(20.dp))
                             
                             // 6. Action selection cards
-                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                                 CombatActionCard(
                                     title = if (activeLang == "TR") "HAMLE" else "STRIKE",
                                     subtitle = if (activeLang == "TR") "Temel vuruş" else "Basic attack",
@@ -1033,12 +1033,12 @@ fun FloorProgressCartographyMap(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = Dimens.SpacingM),
+            .padding(bottom = Dimens.SpacingS),
         shape = RoundedCornerShape(Dimens.SpacingM),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = BorderStroke(Dimens.BorderThin, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
     ) {
-        Column(modifier = Modifier.padding(Dimens.SpacingM)) {
+        Column(modifier = Modifier.padding(Dimens.SpacingS)) {
             // Compact Header Title Row with Scouting triggers
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -1090,13 +1090,13 @@ fun FloorProgressCartographyMap(
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.12f), RoundedCornerShape(Dimens.SpacingS))
                     .border(Dimens.BorderThin, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.03f), RoundedCornerShape(Dimens.SpacingS))
-                    .padding(horizontal = Dimens.SpacingS, vertical = Dimens.SpacingM)
+                    .padding(horizontal = Dimens.SpacingXs, vertical = Dimens.SpacingS)
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .horizontalScroll(scrollState)
-                        .padding(vertical = Dimens.SpacingM),
+                        .padding(vertical = Dimens.SpacingS),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     for (d in 0..19) {
@@ -2005,7 +2005,7 @@ fun CombatActionCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+                .padding(horizontal = 10.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
