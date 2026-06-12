@@ -17,4 +17,20 @@
     <string name="faction_neutral">Neutral Outcast</string>
     <string name="faction_sanctum">Celestial Sanctum (Order)</string>
     <string name="faction_covenant">Void Covenant (Eclipse)</string>
+
+    <!-- Auth Screen -->
+    <string name="auth_title">JOURNEY</string>
+    <string name="auth_footer_copyright">© Journey — Dark Fantasy Tower RPG</string>
+    <string name="auth_subtitle">The Eternal Tower Awaits</string>
+    <string name="auth_choose_path">CHOOSE YOUR PATH</string>
+    <string name="auth_google_sign_in">🔵  Sign in with Google</string>
+    <string name="auth_email_sign_in_register">✉  Sign in / Register with Email</string>
+    <string name="auth_guest_mode">Continue as Guest →</string>
+    <string name="auth_email_password_title">EMAIL / PASSWORD</string>
+    <string name="auth_email_placeholder">email@address.com</string>
+    <string name="auth_password_placeholder">Password</string>
+    <string name="auth_sign_in_button">Sign In</string>
+    <string name="auth_register_button">Create New Account</string>
+    <string name="auth_back_button">← Back</string>
+    <string name="auth_error_firebase_missing">google-services.json is required for Firebase connection.</string>
 </resources>

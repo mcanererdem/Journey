@@ -22,9 +22,15 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.composed
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.keyframes
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.EaseInOut
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -126,6 +132,7 @@ fun TowerClimbTab(
         item {
             FloorProgressCartographyMap(
                 player = player,
+                nodes = nodes,
                 activeLang = activeLang,
                 journal = journal,
                 scoutedNodeIndices = scoutedNodeIndices,
@@ -133,89 +140,6 @@ fun TowerClimbTab(
                 onLockedClicked = onLockedClicked,
                 onNextNodeClick = onNextNodeClick
             )
-        }
-
-        // Visually Crawling Map Node Progress Row
-        item {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = Dimens.SpacingM),
-                shape = RoundedCornerShape(Dimens.SpacingM),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                border = BorderStroke(Dimens.BorderThin, MaterialTheme.colorScheme.primary.copy(alpha = 0.15f))
-            ) {
-                Column(modifier = Modifier.padding(Dimens.SpacingM)) {
-                    Text(
-                        text = LocalizationManager.getString(activeLang, "label_nodes"),
-                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, letterSpacing = Dimens.LetterSpacingNormal),
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(modifier = Modifier.height(Dimens.SpacingM))
-                    
-                    val currentIndex = player.currentNodeIndex
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        // Sliding window view of 5 exploration nodes around the active node
-                        val start = (currentIndex - 2).coerceAtLeast(0)
-                        val end = (start + 4).coerceAtMost(nodes.size - 1)
-                        for (idx in start..end) {
-                            val node = nodes.getOrNull(idx) ?: continue
-                            val isActive = idx == currentIndex
-                            val isCompleted = idx < currentIndex || (idx == currentIndex && player.currentNodeCompleted)
-                            
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(Dimens.BadgeSize)
-                                        .clip(CircleShape)
-                                        .background(
-                                            if (isActive) MaterialTheme.colorScheme.primaryContainer
-                                            else if (isCompleted) ColorHeal.copy(alpha = 0.15f)
-                                            else MaterialTheme.colorScheme.surfaceVariant
-                                        )
-                                        .border(
-                                            width = if (isActive) Dimens.BorderThick else Dimens.BorderThin,
-                                            color = if (isActive) MaterialTheme.colorScheme.primary
-                                            else if (isCompleted) ColorHeal
-                                            else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
-                                            shape = CircleShape
-                                        ),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = when (node.type) {
-                                            NodeType.COMBAT -> "⚔️"
-                                            NodeType.BOSS -> "💀"
-                                            NodeType.CHEST -> "🎁"
-                                            NodeType.SHRINE -> "⛩️"
-                                            NodeType.MERCHANT -> "⚱️"
-                                            NodeType.NARRATIVE -> "📜"
-                                        },
-                                        fontSize = Dimens.TextS
-                                    )
-                                }
-                                Spacer(modifier = Modifier.height(Dimens.BorderGlow))
-                                Text(
-                                    text = "${idx + 1}",
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal,
-                                        fontFamily = FontFamily.Monospace,
-                                        fontSize = Dimens.TextXxs
-                                    ),
-                                    color = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                                )
-                            }
-                        }
-                    }
-                }
-            }
         }
 
         // Central Active Scenario Decisions or Combat Arena
@@ -313,24 +237,23 @@ fun TowerClimbTab(
                                         )
                                     }
                                 } else {
-                                    // Prompt to select node on map
-                                    Button(
-                                        onClick = {},
-                                        enabled = false,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(Dimens.AvatarSize),
-                                        colors = ButtonDefaults.buttonColors(
-                                            disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                                            disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
-                                        )
-                                    ) {
-                                        Text(
-                                            text = if (activeLang == "TR") "İlerlemek için haritadan bir sektör seçin" else "Select a sector on map to advance",
-                                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
-                                        )
+                                    // Continue to the next node
+                                    val nextNode = nodes.getOrNull(activeNode.index + 1)
+                                    if (nextNode != null) {
+                                        Button(
+                                            onClick = { onNextNodeClick(nextNode.depth, nextNode.column) },
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .height(Dimens.AvatarSize),
+                                            colors = ButtonDefaults.buttonColors(containerColor = ColorSanctumPrimary)
+                                        ) {
+                                            Text(
+                                                text = if (activeLang == "TR") "DEVAM ET" else "CONTINUE",
+                                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+                                            )
+                                        }
+                                    }
                                 }
-                            }
                         }
                     }
                 }
@@ -340,10 +263,21 @@ fun TowerClimbTab(
                     val isBoss = activeNode.type == NodeType.BOSS
                     
                     item {
+                        var lastHp by remember { mutableStateOf(mobHp) }
+                        val shakeTrigger = remember { mutableStateOf(0) }
+                        
+                        LaunchedEffect(mobHp) {
+                            if (mobHp < lastHp) {
+                                shakeTrigger.value += 1
+                            }
+                            lastHp = mobHp
+                        }
+
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(bottom = Dimens.SpacingL)
+                                .shake(shakeTrigger.value)
                         ) {
                             // 1. Sector Header & Turn Badge
                             Row(
@@ -481,6 +415,16 @@ fun TowerClimbTab(
                                 horizontalArrangement = Arrangement.spacedBy(16.dp)
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
+                                    var lastPlayerHp by remember { mutableStateOf(player.currentHp) }
+                                    val flashTrigger = remember { mutableStateOf(0) }
+                                    
+                                    LaunchedEffect(player.currentHp) {
+                                        if (player.currentHp < lastPlayerHp) {
+                                            flashTrigger.value += 1
+                                        }
+                                        lastPlayerHp = player.currentHp
+                                    }
+
                                     Row(
                                         modifier = Modifier.fillMaxWidth(),
                                         horizontalArrangement = Arrangement.SpaceBetween
@@ -504,7 +448,8 @@ fun TowerClimbTab(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .height(2.dp)
-                                            .clip(RoundedCornerShape(1.dp)),
+                                            .clip(RoundedCornerShape(1.dp))
+                                            .damageFlash(flashTrigger.value),
                                         color = ColorDanger,
                                         trackColor = ColorBorderMuted
                                     )
@@ -1009,6 +954,7 @@ fun NodeChoiceButton(
 @Composable
 fun FloorProgressCartographyMap(
     player: PlayerProfile,
+    nodes: List<AdventureNode>,
     activeLang: String,
     journal: List<JournalEntry>,
     scoutedNodeIndices: Set<Int>,
@@ -1017,98 +963,201 @@ fun FloorProgressCartographyMap(
     onNextNodeClick: (Int, Int) -> Unit
 ) {
     val isTr = activeLang == "TR"
+    var isExpanded by remember { mutableStateOf(false) }
     
     // Always focus exclusively on the current active floor
     val selectedFloor = player.currentFloor
-    val defaultNodeIdx = player.currentNodeIndex.coerceIn(0, 37)
+    val defaultNodeIdx = player.currentNodeIndex.coerceIn(0, nodes.size - 1)
     
     var selectedNodeIdx by remember(player.currentFloor, player.currentNodeIndex) { mutableStateOf(defaultNodeIdx) }
     var activeModalNode by remember { mutableStateOf<AdventureNode?>(null) }
 
-    // Load blueprint for currently selected floor
-    val blueprint = com.mcanererdem.journey.data.engine.FloorBlueprintSystem.getBlueprintForFloor(selectedFloor, player)
-    val nodes = blueprint.nodes
     val currentDepth = nodes.find { it.index == player.currentNodeIndex }?.depth ?: 0
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = Dimens.SpacingS),
+            .padding(bottom = Dimens.SpacingS)
+            .clickable { isExpanded = !isExpanded },
         shape = RoundedCornerShape(Dimens.SpacingM),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = BorderStroke(Dimens.BorderThin, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
     ) {
         Column(modifier = Modifier.padding(Dimens.SpacingS)) {
-            // Compact Header Title Row with Scouting triggers
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "🧭",
-                    fontSize = Dimens.TextXl,
-                    modifier = Modifier.padding(end = Dimens.SpacingS)
-                )
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = if (isTr) "KAT $selectedFloor HARİTASI" else "FLOOR $selectedFloor MAP",
-                        style = MaterialTheme.typography.titleSmall.copy(
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 0.5.sp
-                        ),
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Text(
-                        text = if (isTr) "Sektör odalarını yana kaydırarak inceleyin" else "Scroll to inspect path sector rooms",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                    )
-                }
-
-                // Beautiful Outlined scout trigger button
-                OutlinedButton(
-                    onClick = onScoutClick,
-                    modifier = Modifier.height(30.dp).testTag("scout_action_btn"),
-                    contentPadding = PaddingValues(horizontal = Dimens.SpacingS, vertical = 0.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = ColorSanctumPrimary),
-                    border = BorderStroke(Dimens.BorderThin, ColorSanctumPrimary.copy(alpha = 0.7f))
-                ) {
-                    Text(
-                        text = if (isTr) "Gözle (-1 ⚡)" else "Scout (-1 ⚡)",
-                        style = MaterialTheme.typography.labelSmall.copy(fontSize = Dimens.TextXxs, fontWeight = FontWeight.Bold)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(Dimens.SpacingM))
-
-            // Compact Horizontally Scrollable Road Path
-            val scrollState = rememberScrollState()
-            
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.12f), RoundedCornerShape(Dimens.SpacingS))
-                    .border(Dimens.BorderThin, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.03f), RoundedCornerShape(Dimens.SpacingS))
-                    .padding(horizontal = Dimens.SpacingXs, vertical = Dimens.SpacingS)
-            ) {
+            if (!isExpanded) {
+                // Collapsed View: Simplified Path Timeline
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .horizontalScroll(scrollState)
-                        .padding(vertical = Dimens.SpacingS),
+                        .padding(horizontal = 4.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = if (isTr) "HARİTA" else "MAP",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontFamily = FontFamily.Serif,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 1.sp
+                            ),
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        
+                        Spacer(modifier = Modifier.width(4.dp))
+                        
+                        val totalDepths = 20
+                        val windowSize = 7
+                        val halfWindow = windowSize / 2
+                        val startDepth = (currentDepth - halfWindow).coerceIn(0, (totalDepths - windowSize).coerceAtLeast(0))
+                        val endDepth = (startDepth + windowSize - 1).coerceAtMost(totalDepths - 1)
+                        
+                        for (d in startDepth..endDepth) {
+                            val nodeAtDepth = nodes.firstOrNull { it.depth == d }
+                            if (nodeAtDepth != null) {
+                                val isCurrent = d == currentDepth
+                                val isCleared = d < currentDepth || (isCurrent && player.currentNodeCompleted)
+                                
+                                val (icon, color) = when {
+                                    isCurrent -> {
+                                        val iconStr = when (nodeAtDepth.type) {
+                                            NodeType.COMBAT -> "⚔️"
+                                            NodeType.BOSS -> "💀"
+                                            NodeType.CHEST -> "🎁"
+                                            NodeType.SHRINE -> "⛩️"
+                                            NodeType.MERCHANT -> "⚱️"
+                                            NodeType.NARRATIVE -> "📜"
+                                            NodeType.CAMP -> "⛺"
+                                            NodeType.EVENT -> "🎲"
+                                            NodeType.SECRET -> "🕵️"
+                                        }
+                                        Pair(iconStr, ColorSanctumPrimary)
+                                    }
+                                    isCleared -> Pair("✓", ColorHeal)
+                                    else -> {
+                                        if (d == totalDepths - 1) {
+                                            Pair("💀", ColorOnSurfaceSubtle)
+                                        } else {
+                                            Pair("⬡", ColorOnSurfaceSubtle)
+                                        }
+                                    }
+                                }
+                                
+                                Box(
+                                    modifier = Modifier
+                                        .size(18.dp)
+                                        .background(
+                                            if (isCurrent) ColorSanctumPrimary.copy(alpha = 0.15f)
+                                            else if (isCleared) ColorHeal.copy(alpha = 0.15f)
+                                            else ColorSurface,
+                                            CircleShape
+                                        )
+                                        .border(
+                                            width = 1.dp,
+                                            color = if (isCurrent) ColorSanctumPrimary else if (isCleared) ColorHeal else ColorBorder,
+                                            shape = CircleShape
+                                        ),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = icon,
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontSize = 8.sp,
+                                            fontWeight = FontWeight.Bold
+                                        ),
+                                        color = if (isCurrent) ColorSanctumPrimary else if (isCleared) ColorHeal else ColorOnSurfaceMuted
+                                    )
+                                }
+                                
+                                if (d < endDepth) {
+                                    Box(
+                                        modifier = Modifier
+                                            .width(8.dp)
+                                            .height(1.dp)
+                                            .background(if (isCleared) ColorHeal else ColorBorder)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowDown,
+                        contentDescription = "Expand",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            } else {
+                // Expanded View: Full Cartography Map
+                // Compact Header Title Row with Scouting triggers
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    for (d in 0..19) {
-                        val nodesAtDepth = nodes.filter { it.depth == d }
-                        if (nodesAtDepth.isNotEmpty()) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center,
-                                modifier = Modifier.width(60.dp)
-                            ) {
-                                if (d == 0 || d == 19) {
-                                    val node = nodesAtDepth[0]
+                    Text(
+                        text = "🧭",
+                        fontSize = Dimens.TextXl,
+                        modifier = Modifier.padding(end = Dimens.SpacingS)
+                    )
+                    Text(
+                        text = "${selectedFloor}",
+                        style = MaterialTheme.typography.headlineSmall.copy(
+                            fontFamily = FontFamily.Serif,
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 24.sp
+                        ),
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(end = 4.dp)
+                    )
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = if (isTr) "KAT" else "FLOOR",
+                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 8.sp, letterSpacing = 1.sp),
+                            color = ColorOnSurfaceMuted
+                        )
+                    }
+
+                    IconButton(onClick = { isExpanded = false }) {
+                        Icon(
+                            imageVector = Icons.Default.KeyboardArrowUp,
+                            contentDescription = "Collapse",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(Dimens.SpacingM))
+
+                // Compact Horizontally Scrollable Road Path
+                val scrollState = rememberScrollState()
+                
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.12f), RoundedCornerShape(Dimens.SpacingS))
+                        .border(Dimens.BorderThin, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.03f), RoundedCornerShape(Dimens.SpacingS))
+                        .padding(vertical = Dimens.SpacingS)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(scrollState)
+                            .padding(vertical = Dimens.SpacingS),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        for (d in 0..19) {
+                            val node = nodes.find { it.depth == d }
+                            if (node != null) {
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Center,
+                                    modifier = Modifier.width(44.dp)
+                                ) {
                                     val isSelected = selectedNodeIdx == node.index
                                     val isCurrent = player.currentFloor == selectedFloor && node.index == player.currentNodeIndex
                                     val isCleared = player.currentFloor > selectedFloor || (player.currentFloor == selectedFloor && (node.depth < currentDepth || (node.index == player.currentNodeIndex && player.currentNodeCompleted)))
@@ -1119,7 +1168,6 @@ fun FloorProgressCartographyMap(
                                     val isScouted = scoutedNodeIndices.contains(node.index)
                                     val isTypeHidden = !isCurrent && !isCleared && !isAccessible && !isScouted
 
-                                    Spacer(modifier = Modifier.height(30.dp))
                                     NodeCircle(
                                         node = node,
                                         isCurrent = isCurrent,
@@ -1139,302 +1187,225 @@ fun FloorProgressCartographyMap(
                                             }
                                         }
                                     )
-                                    Spacer(modifier = Modifier.height(30.dp))
-                                } else {
-                                    val topNode = nodesAtDepth.find { it.column == 0 }
-                                    val bottomNode = nodesAtDepth.find { it.column == 1 }
-
-                                    if (topNode != null) {
-                                        val isSelected = selectedNodeIdx == topNode.index
-                                        val isCurrent = player.currentFloor == selectedFloor && topNode.index == player.currentNodeIndex
-                                        val isCleared = player.currentFloor > selectedFloor || (player.currentFloor == selectedFloor && (topNode.depth < currentDepth || (topNode.index == player.currentNodeIndex && player.currentNodeCompleted)))
-                                        val isAccessible = player.currentFloor == selectedFloor && (
-                                            (topNode.index == player.currentNodeIndex) ||
-                                            (player.currentNodeCompleted && topNode.depth == currentDepth + 1)
-                                        )
-                                        val isScouted = scoutedNodeIndices.contains(topNode.index)
-                                        val isTypeHidden = !isCurrent && !isCleared && !isAccessible && !isScouted
-
-                                        NodeCircle(
-                                            node = topNode,
-                                            isCurrent = isCurrent,
-                                            isCleared = isCleared,
-                                            isAccessible = isAccessible,
-                                            isTypeHidden = isTypeHidden,
-                                            isSelected = isSelected,
-                                            onClick = {
-                                                selectedNodeIdx = topNode.index
-                                                if (!isAccessible) {
-                                                    onLockedClicked(
-                                                        "🔒 Sector Locked! Must complete previous sector first.",
-                                                        "🔒 Sektör Kilitli! Öncelikle bir önceki sektörü tamamlamalısınız."
-                                                    )
-                                                } else {
-                                                    activeModalNode = topNode
-                                                }
-                                            }
-                                        )
-                                    }
-
-                                    Spacer(modifier = Modifier.height(Dimens.SpacingXxl))
-
-                                    if (bottomNode != null) {
-                                        val isSelected = selectedNodeIdx == bottomNode.index
-                                        val isCurrent = player.currentFloor == selectedFloor && bottomNode.index == player.currentNodeIndex
-                                        val isCleared = player.currentFloor > selectedFloor || (player.currentFloor == selectedFloor && (bottomNode.depth < currentDepth || (bottomNode.index == player.currentNodeIndex && player.currentNodeCompleted)))
-                                        val isAccessible = player.currentFloor == selectedFloor && (
-                                            (bottomNode.index == player.currentNodeIndex) ||
-                                            (player.currentNodeCompleted && bottomNode.depth == currentDepth + 1)
-                                        )
-                                        val isScouted = scoutedNodeIndices.contains(bottomNode.index)
-                                        val isTypeHidden = !isCurrent && !isCleared && !isAccessible && !isScouted
-
-                                        NodeCircle(
-                                            node = bottomNode,
-                                            isCurrent = isCurrent,
-                                            isCleared = isCleared,
-                                            isAccessible = isAccessible,
-                                            isTypeHidden = isTypeHidden,
-                                            isSelected = isSelected,
-                                            onClick = {
-                                                selectedNodeIdx = bottomNode.index
-                                                if (!isAccessible) {
-                                                    onLockedClicked(
-                                                        "🔒 Sector Locked! Must complete previous sector first.",
-                                                        "🔒 Sektör Kilitli! Öncelikle bir önceki sektörü tamamlamalısınız."
-                                                    )
-                                                } else {
-                                                    activeModalNode = bottomNode
-                                                }
-                                            }
-                                        )
-                                    }
                                 }
                             }
-                        }
 
-                        if (d < 19) {
-                            val pathCleared = player.currentFloor > selectedFloor || (player.currentFloor == selectedFloor && d < currentDepth)
-                            val pathColor = if (pathCleared) ColorHeal else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.15f)
-                            val pathHeight = if (pathCleared) Dimens.BorderThick else Dimens.BorderThin
-                            
-                            Column(
-                                modifier = Modifier.width(Dimens.SpacingXl),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center
-                            ) {
-                                Box(
-                                    modifier = Modifier.height(90.dp),
-                                    contentAlignment = Alignment.Center
+                            if (d < 19) {
+                                val pathCleared = player.currentFloor > selectedFloor || (player.currentFloor == selectedFloor && d < currentDepth)
+                                val pathColor = if (pathCleared) ColorHeal else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.15f)
+                                val pathHeight = if (pathCleared) Dimens.BorderThick else Dimens.BorderThin
+                                
+                                Column(
+                                    modifier = Modifier.width(Dimens.SpacingS),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Center
                                 ) {
-                                    HorizontalDivider(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        thickness = pathHeight,
-                                        color = pathColor
-                                    )
+                                    Box(
+                                        modifier = Modifier.height(40.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        HorizontalDivider(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            thickness = pathHeight,
+                                            color = pathColor
+                                        )
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
 
-            Spacer(modifier = Modifier.height(Dimens.SpacingS))
+                Spacer(modifier = Modifier.height(Dimens.SpacingM))
 
-            // Beautiful Compact Legend of diverse node types (Combat, Narrative, Treasure, Mystery)
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = Dimens.BorderThick),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                LegendItem("⚔️", if (isTr) "Dövüş" else "Combat")
-                LegendItem("📜", if (isTr) "Hikaye" else "Narrative")
-                LegendItem("💎", if (isTr) "Hazine" else "Treasure")
-                LegendItem("🔮", if (isTr) "Gizem" else "Mystery")
-            }
-
-            Spacer(modifier = Modifier.height(Dimens.SpacingM))
-
-            // Inspection Panel with cleaner shorter info
-            val inspectBlueprint = com.mcanererdem.journey.data.engine.FloorBlueprintSystem.getBlueprintForFloor(selectedFloor, player)
-            val inspectNode = inspectBlueprint.nodes.getOrNull(selectedNodeIdx)
-            
-            if (inspectNode != null) {
-                val nodeName = if (isTr) inspectNode.titleTr else inspectNode.title
-                val nodeDesc = if (isTr) inspectNode.descriptionTr else inspectNode.description
+                // Inspection Panel with cleaner shorter info
+                val inspectNode = nodes.getOrNull(selectedNodeIdx)
                 
-                val nodeCategoryEn = when (inspectNode.type) {
-                    NodeType.COMBAT -> "Combat ⚔️"
-                    NodeType.BOSS -> "Boss 💀"
-                    NodeType.CHEST -> "Treasure 💎"
-                    NodeType.SHRINE -> "Mystery 🔮"
-                    NodeType.MERCHANT -> "Mystery 🔮"
-                    NodeType.NARRATIVE -> "Narrative 📜"
-                }
+                if (inspectNode != null) {
+                    val nodeName = if (isTr) inspectNode.titleTr else inspectNode.title
+                    
+                    val nodeCategoryEn = when (inspectNode.type) {
+                                        NodeType.COMBAT -> "Combat ⚔️"
+                                        NodeType.BOSS -> "Boss 💀"
+                                        NodeType.CHEST -> "Treasure 💎"
+                                        NodeType.SHRINE -> "Mystery 🔮"
+                                        NodeType.MERCHANT -> "Mystery 🔮"
+                                        NodeType.NARRATIVE -> "Narrative 📜"
+                                        NodeType.CAMP -> "Camp ⛺"
+                                        NodeType.EVENT -> "Event 🎲"
+                                        NodeType.SECRET -> "Secret 🕵️"
+                                    }
 
-                val nodeCategoryTr = when (inspectNode.type) {
-                    NodeType.COMBAT -> "Dövüş ⚔️"
-                    NodeType.BOSS -> "Bölüm Sonu 💀"
-                    NodeType.CHEST -> "Hazine 💎"
-                    NodeType.SHRINE -> "Gizem 🔮"
-                    NodeType.MERCHANT -> "Gizem 🔮"
-                    NodeType.NARRATIVE -> "Hikaye 📜"
-                }
+                    val nodeCategoryTr = when (inspectNode.type) {
+                                        NodeType.COMBAT -> "Dövüş ⚔️"
+                                        NodeType.BOSS -> "Bölüm Sonu 💀"
+                                        NodeType.CHEST -> "Hazine 💎"
+                                        NodeType.SHRINE -> "Gizem 🔮"
+                                        NodeType.MERCHANT -> "Gizem 🔮"
+                                        NodeType.NARRATIVE -> "Hikaye 📜"
+                                        NodeType.CAMP -> "Kamp ⛺"
+                                        NodeType.EVENT -> "Etkinlik 🎲"
+                                        NodeType.SECRET -> "Gizem 🕵️"
+                                    }
 
-                val inspectIsCurrent = player.currentFloor == selectedFloor && player.currentNodeIndex == selectedNodeIdx
-                val inspectIsCleared = player.currentFloor > selectedFloor || 
-                        (player.currentFloor == selectedFloor && (inspectNode.depth < currentDepth || (player.currentNodeIndex == selectedNodeIdx && player.currentNodeCompleted)))
-                val inspectIsAccessible = selectedNodeIdx == 0 || inspectIsCurrent || (inspectNode.depth == currentDepth + 1 && player.currentNodeCompleted)
+                    val inspectIsCurrent = player.currentFloor == selectedFloor && player.currentNodeIndex == selectedNodeIdx
+                    val inspectIsCleared = player.currentFloor > selectedFloor || 
+                            (player.currentFloor == selectedFloor && (inspectNode.depth < currentDepth || (player.currentNodeIndex == selectedNodeIdx && player.currentNodeCompleted)))
+                    val inspectIsAccessible = selectedNodeIdx == 0 || inspectIsCurrent || (inspectNode.depth == currentDepth + 1 && player.currentNodeCompleted)
 
-                val isSelectScouted = scoutedNodeIndices.contains(selectedNodeIdx)
-                val isSelectTypeHidden = !inspectIsCurrent && !inspectIsCleared && !inspectIsAccessible && !isSelectScouted
+                    val isSelectScouted = scoutedNodeIndices.contains(selectedNodeIdx)
+                    val isSelectTypeHidden = !inspectIsCurrent && !inspectIsCleared && !inspectIsAccessible && !isSelectScouted
 
-                // Threat or danger tooltip
-                val dangerLevelEn = when {
-                    isSelectTypeHidden -> "❓ UNKNOWN SECTOR (Scout to analyze)"
-                    inspectNode.type == NodeType.BOSS -> "☠️ APEX OVERLORD THREAT LEVEL"
-                    inspectNode.type == NodeType.COMBAT -> "🔴 HOSTILE DETECTED (High Risk)"
-                    inspectNode.type == NodeType.NARRATIVE -> "🟡 STABLE STORY BRANCH (Neutral)"
-                    else -> "🟢 SECURE VAULT COMPARTMENT (Safe)"
-                }
-                val dangerLevelTr = when {
-                    isSelectTypeHidden -> "❓ BİLİNMEYEN SEKTÖR (Gözlem yeteneği kullanın)"
-                    inspectNode.type == NodeType.BOSS -> "☠️ ZİRVE CANAVARI TEHLİKE DÜZEYİ"
-                    inspectNode.type == NodeType.COMBAT -> "🔴 AKTİF DÜŞMAN (Yüksek Risk)"
-                    inspectNode.type == NodeType.NARRATIVE -> "🟡 KARAR SEKTÖRÜ (Normal Tehdit)"
-                    else -> "🟢 SAKİN BÖLGE (Güvenli Alan)"
-                }
+                    // Threat or danger tooltip
+                    val dangerLevelEn = when {
+                        isSelectTypeHidden -> "❓ UNKNOWN SECTOR (Scout to analyze)"
+                        inspectNode.type == NodeType.BOSS -> "☠️ APEX OVERLORD THREAT LEVEL"
+                        inspectNode.type == NodeType.COMBAT -> "🔴 HOSTILE DETECTED (High Risk)"
+                        inspectNode.type == NodeType.NARRATIVE -> "🟡 STABLE STORY BRANCH (Neutral)"
+                        else -> "🟢 SECURE VAULT COMPARTMENT (Safe)"
+                    }
+                    val dangerLevelTr = when {
+                        isSelectTypeHidden -> "❓ BİLİNMEYEN SEKTÖR (Gözlem yeteneği kullanın)"
+                        inspectNode.type == NodeType.BOSS -> "☠️ ZİRVE CANAVARI TEHLİKE DÜZEYİ"
+                        inspectNode.type == NodeType.COMBAT -> "🔴 AKTİF DÜŞMAN (Yüksek Risk)"
+                        inspectNode.type == NodeType.NARRATIVE -> "🟡 KARAR SEKTÖRÜ (Normal Tehdit)"
+                        else -> "🟢 SAKİN BÖLGE (Güvenli Alan)"
+                    }
 
-                val costTextEn = when {
-                    inspectIsCleared -> "⚡ Energy Cost: None (Cleared)"
-                    inspectIsCurrent -> "⚡ Energy Cost: None (Occupied)"
-                    inspectIsAccessible -> "⚡ Energy Cost: 1 Willpower (Movement Entry)"
-                    else -> "🔒 Dynamic Cost: Requires Sequence Unlock"
-                }
-                val costTextTr = when {
-                    inspectIsCleared -> "⚡ İrade Maliyeti: Yok (Temizlendi)"
-                    inspectIsCurrent -> "⚡ İrade Maliyeti: Yok (Mevcut Sektör)"
-                    inspectIsAccessible -> "⚡ İrade Maliyeti: 1 İrade (İlerlemek İçin)"
-                    else -> "🔒 İrade Maliyeti: Sıradaki sektör olmalıdır"
-                }
+                    val costTextEn = when {
+                        inspectIsCleared -> "⚡ Energy Cost: None (Cleared)"
+                        inspectIsCurrent -> "⚡ Energy Cost: None (Occupied)"
+                        inspectIsAccessible -> "⚡ Energy Cost: 1 Willpower (Movement Entry)"
+                        else -> "🔒 Dynamic Cost: Requires Sequence Unlock"
+                    }
+                    val costTextTr = when {
+                        inspectIsCleared -> "⚡ İrade Maliyeti: Yok (Temizlendi)"
+                        inspectIsCurrent -> "⚡ İrade Maliyeti: Yok (Mevcut Sektör)"
+                        inspectIsAccessible -> "⚡ İrade Maliyeti: 1 İrade (İlerlemek İçin)"
+                        else -> "🔒 İrade Maliyeti: Sıradaki sektör olmalıdır"
+                    }
 
-                Surface(
-                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.22f),
-                    shape = RoundedCornerShape(Dimens.SpacingM),
-                    border = BorderStroke(Dimens.BorderThin, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(modifier = Modifier.padding(Dimens.SpacingM)) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(Dimens.SpacingXxxl)
-                                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), CircleShape),
-                                contentAlignment = Alignment.Center
+                    Surface(
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.22f),
+                        shape = RoundedCornerShape(Dimens.SpacingM),
+                        border = BorderStroke(Dimens.BorderThin, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(modifier = Modifier.padding(Dimens.SpacingM)) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.fillMaxWidth()
                             ) {
-                                Text(
-                                    text = if (isSelectTypeHidden) "❓" else when (inspectNode.type) {
-                                        NodeType.COMBAT -> "⚔️"
-                                        NodeType.BOSS -> "💀"
-                                        NodeType.CHEST -> "💎"
-                                        NodeType.SHRINE -> "🔮"
-                                        NodeType.MERCHANT -> "🔮"
-                                        NodeType.NARRATIVE -> "📜"
-                                    },
-                                    fontSize = Dimens.TextM
-                                )
+                                Box(
+                                    modifier = Modifier
+                                        .size(Dimens.SpacingXxxl)
+                                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), CircleShape),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = if (isSelectTypeHidden) "❓" else when (inspectNode.type) {
+                                            NodeType.COMBAT -> "⚔️"
+                                            NodeType.BOSS -> "💀"
+                                            NodeType.CHEST -> "💎"
+                                            NodeType.SHRINE -> "🔮"
+                                            NodeType.MERCHANT -> "🔮"
+                                            NodeType.NARRATIVE -> "📜"
+                                            NodeType.CAMP -> "⛺"
+                                            NodeType.EVENT -> "🎲"
+                                            NodeType.SECRET -> "🕵️"
+                                        },
+                                        fontSize = Dimens.TextM
+                                    )
+                                }
+                                
+                                Spacer(modifier = Modifier.width(Dimens.SpacingS))
+                                
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = if (isSelectTypeHidden) (if (isTr) "Bilinmeyen Sektör" else "Hidden Sector") else nodeName,
+                                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Text(
+                                        text = if (isSelectTypeHidden) (if (isTr) "Keşfedilmemiş" else "Unexplored") else "${if (isTr) nodeCategoryTr else nodeCategoryEn} • ${if (isTr) "Sektör ${selectedNodeIdx + 1}" else "Sector ${selectedNodeIdx + 1}"}",
+                                        style = MaterialTheme.typography.labelSmall.copy(fontSize = Dimens.TextXxs),
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                    )
+                                }
+
+                                Spacer(modifier = Modifier.width(Dimens.SpacingS))
+
+                                // Status Tag
+                                val statusTagText = when {
+                                    inspectIsCurrent -> if (isTr) "📍 AKTİF" else "📍 ACTIVE"
+                                    inspectIsCleared -> if (isTr) "✓ GEÇİLDİ" else "✓ CLEARED"
+                                    else -> if (isTr) "🔒 KİLİTLİ" else "🔒 LOCKED"
+                                }
+                                val statusBgColor = when {
+                                    inspectIsCurrent -> ColorSanctumPrimary.copy(alpha = 0.15f)
+                                    inspectIsCleared -> ColorHeal.copy(alpha = 0.15f)
+                                    else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
+                                }
+                                val statusTextColor = when {
+                                    inspectIsCurrent -> ColorSanctumSecondary
+                                    inspectIsCleared -> Color(0xFF2E7D32)
+                                    else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                }
+
+                                Box(
+                                    modifier = Modifier
+                                        .background(statusBgColor, RoundedCornerShape(Dimens.SpacingXs))
+                                        .padding(horizontal = Dimens.SpacingXs, vertical = Dimens.BorderThick)
+                                ) {
+                                    Text(
+                                        text = statusTagText,
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = Dimens.TextXxs,
+                                            letterSpacing = 0.5.sp
+                                        ),
+                                        color = statusTextColor
+                                    )
+                                }
                             }
+
+                            Spacer(modifier = Modifier.height(Dimens.SpacingS))
                             
-                            Spacer(modifier = Modifier.width(Dimens.SpacingS))
-                            
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = if (isSelectTypeHidden) (if (isTr) "Bilinmeyen Sektör" else "Hidden Sector") else nodeName,
-                                    style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Text(
-                                    text = if (isSelectTypeHidden) (if (isTr) "Keşfedilmemiş" else "Unexplored") else "${if (isTr) nodeCategoryTr else nodeCategoryEn} • ${if (isTr) "Sektör ${selectedNodeIdx + 1}" else "Sector ${selectedNodeIdx + 1}"}",
-                                    style = MaterialTheme.typography.labelSmall.copy(fontSize = Dimens.TextXxs),
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                                )
-                            }
-
-                            Spacer(modifier = Modifier.width(Dimens.SpacingS))
-
-                            // Status Tag
-                            val statusTagText = when {
-                                inspectIsCurrent -> if (isTr) "📍 AKTİF" else "📍 ACTIVE"
-                                inspectIsCleared -> if (isTr) "✓ GEÇİLDİ" else "✓ CLEARED"
-                                else -> if (isTr) "🔒 KİLİTLİ" else "🔒 LOCKED"
-                            }
-                            val statusBgColor = when {
-                                inspectIsCurrent -> ColorSanctumPrimary.copy(alpha = 0.15f)
-                                inspectIsCleared -> ColorHeal.copy(alpha = 0.15f)
-                                else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
-                            }
-                            val statusTextColor = when {
-                                inspectIsCurrent -> ColorSanctumSecondary
-                                inspectIsCleared -> Color(0xFF2E7D32)
-                                else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                            }
-
-                            Box(
-                                modifier = Modifier
-                                    .background(statusBgColor, RoundedCornerShape(Dimens.SpacingXs))
-                                    .padding(horizontal = Dimens.SpacingXs, vertical = Dimens.BorderThick)
-                            ) {
-                                Text(
-                                    text = statusTagText,
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = Dimens.TextXxs,
-                                        letterSpacing = 0.5.sp
-                                    ),
-                                    color = statusTextColor
-                                )
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(Dimens.SpacingS))
-                        
-                        Text(
-                            text = if (isSelectTypeHidden) (if (isTr) "Bu sektör gelecekteki yolda yer alıyor. Türünü ve tehlikesini görmek için Gözlem (Scout) yeteneğini çalıştırın." else "This sector is hidden further along the path. Use the Scout skill to reveal its contents.") else nodeDesc,
-                            style = MaterialTheme.typography.bodySmall.copy(fontSize = Dimens.TextXs),
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                        )
-
-                        Spacer(modifier = Modifier.height(Dimens.SpacingS))
-                        HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
-                        Spacer(modifier = Modifier.height(Dimens.SpacingS))
-
-                        // Brief dynamic hover details: Danger assessment and energy costs
-                        Text(
-                            text = if (isTr) "⚠️ Tehdit Seviyesi: $dangerLevelTr" else "⚠️ Threat Profile: $dangerLevelEn",
-                            style = MaterialTheme.typography.labelSmall.copy(fontSize = Dimens.TextXxs, fontWeight = FontWeight.Bold),
-                            color = if (inspectNode.type == NodeType.BOSS || inspectNode.type == NodeType.COMBAT) ColorDanger else MaterialTheme.colorScheme.primary
-                        )
-                        Text(
-                            text = if (isTr) costTextTr else costTextEn,
-                            style = MaterialTheme.typography.labelSmall.copy(fontSize = Dimens.TextXxs),
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                        )
-
-                        // If combat or boss, show threat assessments
-                        if (!isSelectTypeHidden && (inspectNode.type == NodeType.COMBAT || inspectNode.type == NodeType.BOSS)) {
-                            val enemyName = if (isTr) inspectNode.enemyNameTr else inspectNode.enemyNameEn
                             Text(
-                                text = if (isTr) {
-                                    "✨ Canavar: $enemyName | HP: ${inspectNode.enemyHp} | Saldırı: +${inspectNode.enemyAtk}"
-                                } else {
-                                    "✨ Hostile: $enemyName | HP: ${inspectNode.enemyHp} | Atk: +${inspectNode.enemyAtk}"
-                                },
-                                style = MaterialTheme.typography.labelSmall.copy(fontSize = Dimens.TextXxs, fontStyle = FontStyle.Italic, fontWeight = FontWeight.SemiBold),
-                                color = if (inspectNode.type == NodeType.BOSS) ColorDanger else MaterialTheme.colorScheme.secondary
+                                text = if (isTr) inspectNode.descriptionTr else inspectNode.description,
+                                style = MaterialTheme.typography.bodySmall.copy(fontSize = Dimens.TextXs),
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                             )
+
+                            Spacer(modifier = Modifier.height(Dimens.SpacingS))
+                            HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
+                            Spacer(modifier = Modifier.height(Dimens.SpacingS))
+
+                            // Brief dynamic hover details: Danger assessment and energy costs
+                            Text(
+                                text = if (isTr) "⚠️ Tehdit Seviyesi: $dangerLevelTr" else "⚠️ Threat Profile: $dangerLevelEn",
+                                style = MaterialTheme.typography.labelSmall.copy(fontSize = Dimens.TextXxs, fontWeight = FontWeight.Bold),
+                                color = if (inspectNode.type == NodeType.BOSS || inspectNode.type == NodeType.COMBAT) ColorDanger else MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                text = if (isTr) costTextTr else costTextEn,
+                                style = MaterialTheme.typography.labelSmall.copy(fontSize = Dimens.TextXxs),
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                            )
+
+                            // If combat or boss, show threat assessments
+                            if (!isSelectTypeHidden && (inspectNode.type == NodeType.COMBAT || inspectNode.type == NodeType.BOSS)) {
+                                val enemyName = if (isTr) inspectNode.enemyNameTr else inspectNode.enemyNameEn
+                                Text(
+                                    text = if (isTr) {
+                                        "✨ Canavar: $enemyName | HP: ${inspectNode.enemyHp} | Saldırı: +${inspectNode.enemyAtk}"
+                                    } else {
+                                        "✨ Hostile: $enemyName | HP: ${inspectNode.enemyHp} | Atk: +${inspectNode.enemyAtk}"
+                                    },
+                                    style = MaterialTheme.typography.labelSmall.copy(fontSize = Dimens.TextXxs, fontStyle = FontStyle.Italic, fontWeight = FontWeight.SemiBold),
+                                    color = if (inspectNode.type == NodeType.BOSS) ColorDanger else MaterialTheme.colorScheme.secondary
+                                )
+                            }
                         }
                     }
                 }
@@ -1483,6 +1454,9 @@ fun NodeDetailModal(
         NodeType.NARRATIVE -> MaterialTheme.colorScheme.primary
         NodeType.CHEST -> ColorSanctumPrimary
         NodeType.SHRINE, NodeType.MERCHANT -> ColorCovenantGlow
+        NodeType.CAMP -> ColorHeal
+        NodeType.EVENT -> ColorInfo
+        NodeType.SECRET -> ColorWarning
     }
 
     val typeIcon = when (node.type) {
@@ -1492,6 +1466,9 @@ fun NodeDetailModal(
         NodeType.SHRINE -> "🔮"
         NodeType.MERCHANT -> "🔮"
         NodeType.NARRATIVE -> "📜"
+        NodeType.CAMP -> "⛺"
+        NodeType.EVENT -> "🎲"
+        NodeType.SECRET -> "🕵️"
     }
 
     val typeLabelEn = when (node.type) {
@@ -1501,6 +1478,9 @@ fun NodeDetailModal(
         NodeType.SHRINE -> "Shrine Altar"
         NodeType.MERCHANT -> "Wandering Merchant"
         NodeType.NARRATIVE -> "Narrative Sector"
+        NodeType.CAMP -> "Safe Camp"
+        NodeType.EVENT -> "Random Event"
+        NodeType.SECRET -> "Hidden Chamber"
     }
     val typeLabelTr = when (node.type) {
         NodeType.COMBAT -> "Muharebe Sektörü"
@@ -1509,6 +1489,9 @@ fun NodeDetailModal(
         NodeType.SHRINE -> "Kutsal Sunak"
         NodeType.MERCHANT -> "Gezgin Tüccar"
         NodeType.NARRATIVE -> "Hikaye Karar Odası"
+        NodeType.CAMP -> "Güvenli Kamp"
+        NodeType.EVENT -> "Rastgele Etkinlik"
+        NodeType.SECRET -> "Gizli Bölme"
     }
 
     AlertDialog(
@@ -1594,7 +1577,7 @@ fun NodeDetailModal(
                     colors = ButtonDefaults.buttonColors(containerColor = primaryColor)
                 ) {
                     Text(
-                        text = if (isTr) "Yola Çık ⚡" else "Explore ⚡",
+                        text = if (isTr) "Yola Çık" else "Explore",
                         style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold)
                     )
                 }
@@ -1922,6 +1905,39 @@ fun SecretBossCombatView(
     }
 }
 
+fun Modifier.shake(trigger: Int): Modifier = composed {
+    val shake = remember { Animatable(0f) }
+    LaunchedEffect(trigger) {
+        if (trigger > 0) {
+            shake.animateTo(
+                targetValue = 0f,
+                animationSpec = keyframes {
+                    durationMillis = 300
+                    -10f at 50
+                    10f at 100
+                    -10f at 150
+                    10f at 200
+                    -5f at 250
+                }
+            )
+        }
+    }
+    this.graphicsLayer {
+        translationX = shake.value
+    }
+}
+
+fun Modifier.damageFlash(trigger: Int): Modifier = composed {
+    val color = remember { Animatable(Color.Transparent) }
+    LaunchedEffect(trigger) {
+        if (trigger > 0) {
+            color.animateTo(Color.Red.copy(alpha = 0.5f), animationSpec = tween(50))
+            color.animateTo(Color.Transparent, animationSpec = tween(200))
+        }
+    }
+    this.background(color.value)
+}
+
 @Composable
 fun NodeCircle(
     node: AdventureNode,
@@ -1985,6 +2001,9 @@ fun NodeCircle(
                     NodeType.SHRINE -> "🔮"
                     NodeType.MERCHANT -> "🔮"
                     NodeType.NARRATIVE -> "📜"
+                    NodeType.CAMP -> "⛺"
+                    NodeType.EVENT -> "🎲"
+                    NodeType.SECRET -> "🕵️"
                 },
                 fontSize = Dimens.TextXs,
                 color = if (isCleared || isCurrent) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)

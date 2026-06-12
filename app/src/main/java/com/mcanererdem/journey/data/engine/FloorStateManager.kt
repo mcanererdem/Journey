@@ -69,6 +69,9 @@ object FloorStateManager {
                 NodeType.SHRINE -> "Sacrament: Pay homage at"
                 NodeType.MERCHANT -> "Trade: Interact with"
                 NodeType.NARRATIVE -> "Narrative: Witness"
+                NodeType.CAMP -> "Camp: Rest at"
+                NodeType.EVENT -> "Event: Participate in"
+                NodeType.SECRET -> "Secret: Discover"
             }
             val nodeTypePrefixTr = when (node.type) {
                 NodeType.COMBAT -> "Dövüş: Alt Et"
@@ -77,6 +80,9 @@ object FloorStateManager {
                 NodeType.SHRINE -> "Kutsal Alan: Bağ kur"
                 NodeType.MERCHANT -> "Ticaret: Pazarlık yap"
                 NodeType.NARRATIVE -> "Hikaye: Şahit ol"
+                NodeType.CAMP -> "Kamp: Dinlen"
+                NodeType.EVENT -> "Etkinlik: Katıl"
+                NodeType.SECRET -> "Gizem: Keşfet"
             }
 
             objectives.add(

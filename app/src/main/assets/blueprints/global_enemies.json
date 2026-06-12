@@ -2,87 +2,47 @@
   "infested_rat": {
     "enemyId": "infested_rat",
     "nameKey": "enemy_infested_rat_name",
-    "hp": 42,
-    "maxHp": 42,
-    "atk": 4,
-    "skills": []
+    "hp": 42, "maxHp": 42, "atk": 4, "skills": []
   },
-  "blighted_acid_crawler": {
-    "enemyId": "blighted_acid_crawler",
-    "nameKey": "enemy_blighted_acid_crawler_name",
-    "hp": 48,
-    "maxHp": 48,
-    "atk": 5,
-    "skills": [
-      {
-        "id": "acid_spray",
-        "nameKey": "skill_acid_spray_name",
-        "descriptionKey": "skill_acid_spray_desc",
-        "damage": 6,
-        "statusEffect": "POISON",
-        "effectDuration": 3,
-        "effectValue": 2
-      }
-    ]
+  "blighted_wolf": {
+    "enemyId": "blighted_wolf",
+    "nameKey": "enemy_blighted_wolf_name",
+    "hp": 65, "maxHp": 65, "atk": 8,
+    "skills": [{ "id": "rending_bite", "nameKey": "skill_rending_bite_name", "damage": 12 }]
   },
-  "spore_host": {
-    "enemyId": "spore_host",
-    "nameKey": "enemy_spore_host_name",
-    "hp": 50,
-    "maxHp": 50,
-    "atk": 5,
-    "skills": []
+  "fungal_horror": {
+    "enemyId": "fungal_horror",
+    "nameKey": "enemy_fungal_horror_name",
+    "hp": 85, "maxHp": 85, "atk": 9,
+    "skills": [{ "id": "spore_cloud", "nameKey": "skill_spore_cloud_name", "damage": 5, "statusEffect": "POISON" }]
   },
-  "rat_swarm": {
-    "enemyId": "rat_swarm",
-    "nameKey": "enemy_rat_swarm_name",
-    "hp": 55,
-    "maxHp": 55,
-    "atk": 5,
-    "skills": []
+  "skeleton_warrior": {
+    "enemyId": "skeleton_warrior",
+    "nameKey": "enemy_skeleton_warrior_name",
+    "hp": 70, "maxHp": 70, "atk": 9, "skills": []
   },
-  "blight_abomination": {
-    "enemyId": "blight_abomination",
-    "nameKey": "enemy_blight_abomination_name",
-    "hp": 105,
-    "maxHp": 105,
-    "atk": 9,
-    "skills": [
-      {
-        "id": "toxic_slam",
-        "nameKey": "skill_toxic_slam_name",
-        "descriptionKey": "skill_toxic_slam_desc",
-        "damage": 12,
-        "statusEffect": "POISON",
-        "effectDuration": 2,
-        "effectValue": 4
-      }
-    ]
+  "skeleton_archer": {
+    "enemyId": "skeleton_archer",
+    "nameKey": "enemy_skeleton_archer_name",
+    "hp": 60, "maxHp": 60, "atk": 11,
+    "skills": [{ "id": "bone_arrow", "nameKey": "skill_bone_arrow_name", "damage": 13 }]
   },
-  "tunnel_hound": {
-    "enemyId": "tunnel_hound",
-    "nameKey": "enemy_tunnel_hound_name",
-    "hp": 62,
-    "maxHp": 62,
-    "atk": 6,
-    "skills": []
+  "skeleton_captain": {
+    "enemyId": "skeleton_captain",
+    "nameKey": "enemy_skeleton_captain_name",
+    "hp": 130, "maxHp": 130, "atk": 14,
+    "skills": [{ "id": "undead_rally", "nameKey": "skill_undead_rally_name", "damage": 8, "statusEffect": "STUN" }]
+  },
+  "skeleton_champion": {
+    "enemyId": "skeleton_champion",
+    "nameKey": "enemy_skeleton_champion_name",
+    "hp": 200, "maxHp": 200, "atk": 18,
+    "skills": [{ "id": "execute", "nameKey": "skill_execute_name", "damage": 25 }]
   },
   "rat_king": {
     "enemyId": "rat_king",
     "nameKey": "enemy_rat_king_name",
-    "hp": 150,
-    "maxHp": 150,
-    "atk": 8,
-    "skills": [
-      {
-        "id": "plague_bite",
-        "nameKey": "skill_plague_bite_name",
-        "descriptionKey": "skill_plague_bite_desc",
-        "damage": 10,
-        "statusEffect": "POISON",
-        "effectDuration": 2,
-        "effectValue": 3
-      }
-    ]
+    "hp": 250, "maxHp": 250, "atk": 10,
+    "skills": [{ "id": "plague_bite", "nameKey": "skill_plague_bite_name", "damage": 12, "statusEffect": "POISON" }]
   }
 }

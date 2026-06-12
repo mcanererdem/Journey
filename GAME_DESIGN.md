@@ -542,10 +542,10 @@ data class Quest(
 > Bu bölüme kendi düşüncelerini, sorularını ve önerilerini yaz.  
 > Her not sonraki geliştirme döngüsünde değerlendirilir.
 
-<!-- Örnek format:
-### [2026-06-10] Konu
-- Not 1
-- Not 2
--->
+### [2024-10-27] Proje Analizi ve Geliştirme Önerileri
+- **Görsel Derinlik:** "Floormap" (kat haritası) daha organik bir yapıya kavuşturulmalı. Düz çizgiler yerine parşömen üzerindeki mürekkep izleri gibi görünen bağlantılar eklenebilir.
+- **Savaş Hissiyatı:** Vuruş efektleri (ekran sallanması, parlamalar) eklenerek "game feel" güçlendirilmeli.
+- **Dinamik Müzik:** Momentum'a göre (Sanctum vs Covenant) değişen arka plan müzikleri atmosferi çok güçlendirecektir.
+- **Gizli Lore:** Sadece belirli Momentum değerlerinde veya belirli eşyalarla açılan özel diyaloglar oyuncunun merakını canlı tutar.
+- **Kalıcı İlerleme:** Ölüm anında kazanılan "Legacy Points" ile açılan kalıcı pasifler (örn: +5 başlangıç HP) rogue-lite döngüsünü tamamlar.
 
-_Henüz not eklenmedi. İlk notunu buraya ekleyebilirsin._

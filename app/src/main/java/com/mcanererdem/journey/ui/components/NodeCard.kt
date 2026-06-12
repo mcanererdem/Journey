@@ -177,6 +177,9 @@ fun nodeTypeColor(type: NodeType) = when (type) {
     NodeType.CHEST     -> ColorNodeChest
     NodeType.SHRINE    -> ColorNodeShrine
     NodeType.MERCHANT  -> ColorNodeMerchant
+    NodeType.CAMP      -> ColorNodeCamp
+    NodeType.EVENT     -> ColorNodeEvent
+    NodeType.SECRET    -> ColorNodeSecret
 }
 
 fun nodeTypeLabel(type: NodeType, lang: String) = when (type) {
@@ -186,4 +189,7 @@ fun nodeTypeLabel(type: NodeType, lang: String) = when (type) {
     NodeType.CHEST     -> if (lang == "TR") "HAZİNE" else "TREASURE"
     NodeType.SHRINE    -> if (lang == "TR") "SUNAK"  else "SHRINE"
     NodeType.MERCHANT  -> if (lang == "TR") "TÜCCAR" else "MERCHANT"
+    NodeType.CAMP      -> if (lang == "TR") "KAMP"   else "CAMP"
+    NodeType.EVENT     -> if (lang == "TR") "OLAY"   else "EVENT"
+    NodeType.SECRET    -> if (lang == "TR") "GİZLİ"  else "SECRET"
 }

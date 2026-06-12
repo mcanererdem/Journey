@@ -45,6 +45,15 @@ enum class LegacyUpgradeType(
         descriptionTr = "Kazanılan altın miktarını seviye başına %20 artırır.",
         baseCost = 8,
         costMultiplier = 8
+    ),
+    RECOVERY(
+        key = "RECOVERY",
+        nameEn = "Soul Recovery",
+        nameTr = "Ruhsal Yenilenme",
+        descriptionEn = "Increase HP recovery from Camp and items by +15% per level.",
+        descriptionTr = "Kamp ve eşyalardan gelen HP yenilenmesini seviye başına %15 artırır.",
+        baseCost = 6,
+        costMultiplier = 6
     );
 
     fun getCostForLevel(level: Int): Int {

@@ -86,7 +86,7 @@ object LocalizationManager {
             floor == 100 -> Pair("floor_100", false)
             floor % 25 == 0 -> Pair("exarch_council", true)
             floor % 10 == 0 -> Pair("arbiter_threshold", true)
-            else -> Pair("theme_${floor % 7}", true)
+            else -> Pair("bracket_${((floor - 1) / 10) + 1}", true)
         }
 
         try {
@@ -150,6 +150,7 @@ object LocalizationManager {
             val optB: GameOption
             val optC: GameOption
 
+            val bracketIdx = (floor - 1) / 10
             when {
                 floor == 100 -> {
                     optA = buildOption("optA", 40, 0, 500, -20)
@@ -167,39 +168,54 @@ object LocalizationManager {
                     optC = buildOption("optC", 0, -150, 0, 0)
                 }
                 else -> {
-                    // Standard dynamic floors
-                    when (floor % 7) {
-                        0 -> {
+                    // Standard dynamic floors based on bracket
+                    when (bracketIdx) {
+                        0 -> { // 1-10
                             optA = buildOption("optA", 8, 0, 25, 0)
                             optB = buildOption("optB", -8, 0, 30, 0)
                             optC = buildOption("optC", 0, 50, 0, 0)
                         }
-                        1 -> {
+                        1 -> { // 11-20
                             optA = buildOption("optA", 10, 0, 40, -10)
                             optB = buildOption("optB", -10, 0, 45, -10)
                             optC = buildOption("optC", 0, 0, 0, 20)
                         }
-                        2 -> {
+                        2 -> { // 21-30
                             optA = buildOption("optA", 12, 0, 50, -15)
                             optB = buildOption("optB", -12, 0, 55, 0)
                             optC = buildOption("optC", 0, 60, 0, 0)
                         }
-                        3 -> {
+                        3 -> { // 31-40
                             optA = buildOption("optA", 10, -80, 80, 0)
                             optB = buildOption("optB", -10, -80, 85, 0)
                             optC = buildOption("optC", 0, 70, 0, 10)
                         }
-                        4 -> {
+                        4 -> { // 41-50
                             optA = buildOption("optA", 10, 0, 40, 0)
                             optB = buildOption("optB", -14, 0, 60, 0)
                             optC = buildOption("optC", 0, 80, 0, 0)
                         }
-                        5 -> {
+                        5 -> { // 51-60
                             optA = buildOption("optA", 10, 0, 50, -10)
                             optB = buildOption("optB", -10, 0, 50, -10)
                             optC = buildOption("optC", 0, -20, 0, 30)
                         }
-                        else -> { // Theme 6
+                        6 -> { // 61-70
+                            optA = buildOption("optA", 15, 0, 60, -10)
+                            optB = buildOption("optB", -15, 0, 60, -10)
+                            optC = buildOption("optC", 0, 0, 30, 0)
+                        }
+                        7 -> { // 71-80
+                            optA = buildOption("optA", 12, -100, 100, 0)
+                            optB = buildOption("optB", -12, -100, 100, 0)
+                            optC = buildOption("optC", 0, 150, 0, -10)
+                        }
+                        8 -> { // 81-90
+                            optA = buildOption("optA", 20, 0, 80, -20)
+                            optB = buildOption("optB", -20, 0, 80, -20)
+                            optC = buildOption("optC", 0, 0, 0, 40)
+                        }
+                        else -> { // 91-99
                             optA = buildOption("optA", 10, 0, 40, -15)
                             optB = buildOption("optB", -10, 0, 40, -15)
                             optC = buildOption("optC", 0, -50, 0, 0)

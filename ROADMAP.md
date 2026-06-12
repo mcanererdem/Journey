@@ -163,10 +163,11 @@ object Dimens {
 - [ ] `Theme.kt` güncelle: dark fantasy Sanctum ve Covenant temaları
 
 **0.2 UI Dosya Bölme**
-- [ ] `ui/components/` klasörü oluştur
-- [ ] `RpgGameScreen.kt`'dan her ekranı ayrı dosyaya çıkar
-- [ ] Tekrar kullanılan bileşenler `components/`'e taşı
-- [ ] Her dosya max ~400 satır olacak şekilde sınırla
+- [x] `ui/components/` klasörü oluştur
+- [x] `RpgGameScreen.kt`'dan her ekranı ayrı dosyaya çıkar
+- [x] Tekrar kullanılan bileşenler `components/`'e taşı
+- [x] Her dosya max ~400 satır olacak şekilde sınırla
+- [x] FloorMap (Cartography) horizontal boşluk optimizasyonu
 
 **0.3 Stat Sadeleştirmesi**
 - [ ] `PlayerProfile`'dan `gleam` ve `pyre` kaldır, `aether` ekle

@@ -227,6 +227,106 @@
       "optC_text": "Loot the gold coins from the frozen coffers (+Gold)",
       "optC_journal": "On Floor %d, you prioritized material gold over spiritual matters."
     },
+    "bracket_1": {
+      "title": "The Blighted Foothills - F%d",
+      "description": "The tower's entrance shakes with the breath of corrupted nature. Airborne spores cloud your mind while purple veins on the floor move as if alive.",
+      "optA_text": "Purify nature and spread holy light (+Aether)",
+      "optA_journal": "On Floor %d, you cleansed corrupted roots with holy light.",
+      "optB_text": "Inhale the spores and merge with corruption (+Aether)",
+      "optB_journal": "On Floor %d, you breathed in toxic spores to strengthen your dark bond.",
+      "optC_text": "Gather gold from fallen warriors among the roots (+Gold)",
+      "optC_journal": "On Floor %d, you risked safety to extract gold from the roots."
+    },
+    "bracket_2": {
+      "title": "The Sunken Necropolis - F%d",
+      "description": "Stone walls are weeping. Tombs of forgotten kings are submerged. Whispers from beneath the dark waters call you into the depths.",
+      "optA_text": "Grant peace to spirits and sanctify the waters (+Aether)",
+      "optA_journal": "On Floor %d, you appeased restless spirits.",
+      "optB_text": "Awaken the ancient dark power beneath the waters (+Aether)",
+      "optB_journal": "On Floor %d, you summoned ancient power from the necropolis depths.",
+      "optC_text": "Find valuables from semi-submerged sarcophagi (+Gold)",
+      "optC_journal": "On Floor %d, you scavenged loot like a grave robber."
+    },
+    "bracket_3": {
+      "title": "The Scorched Spire - F%d",
+      "description": "Rivers of lava flow through corridors. The smell of sulfur takes your breath away. With every step, the ground feels as if it's melting beneath you.",
+      "optA_text": "Suppress the flames with a holy shield (+Aether)",
+      "optA_journal": "On Floor %d, you used holy will against hellish heat.",
+      "optB_text": "Accept the dark fire into your soul and grow stronger (+Aether)",
+      "optB_journal": "On Floor %d, you claimed the burning power of lava with a dark ritual.",
+      "optC_text": "Collect molten metal fragments (+Gold)",
+      "optC_journal": "On Floor %d, you scraped precious metals from dangerous lava flows."
+    },
+    "bracket_4": {
+      "title": "The Whispering Gardens - F%d",
+      "description": "Plants here don't just feed on sunlight. Every flower murmurs with the memories of its victims. Beauty is the greatest trap here.",
+      "optA_text": "Burn corrupted vines with holy fire (+Aether)",
+      "optA_journal": "On Floor %d, you pruned the wild garden with holy wrath.",
+      "optB_text": "Listen to the plants' whispers and learn secrets (+Aether)",
+      "optB_journal": "On Floor %d, you gained forbidden knowledge from the plants' dark murmurs.",
+      "optC_text": "Gather rare alchemical essences (+Gold)",
+      "optC_journal": "On Floor %d, you collected expensive plant essences from the garden."
+    },
+    "bracket_5": {
+      "title": "The Crystal Desolation - F%d",
+      "description": "A perfect silence. Crystals reflect every movement thousands of times. Here, even your own reflection might be trying to steal something from you.",
+      "optA_text": "Break crystal reflections with pure light (+Aether)",
+      "optA_journal": "On Floor %d, you dispelled illusions with pure willpower.",
+      "optB_text": "Make a deal with the dark shadow in your reflection (+Aether)",
+      "optB_journal": "On Floor %d, you entered a dark bargain with your own shadow.",
+      "optC_text": "Remove valuable crystal shards (+Gold)",
+      "optC_journal": "On Floor %d, you tore priceless crystals from the walls."
+    },
+    "bracket_6": {
+      "title": "The Abyssal Archive - F%d",
+      "description": "Billions of pages are whispering. This is home to everything the universe wants to forget. Even gravity bends here with the weight of information.",
+      "optA_text": "Seal forbidden books and protect the light (+Aether)",
+      "optA_journal": "On Floor %d, you sealed dangerous information forever.",
+      "optB_text": "Read forbidden runes in dark scrolls (+Aether)",
+      "optB_journal": "On Floor %d, you etched the archive's darkest secrets into your soul.",
+      "optC_text": "Take rare ancient volumes with you (+Gold)",
+      "optC_journal": "On Floor %d, you smuggled away priceless manuscripts."
+    },
+    "bracket_7": {
+      "title": "The Celestial Forge - F%d",
+      "description": "Where cosmic energy is forged with steel. Giant wheels weave the fabric of reality. Only the strongest souls can take shape here.",
+      "optA_text": "Sanctify the anvil with a holy prayer (+Aether)",
+      "optA_journal": "On Floor %d, you aligned the forge's energy with light.",
+      "optB_text": "Feed the forge's heat with dark ambition (+Aether)",
+      "optB_journal": "On Floor %d, you fueled the cosmic furnace with dark greed.",
+      "optC_text": "Collect leftover holy alloys (+Gold)",
+      "optC_journal": "On Floor %d, you gathered precious leftover alloys from the forge."
+    },
+    "bracket_8": {
+      "title": "The Void Sanctum - F%d",
+      "description": "The very heart of nothingness. Here the boundary between being and non-being vanishes. Stars fade away beneath your feet.",
+      "optA_text": "Be a beacon of light in the void (+Aether)",
+      "optA_journal": "On Floor %d, you lit an unquenchable light in the heart of darkness.",
+      "optB_text": "Embrace the infinite power of the void (+Aether)",
+      "optB_journal": "On Floor %d, you surrendered your being to the void itself.",
+      "optC_text": "Collect astral fragments drifting from the void (+Gold)",
+      "optC_journal": "On Floor %d, you gathered astral remains from beyond reality."
+    },
+    "bracket_9": {
+      "title": "The Mirror Dimension - F%d",
+      "description": "Reality is split into thousands of fragments. Which reflection is real, which you is you? Every corner holds a whisper of another life.",
+      "optA_text": "Fix reality with your pure will (+Aether)",
+      "optA_journal": "On Floor %d, you gathered the scattered reality with holy power.",
+      "optB_text": "Claim the chaos among reflections (+Aether)",
+      "optB_journal": "On Floor %d, you drew power from the chaotic whispers of the multiverse.",
+      "optC_text": "Collect ancient coins from different dimensions (+Gold)",
+      "optC_journal": "On Floor %d, you amassed wealth through interdimensional trade."
+    },
+    "bracket_10": {
+      "title": "The Sovereign Peak - F%d",
+      "description": "Only a breath away from the summit. The world below looks like a cloud of dust. The Tower's will puts you through your heaviest trial here.",
+      "optA_text": "Declare your sovereignty with light and justice (+Aether)",
+      "optA_journal": "On Floor %d, you began a glorious march toward the peak.",
+      "optB_text": "Transform the Tower into a dark throne (+Aether)",
+      "optB_journal": "On Floor %d, you prepared the summit for dark dominion.",
+      "optC_text": "Find pure gold veins at the Tower's root (+Gold)",
+      "optC_journal": "On Floor %d, you looted cosmic riches at the summit."
+    },
     "theme_1": {
       "title": "The Shimmering Mirror - F%d",
       "description": "A pool of heavy liquid starlight reflects your true Momentum. It whispers your secret class potential and beckons your soul to commit.",

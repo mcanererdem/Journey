@@ -28,68 +28,12 @@ object FloorBlueprintSystem {
     fun getBlueprintForFloor(floor: Int, player: PlayerProfile? = null): FloorBlueprint {
         val jsonBlueprint = loadBlueprintFromJson(floor)
         if (jsonBlueprint != null) {
-            if (jsonBlueprint.nodes.size == 20) {
-                val expandedNodes = ArrayList<AdventureNode>()
-                val originalNodes = jsonBlueprint.nodes
-                for (d in 0..19) {
-                    if (d == 0) {
-                        expandedNodes.add(originalNodes[0].copy(index = 0, depth = 0, column = 0))
-                    } else if (d == 19) {
-                        expandedNodes.add(originalNodes[19].copy(index = 37, depth = 19, column = 0))
-                    } else {
-                        val originalNode = originalNodes[d]
-                        // Left Column (column 0)
-                        expandedNodes.add(originalNode.copy(index = 2 * d - 1, depth = d, column = 0))
-                        // Right Column (column 1) - scale rewards and difficulty
-                        val statsScaledNode = if (originalNode.type == NodeType.COMBAT) {
-                            originalNode.copy(
-                                index = 2 * d,
-                                depth = d,
-                                column = 1,
-                                title = "Elite " + originalNode.title,
-                                titleTr = "Seçkin " + originalNode.titleTr,
-                                enemyHp = (originalNode.enemyHp * 1.3f).toInt(),
-                                enemyMaxHp = (originalNode.enemyMaxHp * 1.3f).toInt(),
-                                enemyAtk = (originalNode.enemyAtk * 1.3f).toInt(),
-                                enemyNameEn = "Elite " + originalNode.enemyNameEn,
-                                enemyNameTr = "Seçkin " + originalNode.enemyNameTr
-                            )
-                        } else {
-                            val optA = originalNode.optionA?.copy(
-                                goldChange = (originalNode.optionA.goldChange * 1.5).toInt(),
-                                aetherChange = (originalNode.optionA.aetherChange * 1.5).toInt(),
-                                hpChange = (originalNode.optionA.hpChange * 1.5).toInt(),
-                                willChange = (originalNode.optionA.willChange * 1.5).toInt()
-                            )
-                            val optB = originalNode.optionB?.copy(
-                                goldChange = (originalNode.optionB.goldChange * 1.5).toInt(),
-                                aetherChange = (originalNode.optionB.aetherChange * 1.5).toInt(),
-                                hpChange = (originalNode.optionB.hpChange * 1.5).toInt(),
-                                willChange = (originalNode.optionB.willChange * 1.5).toInt()
-                            )
-                            val optC = originalNode.optionC?.copy(
-                                goldChange = (originalNode.optionC.goldChange * 1.5).toInt(),
-                                aetherChange = (originalNode.optionC.aetherChange * 1.5).toInt(),
-                                hpChange = (originalNode.optionC.hpChange * 1.5).toInt(),
-                                willChange = (originalNode.optionC.willChange * 1.5).toInt()
-                            )
-                            originalNode.copy(
-                                index = 2 * d,
-                                depth = d,
-                                column = 1,
-                                title = originalNode.title + " (Covenant Route)",
-                                titleTr = originalNode.titleTr + " (Ahit Rotası)",
-                                optionA = optA,
-                                optionB = optB,
-                                optionC = optC
-                            )
-                        }
-                        expandedNodes.add(statsScaledNode)
-                    }
-                }
-                return jsonBlueprint.copy(nodes = expandedNodes)
+            // Handcrafted nodes are already linear in the JSON, no need to expand them to columns.
+            // We just ensure their index matches their position in the list.
+            val linearNodes = jsonBlueprint.nodes.mapIndexed { index, node ->
+                node.copy(index = index, depth = index, column = 0)
             }
-            return jsonBlueprint
+            return jsonBlueprint.copy(nodes = linearNodes)
         }
         return generateProceduralBlueprint(floor, player)
     }
@@ -106,70 +50,88 @@ object FloorBlueprintSystem {
         val descEn: String
         val descTr: String
 
-        // Establish 7 unique procedural theme categories
-        val themeIndex = (floor % 7)
-        when (themeIndex) {
+        // Establish 10 unique procedural theme brackets (every 10 floors)
+        val bracketIndex = ((floor - 1) / 10).coerceIn(0, 9)
+        when (bracketIndex) {
             0 -> {
-                titleEn = "The Blighted Vaults - F$floor"
-                titleTr = "Musibetli Mahzenler - K$floor"
-                descEn = "Thick purple roots of the Eternal Blight wrap around crumbling stone vaults. Skeletons lie frozen in eternal prayer."
-                descTr = "Ebedi Çürüme'nin kalın mor kökleri ufalanan taş tonozları sarıyor. İskeletler ebedi duada donakalmış halde yatıyor."
+                titleEn = "The Blighted Foothills - F$floor"
+                titleTr = "Musibetli Yamaçlar - K$floor"
+                descEn = "The tower's base is choked by thick, pulsating roots and the stench of decay. Shadows skitter just out of sight."
+                descTr = "Kulenin temeli kalın, zonklayan kökler ve çürüme kokusuyla boğulmuş durumda. Gölgeler gözden ırak yerlerde süzülüyor."
             }
             1 -> {
-                titleEn = "The Shimmering Mirror - F$floor"
-                titleTr = "Işıldayan Ayna - K$floor"
-                descEn = "A cosmic liquid pool reflects starlight from the peaks of the tower structure."
-                descTr = "Kozmik sıvı havuzu, kule yapısının en tepe noktalarından süzülen yıldız ışıklarını yansıtıyor."
+                titleEn = "The Sunken Necropolis - F$floor"
+                titleTr = "Batık Nekropol - K$floor"
+                descEn = "Damp stone corridors filled with the whispers of the forgotten. The air is cold and smells of wet earth and ancient bone."
+                descTr = "Unutulmuşların fısıltılarıyla dolu nemli taş koridorlar. Hava soğuk, ıslak toprak ve kadim kemik kokuyor."
             }
             2 -> {
-                titleEn = "The Ruined Shrine of Sealing - F$floor"
-                titleTr = "Yıkık Mühürleme Tapınağı - K$floor"
-                descEn = "A floating broken sanctuary collapsing slowly under severe void pressure conditions."
-                descTr = "Şiddetli boşluk basıncı altında yavaşça çöken, havada süzülen yitik ve yıkık bir tapınak."
+                titleEn = "The Scorched Spire - F$floor"
+                titleTr = "Yanık Kule - K$floor"
+                descEn = "Molten veins flow through the walls. The heat is oppressive, and the air is thick with volcanic ash and sulfur."
+                descTr = "Duvarlardan erimiş damarlar akıyor. Baskıcı bir sıcaklık var ve hava volkanik kül ve kükürtle ağırlaşmış."
             }
             3 -> {
-                titleEn = "The Spires Caravan - F$floor"
-                titleTr = "Kuleler Kervanı - K$floor"
-                descEn = "A neutral hub where nomadic traders barter specialized artifacts and whisper dark intel."
-                descTr = "Göçebe tüccarların kıymetli eserler takas ettiği ve gizemli istihbaratlar fısıldadığı tarafsız durak."
+                titleEn = "The Whispering Gardens - F$floor"
+                titleTr = "Fısıldayan Bahçeler - K$floor"
+                descEn = "Lush, alien flora glows with a sickly light. Beautiful but deadly, the plants here hunger for more than just sunlight."
+                descTr = "Gür, yabancı flora hastalıklı bir ışıkla parlıyor. Güzel ama ölümcül; buradaki bitkiler güneş ışığından fazlasına aç."
             }
             4 -> {
-                titleEn = "The Weeping Void Outpost - F$floor"
-                titleTr = "Ağlayan Boşluk Karakolu - K$floor"
-                descEn = "A scattered outpost of the Eclipse army, devastated by purifiers hunting void outcasts."
-                descTr = "Boşluk sürgünlerini avlayan arındırıcılar tarafından yerle bir edilmiş yitik Ahit sığınağı."
+                titleEn = "The Crystal Desolation - F$floor"
+                titleTr = "Kristal Issızlık - K$floor"
+                descEn = "Jagged crystalline structures refract light into blinding patterns. It's a silent, beautiful, and frozen wasteland."
+                descTr = "Pürüzlü kristal yapılar ışığı kör edici desenlere kırıyor. Sessiz, güzel ve donmuş bir ıssızlık."
             }
             5 -> {
-                titleEn = "The Whispering Fount - F$floor"
-                titleTr = "Fısıldayan Çeşme - K$floor"
-                descEn = "Natural mineral rivers bubbling in sulfur fumes where echo memories whisper."
-                descTr = "Kükürt buharları arasında fıkırdayan ve yankı anıları fısıldayan doğal şifalı mineral kaynakları."
+                titleEn = "The Abyssal Archive - F$floor"
+                titleTr = "Derinlik Arşivi - K$floor"
+                descEn = "Infinite shelves of forbidden knowledge stretch into the darkness. The gravity here feels heavy with the weight of secrets."
+                descTr = "Yasak bilgilerin sonsuz rafları karanlığa uzanıyor. Buradaki yerçekimi, sırların ağırlığıyla ağır hissediliyor."
+            }
+            6 -> {
+                titleEn = "The Celestial Forge - F$floor"
+                titleTr = "Semavi Demirhane - K$floor"
+                descEn = "The air rings with the sound of phantom hammers. Golden sparks fly as cosmic energy is hammered into reality."
+                descTr = "Hava, hayalet çekiçlerin sesiyle çınlıyor. Kozmik enerji gerçekliğe dövülürken altın kıvılcımlar uçuşuyor."
+            }
+            7 -> {
+                titleEn = "The Void Sanctum - F$floor"
+                titleTr = "Boşluk Tapınağı - K$floor"
+                descEn = "Reality is thin here. Stars are visible through cracks in the floor. A place of deep meditation and terrifying power."
+                descTr = "Burada gerçeklik oldukça ince. Yerdeki çatlaklardan yıldızlar görünüyor. Derin meditasyon ve dehşet verici bir güç yeri."
+            }
+            8 -> {
+                titleEn = "The Mirror Dimension - F$floor"
+                titleTr = "Ayna Boyutu - K$floor"
+                descEn = "Everything is reflected and distorted. You see versions of yourself that never were, whispering of what could be."
+                descTr = "Her şey yansıtılıyor ve çarpıtılıyor. Hiç var olmamış versiyonlarınızı görüyorsunuz, neler olabileceğini fısıldıyorlar."
             }
             else -> {
-                titleEn = "The Iron Threshold - F$floor"
-                titleTr = "Demir Eşik - K$floor"
-                descEn = "Thick steel blast doors blocking the path forward, requiring tribute sacrifices to pass."
-                descTr = "Yolu tıkayan ağır zırhlı kapılar; tüneli geçebilmek için haraç veya hizalamalı kurbanlar talep ediyor."
+                titleEn = "The Sovereign Peak - F$floor"
+                titleTr = "Hükümdar Zirvesi - K$floor"
+                descEn = "The very top of the world. The Core is close now. The wind screams with the voices of all who failed to reach this height."
+                descTr = "Dünyanın en tepesi. Çekirdek artık yakın. Rüzgar, bu yüksekliğe ulaşamayanların sesleriyle çığlık atıyor."
             }
         }
 
         // Construct standard scenario matching historical patterns
-        val scenario = buildNormalScenario(floor, themeIndex)
+        val scenario = buildNormalScenario(floor, bracketIndex)
 
         // Construct nodes List dynamically based on deterministic distribution
         val totalDepths = 20
         val nodes = ArrayList<AdventureNode>()
 
-        val innerCount = 36 // 18 depths * 2 columns
-        var combatCount = (innerCount * 0.40).toInt().coerceAtLeast(8)
-        var merchantCount = (innerCount * 0.10).toInt().coerceAtLeast(4)
-        var chestCount = (innerCount * 0.10).toInt().coerceAtLeast(4)
-        var shrineCount = (innerCount * 0.10).toInt().coerceAtLeast(2)
+        val innerCount = 18 // 18 depths * 1 column
+        var combatCount = (innerCount * 0.40).toInt().coerceAtLeast(6)
+        var merchantCount = (innerCount * 0.10).toInt().coerceAtLeast(2)
+        var chestCount = (innerCount * 0.10).toInt().coerceAtLeast(2)
+        var shrineCount = (innerCount * 0.10).toInt().coerceAtLeast(1)
         var narrativeCount = innerCount - combatCount - merchantCount - chestCount - shrineCount
 
-        if (narrativeCount < 6) {
-            narrativeCount = 6
-            combatCount = (innerCount - merchantCount - chestCount - shrineCount - narrativeCount).coerceAtLeast(6)
+        if (narrativeCount < 4) {
+            narrativeCount = 4
+            combatCount = (innerCount - merchantCount - chestCount - shrineCount - narrativeCount).coerceAtLeast(4)
         }
 
         val pool = ArrayList<NodeType>()
@@ -178,7 +140,7 @@ object FloorBlueprintSystem {
         repeat(chestCount) { pool.add(NodeType.CHEST) }
         repeat(shrineCount) { pool.add(NodeType.SHRINE) }
         repeat(narrativeCount) { pool.add(NodeType.NARRATIVE) }
-        val shuffledPool = pool.shuffled(random)
+        val shuffledPool = pool.shuffled(random).toMutableList()
 
         // Depth 0
         nodes.add(
@@ -218,20 +180,15 @@ object FloorBlueprintSystem {
 
         // Depths 1 to 18
         for (d in 1..18) {
-            val type0 = shuffledPool[(d - 1) * 2]
-            val type1 = shuffledPool[(d - 1) * 2 + 1]
-            
-            // Left Column (Column 0)
-            nodes.add(generateProceduralNode(floor, 2 * d - 1, type0, random, d, 0))
-            // Right Column (Column 1)
-            nodes.add(generateProceduralNode(floor, 2 * d, type1, random, d, 1))
+            val type = if (d == 10) NodeType.CAMP else shuffledPool.removeAt(0)
+            nodes.add(generateProceduralNode(floor, d, type, random, d, 0))
         }
 
         // Depth 19 (Boss)
         val bossInfo = getBossForFloor(floor, random)
         nodes.add(
             AdventureNode(
-                index = 37,
+                index = 19,
                 type = NodeType.BOSS,
                 title = "Floor $floor Overlord: ${bossInfo.nameEn}",
                 description = "Guarding the cosmic seal is the Warden of Blight: ${bossInfo.nameEn}.",
@@ -373,6 +330,43 @@ object FloorBlueprintSystem {
                     willCost = 1
                 )
             }
+            NodeType.CAMP -> {
+                AdventureNode(
+                    index = index,
+                    type = NodeType.CAMP,
+                    title = "Whispering Campfire",
+                    description = "A warm, safe corner where the tower's corruption seems to fade. You can rest here to recover your strength.",
+                    titleTr = "Fısıldayan Kamp Ateşi",
+                    descriptionTr = "Kulenin yozlaşmasının azaldığı, sıcak ve güvenli bir köşe. Burada dinlenerek güç toplayabilirsiniz.",
+                    depth = depth,
+                    column = column,
+                    optionA = NodeChoice(
+                        textEn = "Rest and Meditate (+25 HP, +2 Will)",
+                        textTr = "Dinlen ve Meditasyon Yap (+25 HP, +2 İrade)",
+                        journalEn = "On Floor $floor, you rested at a campfire, recovering vital energy.",
+                        journalTr = "$floor. Katta bir kamp ateşinde dinlenerek hayati enerjini topladın.",
+                        hpChange = 25,
+                        willChange = 2
+                    ),
+                    optionB = NodeChoice(
+                        textEn = "Deep Sleep (+50 HP, -10 Gold)",
+                        textTr = "Derin Uyku (+50 HP, -10 Altın)",
+                        journalEn = "You spent some gold for a safer, deeper rest at the camp.",
+                        journalTr = "Kampta daha güvenli ve derin bir dinlenme için biraz altın harcadın.",
+                        hpChange = 50,
+                        goldChange = -10
+                    ),
+                    optionC = NodeChoice(
+                        textEn = "Tinker with Gear (+15 EXP, +10 Aether)",
+                        textTr = "Teçhizatı Onar (+15 EXP, +10 Aether)",
+                        journalEn = "Instead of resting, you spent time maintaining your gear.",
+                        journalTr = "Dinlenmek yerine vaktini teçhizatının bakımına ayırdın.",
+                        expChange = 15,
+                        aetherChange = 10
+                    ),
+                    willCost = 0
+                )
+            }
             NodeType.NARRATIVE -> {
                 AdventureNode(
                     index = index,
@@ -419,6 +413,36 @@ object FloorBlueprintSystem {
                     enemyMaxHp = stats.hp * 2,
                     enemyAtk = (stats.atk * 1.5).toInt(),
                     willCost = 2
+                )
+            }
+            else -> {
+                // Default fallback for EVENT, SECRET etc.
+                AdventureNode(
+                    index = index,
+                    type = NodeType.NARRATIVE,
+                    title = "Uncharted Ruins",
+                    titleTr = "Keşfedilmemiş Harabeler",
+                    description = "Eerie runes glow on a cracked pillar. A quiet voice promises power in exchange for your faith.",
+                    descriptionTr = "Çatlamış bir sütunda tekinsiz rünler parlıyor. Sessiz bir ses inancına karşılık güç vaat ediyor.",
+                    depth = depth,
+                    column = column,
+                    optionA = NodeChoice(
+                        textEn = "Reject the voice (+10 Momentum, +20 EXP)",
+                        textTr = "Sesi reddet (+10 Momentum, +20 EXP)",
+                        journalEn = "Purified a whispering chaotic wall.",
+                        journalTr = "Fısıldayan kaotik bir duvarı arındırıp Ak Kule yoluna yaklaştınız.",
+                        alignmentShift = 10,
+                        expChange = 20
+                    ),
+                    optionB = NodeChoice(
+                        textEn = "Embrace the shadows (+15 Aether, -10 Momentum)",
+                        textTr = "Gölgeleri kucakla (+15 Aether, -10 Momentum)",
+                        journalEn = "Whispered secrets to the dark wall, feeding the void soul.",
+                        journalTr = "Karanlık duvara sırlar fısıldayarak boşluk ruhunu beslediniz.",
+                        alignmentShift = -10,
+                        aetherChange = 15
+                    ),
+                    willCost = 0
                 )
             }
         }
@@ -484,22 +508,47 @@ object FloorBlueprintSystem {
     }
 
     private fun getBossForFloor(floor: Int, random: Random): EnemyStats {
-        val bossList = when {
-            floor <= 20 -> listOf(
-                EnemyStats("Bone Grinder Gargole", "Kemik Kıran Taşlaşmış Gargoyle", 250, 15),
-                EnemyStats("Infested Broodmother", "Çürük Yuva Anası", 280, 14)
+        val bracketIndex = ((floor - 1) / 10).coerceIn(0, 9)
+        val bossList = when (bracketIndex) {
+            0 -> listOf(
+                EnemyStats("Root-Grown Horror", "Kökten Türeme Dehşet", 250, 15),
+                EnemyStats("Blighted Broodmother", "Musibetli Yuva Anası", 280, 14)
             )
-            floor <= 50 -> listOf(
-                EnemyStats("Exarch Desolator", "Egzark Yıkım Elçisi", 450, 24),
-                EnemyStats("Aegis Defiler", "Zırh Kirleten Musibet", 500, 22)
+            1 -> listOf(
+                EnemyStats("Drowned Archduke", "Boğulmuş Arşidük", 350, 20),
+                EnemyStats("Crypt Warden", "Mezar Muhafızı", 380, 18)
             )
-            floor <= 80 -> listOf(
-                EnemyStats("Shattered Archon", "Paramparça Kozmik Hükümdar", 750, 36),
-                EnemyStats("Abyssal Blood-weaver", "Derinliklerin Kan Dokuyucusu", 800, 34)
+            2 -> listOf(
+                EnemyStats("Magma Core Golem", "Magma Çekirdek Golemi", 450, 25),
+                EnemyStats("Cinder Wyvern", "Kül Ejderi", 480, 24)
+            )
+            3 -> listOf(
+                EnemyStats("Ancient Shambler", "Kadim Sendeleyen", 550, 30),
+                EnemyStats("Floral Empress", "Çiçeksi İmparatoriçe", 580, 28)
+            )
+            4 -> listOf(
+                EnemyStats("Shard-Heart Colossus", "Kristal Kalpli Kolos", 650, 35),
+                EnemyStats("Glass Weaver", "Cam Dokuyucu", 680, 33)
+            )
+            5 -> listOf(
+                EnemyStats("Grand Archivist", "Büyük Arşivci", 750, 40),
+                EnemyStats("Tome-Bound Wraith", "Kitaba Bağlı Hortlak", 780, 38)
+            )
+            6 -> listOf(
+                EnemyStats("Solaris Smith", "Solaris Demirci", 850, 45),
+                EnemyStats("Celestial Guardian", "Semavi Gardiyan", 880, 43)
+            )
+            7 -> listOf(
+                EnemyStats("Void Reaver", "Boşluk Yağmacısı", 950, 50),
+                EnemyStats("Shadow Stalker", "Gölge Takipçisi", 980, 48)
+            )
+            8 -> listOf(
+                EnemyStats("Mirror Doppelganger", "Ayna İkizi", 1050, 55),
+                EnemyStats("Reflective Terror", "Yansıtıcı Dehşet", 1080, 53)
             )
             else -> listOf(
-                EnemyStats("Eldritch Void Terror", "Karanlık Ezeli Boşluk Felaketi", 1100, 48),
-                EnemyStats("Avatar of the Core", "Kule Çekirdeğinin Avatarı", 1300, 52)
+                EnemyStats("Avatar of the Core", "Çekirdeğin Avatarı", 1200, 65),
+                EnemyStats("The Eternal Sovereign", "Ebedi Hükümdar", 1500, 70)
             )
         }
         val template = bossList[random.nextInt(bossList.size)]
@@ -509,26 +558,71 @@ object FloorBlueprintSystem {
     }
 
     private fun getEnemyForFloor(floor: Int, random: Random): EnemyStats {
-        val mobs = listOf(
-            EnemyStats("Sewer Scuttler", "Leş Akrebi", 70, 8),
-            EnemyStats("Blighted Shadow Wolf", "Musibetli Gölge Kurdu", 85, 10),
-            EnemyStats("Void Parasite", "Boşluk Asalağı", 60, 12),
-            EnemyStats("Corrupted Cultist", "Yozlaşmış Ahit Müridi", 90, 9),
-            EnemyStats("Crystalline Spectre", "Parıltılı Hortlak", 80, 11),
-            EnemyStats("Rogue Sentry Officer", "Kaçak Nöbetçi Subayı", 100, 8)
-        )
+        val bracketIndex = ((floor - 1) / 10).coerceIn(0, 9)
+        val mobs = when (bracketIndex) {
+            0 -> listOf(
+                EnemyStats("Infested Rat", "Musibetli Fare", 70, 8),
+                EnemyStats("Blighted Sprout", "Yozlaşmış Filiz", 75, 9),
+                EnemyStats("Thorny Vine-Lurker", "Dikenli Sarmaşık Pusuya Yatan", 80, 10)
+            )
+            1 -> listOf(
+                EnemyStats("Damp Skeleton", "Nemli İskelet", 90, 11),
+                EnemyStats("Oozing Slime", "Sızan Balçık", 85, 12),
+                EnemyStats("Grave Beetle", "Mezar Böceği", 95, 10)
+            )
+            2 -> listOf(
+                EnemyStats("Ash Crawler", "Kül Sürüngeni", 110, 15),
+                EnemyStats("Lava Imp", "Lav Zebanisi", 100, 16),
+                EnemyStats("Obsidian Shard", "Obsidyen Parçası", 120, 14)
+            )
+            3 -> listOf(
+                EnemyStats("Spore Cloud", "Spor Bulutu", 130, 18),
+                EnemyStats("Petal-Blade Stalker", "Taç Yaprak Bıçaklı Avcı", 140, 20),
+                EnemyStats("Tangled Roots", "Düğümlü Kökler", 150, 17)
+            )
+            4 -> listOf(
+                EnemyStats("Crystalline Spider", "Kristal Örümcek", 160, 22),
+                EnemyStats("Prism Golem", "Prizma Golemi", 180, 20),
+                EnemyStats("Light-Bound Spectre", "Işığa Bağlı Hortlak", 170, 24)
+            )
+            5 -> listOf(
+                EnemyStats("Ink-Stained Monk", "Mürekkep Lekeli Keşiş", 200, 26),
+                EnemyStats("Paper-Cut Horror", "Kağıt Kesikli Dehşet", 190, 28),
+                EnemyStats("Scroll Guardian", "Parşömen Muhafızı", 210, 25)
+            )
+            6 -> listOf(
+                EnemyStats("Gilded Sentinel", "Altın Kaplama Gözcü", 230, 30),
+                EnemyStats("Solar Flare Spirit", "Güneş Patlaması Ruhu", 220, 32),
+                EnemyStats("Hammer-Hands", "Çekiç Elliler", 250, 28)
+            )
+            7 -> listOf(
+                EnemyStats("Void Parasite", "Boşluk Asalağı", 260, 35),
+                EnemyStats("Rift Creeper", "Yarık Sürüngeni", 270, 38),
+                EnemyStats("Dark Matter Ooze", "Karanlık Madde Balçığı", 280, 33)
+            )
+            8 -> listOf(
+                EnemyStats("Silver Echo", "Gümüş Yankı", 300, 40),
+                EnemyStats("Fractured Image", "Kırık Görüntü", 310, 42),
+                EnemyStats("Mirror Shard Gargoyle", "Ayna Parçası Gargoyle", 320, 38)
+            )
+            else -> listOf(
+                EnemyStats("Celestial Zealot", "Semavi Bağnaz", 350, 45),
+                EnemyStats("Abyssal Harbinger", "Derinlik Habercisi", 360, 48),
+                EnemyStats("Sovereign Guard", "Hükümdar Muhafızı", 380, 42)
+            )
+        }
         val template = mobs[random.nextInt(mobs.size)]
         val scaleHp = template.hp + (floor * 6)
         val scaleAtk = template.atk + (floor * 0.6).toInt()
         return template.copy(hp = scaleHp, atk = scaleAtk)
     }
 
-    private fun buildNormalScenario(floor: Int, themeIndex: Int): FloorScenario {
-        val (scenarioKey, formatFloorArg) = when {
-            floor == 100 -> Pair("floor_100", false)
-            floor % 25 == 0 -> Pair("exarch_council", true)
-            floor % 10 == 0 -> Pair("arbiter_threshold", true)
-            else -> Pair("theme_${floor % 7}", true)
+    private fun buildNormalScenario(floor: Int, bracketIndex: Int): FloorScenario {
+        val scenarioKey = when {
+            floor == 100 -> "floor_100"
+            floor % 25 == 0 -> "exarch_council"
+            floor % 10 == 0 -> "arbiter_threshold"
+            else -> "bracket_${bracketIndex + 1}"
         }
 
         // Return a mock FloorScenario representation. LocalizationManager handles the standard
@@ -596,12 +690,12 @@ object FloorBlueprintSystem {
                 val type = try { NodeType.valueOf(typeStr) } catch(e: Exception) { NodeType.NARRATIVE }
                 
                 val nodeTitleKey = nodeObj.optString("titleKey", "")
-                val title = if (nodeTitleKey.isNotEmpty()) LocalizationManager.getString("EN", nodeTitleKey) else nodeObj.optString("title", "")
-                val titleTr = if (nodeTitleKey.isNotEmpty()) LocalizationManager.getString("TR", nodeTitleKey) else nodeObj.optString("titleTr", "")
+                val title = if (nodeTitleKey.isNotEmpty()) LocalizationManager.getString("EN", nodeTitleKey) else nodeObj.optString("titleEn", nodeObj.optString("title", ""))
+                val titleTr = if (nodeTitleKey.isNotEmpty()) LocalizationManager.getString("TR", nodeTitleKey) else nodeObj.optString("titleTr", nodeObj.optString("title", ""))
                 
                 val nodeDescKey = nodeObj.optString("descriptionKey", "")
-                val description = if (nodeDescKey.isNotEmpty()) LocalizationManager.getString("EN", nodeDescKey) else nodeObj.optString("description", "")
-                val descriptionTr = if (nodeDescKey.isNotEmpty()) LocalizationManager.getString("TR", nodeDescKey) else nodeObj.optString("descriptionTr", "")
+                val description = if (nodeDescKey.isNotEmpty()) LocalizationManager.getString("EN", nodeDescKey) else nodeObj.optString("descriptionEn", nodeObj.optString("description", ""))
+                val descriptionTr = if (nodeDescKey.isNotEmpty()) LocalizationManager.getString("TR", nodeDescKey) else nodeObj.optString("descriptionTr", nodeObj.optString("description", ""))
 
                 val depth = nodeObj.optInt("depth", idx)
                 val column = nodeObj.optInt("column", 0)

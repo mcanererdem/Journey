@@ -9,7 +9,10 @@ enum class NodeType {
     BOSS,
     CHEST,
     SHRINE,
-    MERCHANT
+    MERCHANT,
+    CAMP,
+    EVENT,
+    SECRET
 }
 
 data class AdventureNode(
@@ -221,6 +224,44 @@ object AdventureEngine {
                 goldChange = -80,
                 rewardItem = uniqueLoot
             )
+        )
+    }
+
+    private fun generateCampNode(index: Int, floor: Int, random: Random): AdventureNode {
+        return AdventureNode(
+            index = index,
+            type = NodeType.CAMP,
+            title = "Whispering Campfire",
+            description = "A warm, safe corner where the tower's corruption seems to fade. You can rest here to recover your strength.",
+            titleTr = "Fısıldayan Kamp Ateşi",
+            descriptionTr = "Kulenin yozlaşmasının azaldığı, sıcak ve güvenli bir köşe. Burada dinlenerek güç toplayabilirsiniz.",
+            depth = index, // default to index if not specified
+            column = 0,
+            optionA = NodeChoice(
+                textEn = "Rest and Meditate (+25 HP, +2 Will)",
+                textTr = "Dinlen ve Meditasyon Yap (+25 HP, +2 İrade)",
+                journalEn = "On Floor $floor, you rested at a campfire, recovering vital energy.",
+                journalTr = "$floor. Katta bir kamp ateşinde dinlenerek hayati enerjini topladın.",
+                hpChange = 25,
+                willChange = 2
+            ),
+            optionB = NodeChoice(
+                textEn = "Deep Sleep (+50 HP, -10 Gold)",
+                textTr = "Derin Uyku (+50 HP, -10 Altın)",
+                journalEn = "You spent some gold for a safer, deeper rest at the camp.",
+                journalTr = "Kampta daha güvenli ve derin bir dinlenme için biraz altın harcadın.",
+                hpChange = 50,
+                goldChange = -10
+            ),
+            optionC = NodeChoice(
+                textEn = "Tinker with Gear (+15 EXP, +10 Aether)",
+                textTr = "Teçhizatı Onar (+15 EXP, +10 Aether)",
+                journalEn = "Instead of resting, you spent time maintaining your gear.",
+                journalTr = "Dinlenmek yerine vaktini teçhizatının bakımına ayırdın.",
+                expChange = 15,
+                aetherChange = 10
+            ),
+            willCost = 0
         )
     }
 

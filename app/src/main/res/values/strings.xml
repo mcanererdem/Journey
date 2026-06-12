@@ -17,4 +17,20 @@
     <string name="faction_neutral">Tarafsız</string>
     <string name="faction_sanctum">Celestial Sanctum (Işık)</string>
     <string name="faction_covenant">Void Covenant (Karanlık)</string>
+
+    <!-- Auth Screen -->
+    <string name="auth_title">JOURNEY</string>
+    <string name="auth_footer_copyright">© Journey — Karanlık Fantezi Kule RPG</string>
+    <string name="auth_subtitle">Ebedi Kule Sizi Bekliyor</string>
+    <string name="auth_choose_path">YOLUNUZU SEÇİN</string>
+    <string name="auth_google_sign_in">🔵  Google ile Giriş Yap</string>
+    <string name="auth_email_sign_in_register">✉  Email ile Giriş / Kayıt</string>
+    <string name="auth_guest_mode">Misafir olarak devam et →</string>
+    <string name="auth_email_password_title">E-POSTA / ŞİFRE</string>
+    <string name="auth_email_placeholder">eposta@adres.com</string>
+    <string name="auth_password_placeholder">Şifre</string>
+    <string name="auth_sign_in_button">Giriş Yap</string>
+    <string name="auth_register_button">Yeni Hesap Oluştur</string>
+    <string name="auth_back_button">← Geri</string>
+    <string name="auth_error_firebase_missing">Firebase bağlantısı için google-services.json gereklidir.</string>
 </resources>

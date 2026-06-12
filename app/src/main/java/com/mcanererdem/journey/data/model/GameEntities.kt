@@ -9,7 +9,8 @@ enum class NavigationTab {
     CHAR_SHEET,
     QUESTS,
     LEGACY,
-    JOURNAL
+    JOURNAL,
+    SETTINGS
 }
 
 enum class Faction {

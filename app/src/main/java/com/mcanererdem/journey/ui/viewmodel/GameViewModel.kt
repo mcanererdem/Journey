@@ -147,7 +147,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 "ABYSS" -> "COVENANT"
                 else -> { // "ALIGNMENT"
                     val momentum = profile?.momentum ?: 50
-                    if (momentum >= 50) "SANCTUM" else "COVENANT"
+                    when {
+                        momentum > 55 -> "SANCTUM"
+                        momentum < 45 -> "COVENANT"
+                        else -> "NEUTRAL"
+                    }
                 }
             }
         }.stateIn(
@@ -274,11 +278,15 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val greedMultiplier = 1.0f + (greedLvl * 0.20f)
             val scaledGoldChange = if (option.goldChange > 0) (option.goldChange * greedMultiplier).toInt() else option.goldChange
 
+            val recoveryLvl = com.mcanererdem.journey.data.model.LegacyUpgradeType.getUpgradeLevel(profile.upgradesEncoded, com.mcanererdem.journey.data.model.LegacyUpgradeType.RECOVERY)
+            val recoveryMultiplier = 1.0f + (recoveryLvl * 0.15f)
+            val scaledHpChange = if (option.hpChange > 0) (option.hpChange * recoveryMultiplier).toInt() else option.hpChange
+
             // Calculate status adjustments
             val newMomentum = (profile.momentum + option.alignmentShift).coerceIn(-100, 100)
             val newGold = (profile.gold + scaledGoldChange).coerceAtLeast(0)
             val newAether = (profile.aether + option.aetherChange).coerceAtLeast(0)
-            var newHp = profile.currentHp + option.hpChange
+            var newHp = profile.currentHp + scaledHpChange
             
             val activeFactionSide = if (profile.side == "NEUTRAL" && option.alignmentShift != 0) {
                 // Automagic alignment detection
@@ -538,6 +546,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val greedMultiplier = 1.0f + (greedLvl * 0.20f)
             val scaledGoldChange = if (choice.goldChange > 0) (choice.goldChange * greedMultiplier).toInt() else choice.goldChange
 
+            val recoveryLvl = com.mcanererdem.journey.data.model.LegacyUpgradeType.getUpgradeLevel(profile.upgradesEncoded, com.mcanererdem.journey.data.model.LegacyUpgradeType.RECOVERY)
+            val recoveryMultiplier = 1.0f + (recoveryLvl * 0.15f)
+            val scaledHpChange = if (choice.hpChange > 0) (choice.hpChange * recoveryMultiplier).toInt() else choice.hpChange
+
             // Process Quest progress updates
             val nodes = _currentFloorNodes.value
             val activeNode = nodes.getOrNull(profile.currentNodeIndex)
@@ -553,7 +565,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val newGold = (profile.gold + scaledGoldChange).coerceAtLeast(0)
             val newAether = (profile.aether + choice.aetherChange).coerceAtLeast(0)
             val newWill = (profile.currentWill + resolvedWillChange).coerceIn(0, profile.maxWill)
-            var newHp = profile.currentHp + choice.hpChange
+            var newHp = profile.currentHp + scaledHpChange
             
             // Build item catalog list
             var currentItems = if (profile.itemsEncoded.isEmpty()) emptyList() else profile.itemsEncoded.split(",")
@@ -727,7 +739,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 _combatLog.value = emptyList()
             }
 
-            val willSpent = if (hasPass) 0 else 1
+            val willSpent = if (hasPass) 0 else 0 // Regular node advancement no longer costs Will
             if (willSpent > 0) {
                 profile = updateDailyQuestProgress(profile, 2, willSpent)
             }
@@ -736,7 +748,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 currentNodeIndex = nextNode.index,
                 currentNodeColumn = column,
                 currentNodeCompleted = false,
-                currentWill = if (hasPass) profile.currentWill else profile.currentWill - 1, // Deduct Will
+                currentWill = if (hasPass) profile.currentWill else profile.currentWill - willSpent, // Deduct Will
                 lastUpdated = System.currentTimeMillis()
             )
             repository.savePlayerProfile(updated)
@@ -1080,8 +1092,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 }
                 playerHp = (playerHp - dmg).coerceAtLeast(0)
                 logs.add(
-                    if (_activeLanguage.value == "TR") "ğŸ‘¹ DÃ¼ÅŸman saldÄ±rdÄ±! DÃ¼ÅŸmandan  hasar aldÄ±nÄ±z."
-                    else "ğŸ‘¹ Enemy attacked! Dealt  damage to you."
+                    if (_activeLanguage.value == "TR") "👺 Düşman saldırdı! $dmg hasar aldınız."
+                    else "👺 Enemy attacked! Dealt $dmg damage to you."
                 )
             }
             EnemyIntent.DEFEND -> {
@@ -1239,6 +1251,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     ) {
         val fractureCount = profile.totalFractures + 1
         val rollbackFloor = profile.savedFloorCheckpoint
+        
+        // Award Legacy Points based on progress
+        val earnedLegacyPoints = (profile.currentFloor / 10) + 1
+        val newLegacyPoints = profile.legacyPoints + earnedLegacyPoints
 
         val updated = profile.copy(
             momentum = newMomentum,
@@ -1249,6 +1265,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             currentNodeIndex = 0, // Reset progression to beginning of safety checkpoint
             currentNodeCompleted = false,
             totalFractures = fractureCount,
+            legacyPoints = newLegacyPoints,
             chosenClass = calculatePlayerClass(factionSide, newMomentum),
             rank = calculateRank(rollbackFloor),
             lastUpdated = System.currentTimeMillis()

@@ -12,9 +12,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import com.mcanererdem.journey.R
 import com.mcanererdem.journey.ui.components.*
 import com.mcanererdem.journey.ui.theme.*
 
@@ -50,6 +53,8 @@ fun AuthScreen(
     onGuestMode: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+    val firebaseError = stringResource(R.string.auth_error_firebase_missing)
     var showEmailForm by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
 
@@ -118,11 +123,11 @@ fun AuthScreen(
                     EmailPasswordForm(
                         onSignIn = { email, pass ->
                             // TODO: Firebase Auth.signInWithEmailAndPassword(email, pass)
-                            errorMessage = "Firebase bağlantısı için google-services.json gereklidir."
+                            errorMessage = firebaseError
                         },
                         onRegister = { email, pass ->
                             // TODO: Firebase Auth.createUserWithEmailAndPassword(email, pass)
-                            errorMessage = "Firebase bağlantısı için google-services.json gereklidir."
+                            errorMessage = firebaseError
                         },
                         onBack = { showEmailForm = false; errorMessage = "" }
                     )
@@ -131,7 +136,7 @@ fun AuthScreen(
                         onGoogleSignIn = {
                             // TODO: Google Sign-In flow
                             // GoogleSignInClient → ActivityResultLauncher → Firebase.auth.signInWithCredential
-                            errorMessage = "Firebase bağlantısı için google-services.json gereklidir."
+                            errorMessage = firebaseError
                         },
                         onEmailSignIn = { showEmailForm = true },
                         onGuestMode = onGuestMode
@@ -143,7 +148,7 @@ fun AuthScreen(
 
             // Alt bilgi
             Text(
-                text = "© Journey — Dark Fantasy Tower RPG",
+                text = stringResource(R.string.auth_footer_copyright),
                 style = MaterialTheme.typography.labelSmall,
                 color = ColorOnSurfaceSubtle,
                 textAlign = TextAlign.Center
@@ -168,7 +173,7 @@ private fun JourneyBranding() {
     ) {
         // "JOURNEY" — büyük gothic başlık
         Text(
-            text = "JOURNEY",
+            text = stringResource(R.string.auth_title),
             style = MaterialTheme.typography.displayLarge,
             color = ColorSanctumPrimary,
             modifier = Modifier.alpha(alpha),
@@ -187,7 +192,7 @@ private fun JourneyBranding() {
         }
 
         Text(
-            text = "The Eternal Tower Awaits",
+            text = stringResource(R.string.auth_subtitle),
             style = MaterialTheme.typography.bodyMedium.copy(fontStyle = FontStyle.Italic),
             color = ColorOnSurfaceMuted,
             textAlign = TextAlign.Center
@@ -207,7 +212,7 @@ private fun AuthOptions(
         modifier = Modifier.fillMaxWidth()
     ) {
         Text(
-            text = "CHOOSE YOUR PATH",
+            text = stringResource(R.string.auth_choose_path),
             style = TextStyleFactionTitle,
             color = ColorOnSurfaceMuted,
             textAlign = TextAlign.Center
@@ -217,7 +222,7 @@ private fun AuthOptions(
 
         // Google ile giriş — birincil seçenek
         DarkFantasyButton(
-            text = "🔵  Google ile Giriş Yap",
+            text = stringResource(R.string.auth_google_sign_in),
             onClick = onGoogleSignIn,
             factionSide = "SANCTUM",
             modifier = Modifier.fillMaxWidth()
@@ -225,7 +230,7 @@ private fun AuthOptions(
 
         // Email ile giriş
         DarkFantasyButton(
-            text = "✉  Email ile Giriş / Kayıt",
+            text = stringResource(R.string.auth_email_sign_in_register),
             onClick = onEmailSignIn,
             factionSide = "NEUTRAL",
             modifier = Modifier.fillMaxWidth()
@@ -234,7 +239,7 @@ private fun AuthOptions(
         Spacer(Modifier.height(Dimens.SpacingXs))
 
         GhostButton(
-            text = "Misafir olarak devam et →",
+            text = stringResource(R.string.auth_guest_mode),
             onClick = onGuestMode,
             color = ColorOnSurfaceMuted
         )
@@ -256,7 +261,7 @@ private fun EmailPasswordForm(
         modifier = Modifier.fillMaxWidth()
     ) {
         Text(
-            text = "EMAIL / ŞİFRE",
+            text = stringResource(R.string.auth_email_password_title),
             style = TextStyleFactionTitle,
             color = ColorOnSurfaceMuted
         )
@@ -266,33 +271,33 @@ private fun EmailPasswordForm(
         DarkEmailField(
             value = email,
             onValueChange = { email = it },
-            placeholder = "eposta@adres.com"
+            placeholder = stringResource(R.string.auth_email_placeholder)
         )
 
         DarkPasswordField(
             value = password,
             onValueChange = { password = it },
-            placeholder = "Şifre"
+            placeholder = stringResource(R.string.auth_password_placeholder)
         )
 
         Spacer(Modifier.height(Dimens.SpacingS))
 
         DarkFantasyButton(
-            text = "Giriş Yap",
+            text = stringResource(R.string.auth_sign_in_button),
             onClick = { onSignIn(email, password) },
             factionSide = "SANCTUM",
             modifier = Modifier.fillMaxWidth()
         )
 
         DarkFantasyButton(
-            text = "Yeni Hesap Oluştur",
+            text = stringResource(R.string.auth_register_button),
             onClick = { onRegister(email, password) },
             factionSide = "NEUTRAL",
             modifier = Modifier.fillMaxWidth()
         )
 
         GhostButton(
-            text = "← Geri",
+            text = stringResource(R.string.auth_back_button),
             onClick = onBack,
             color = ColorOnSurfaceMuted
         )

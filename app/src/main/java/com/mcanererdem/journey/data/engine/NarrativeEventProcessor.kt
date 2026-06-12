@@ -1,6 +1,7 @@
 package com.mcanererdem.journey.data.engine
 
 import com.mcanererdem.journey.data.model.PlayerProfile
+import com.mcanererdem.journey.data.model.LegacyUpgradeType
 
 /**
  * Branching Choice representation in the Narrative Event Processor.
@@ -232,12 +233,20 @@ object NarrativeEventProcessor {
      * Process selection choice inside a Narrative Branch and award immediate payouts.
      */
     fun processNarrativeChoice(player: PlayerProfile, choice: NarrativeBranchOption): PlayerProfile {
+        val greedLvl = LegacyUpgradeType.getUpgradeLevel(player.upgradesEncoded, LegacyUpgradeType.GREED)
+        val greedMultiplier = 1.0f + (greedLvl * 0.20f)
+        val scaledGoldChange = if (choice.goldChange > 0) (choice.goldChange * greedMultiplier).toInt() else choice.goldChange
+
+        val recoveryLvl = LegacyUpgradeType.getUpgradeLevel(player.upgradesEncoded, LegacyUpgradeType.RECOVERY)
+        val recoveryMultiplier = 1.0f + (recoveryLvl * 0.15f)
+        val scaledHpChange = if (choice.hpChange > 0) (choice.hpChange * recoveryMultiplier).toInt() else choice.hpChange
+
         val newMomentum = (player.momentum + choice.alignmentImpact).coerceIn(0, 100)
-        val newGold = (player.gold + choice.goldChange).coerceAtLeast(0)
+        val newGold = (player.gold + scaledGoldChange).coerceAtLeast(0)
         val newAether = (player.aether + choice.aetherChange).coerceAtLeast(0)
         
-        var newHp = player.currentHp + choice.hpChange
-        if (newHp < 1 && choice.hpChange < 0) {
+        var newHp = player.currentHp + scaledHpChange
+        if (newHp < 1 && scaledHpChange < 0) {
             newHp = 1 // Prevent narrative death from simple choices, leave at critical 1 HP
         }
 
