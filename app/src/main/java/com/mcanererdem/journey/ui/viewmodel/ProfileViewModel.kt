@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 class ProfileViewModel(
     private val repository: GameRepository,
     application: Application,
-    private val onMessage: (String, String) -> Unit,
+    private val onMessage: (ActionMessage) -> Unit,
     private val activeLanguage: StateFlow<String>
 ) : AndroidViewModel(application) {
 
@@ -55,10 +55,7 @@ class ProfileViewModel(
                 lastUpdated = System.currentTimeMillis()
             )
             repository.savePlayerProfile(updated)
-            onMessage(
-                "Ascendent identity named: $name",
-                "Yükseliş kimliği belirlendi: $name"
-            )
+            onMessage(ActionMessage("msg_name_update", listOf(name)))
         }
     }
 
@@ -82,10 +79,7 @@ class ProfileViewModel(
                 lastUpdated = System.currentTimeMillis()
             )
             repository.savePlayerProfile(updated)
-            onMessage(
-                "Swore an oath of allegiance to: $faction",
-                "Şu tarafa bağlılık yemini edildi: $faction"
-            )
+            onMessage(ActionMessage("msg_faction_selected", listOf(faction)))
         }
     }
 
@@ -99,10 +93,7 @@ class ProfileViewModel(
                 lastUpdated = System.currentTimeMillis()
             )
             repository.savePlayerProfile(updated)
-            onMessage(
-                "Renounced faction covenants. You are now an Outcast.",
-                "Tüm bağlılık yeminleri bozuldu. Artık Aforoz edilmiş bir avaresiniz."
-            )
+            onMessage(ActionMessage("msg_faction_renounce"))
         }
     }
 
@@ -114,10 +105,7 @@ class ProfileViewModel(
             if (!currentUnlocked.contains(title.id) && title.meetsPreconditions(profile)) {
                 currentUnlocked.add(title.id)
                 changed = true
-                onMessage(
-                    "👑 UNLOCKED TITLE: ${LocalizationManager.getString("EN", title.nameKey)}!",
-                    "👑 YENİ UNVAN KAZANILDI: ${LocalizationManager.getString("TR", title.nameKey)}!"
-                )
+                onMessage(ActionMessage("msg_title_unlocked", listOf(title.nameKey)))
             }
         }
         
@@ -142,8 +130,8 @@ class ProfileViewModel(
                 )
                 repository.savePlayerProfile(updated)
                 onMessage(
-                    if (titleId.isEmpty()) "Unequipped title." else "Equipped: ${QuestTitleSystem.getTitleDef(titleId)?.let { LocalizationManager.getString("EN", it.nameKey) }}",
-                    if (titleId.isEmpty()) "Unvan çıkarıldı." else "Mistik unvan kuşanıldı: ${QuestTitleSystem.getTitleDef(titleId)?.let { LocalizationManager.getString("TR", it.nameKey) }}"
+                    if (titleId.isEmpty()) ActionMessage("msg_title_unequipped")
+                    else ActionMessage("msg_title_equipped", listOf(QuestTitleSystem.getTitleDef(titleId)!!.nameKey))
                 )
             }
         }
@@ -212,10 +200,7 @@ class ProfileViewModel(
             
             val questTitleEn = LocalizationManager.getString("EN", quest.titleKey)
             val questTitleTr = LocalizationManager.getString("TR", quest.titleKey)
-            onMessage(
-                "Quest '$questTitleEn' claimed! Rewards received.",
-                "'$questTitleTr' görevi tamamlandı! Ödülleri aldınız."
-            )
+            onMessage(ActionMessage("msg_quest_claimed", listOf(quest.titleKey)))
         }
     }
 
@@ -254,10 +239,7 @@ class ProfileViewModel(
             )
             repository.savePlayerProfile(updated)
             
-            onMessage(
-                "Claimed daily quest reward! +$finalGold Gold, +$baseAether Aether",
-                "Günlük görev ödülü alındı! +$finalGold Altın, +$baseAether Aether"
-            )
+            onMessage(ActionMessage("msg_daily_reward_claimed", listOf(finalGold, baseAether)))
         }
     }
 
@@ -283,10 +265,7 @@ class ProfileViewModel(
             )
             repository.savePlayerProfile(updated)
             
-            onMessage(
-                "Successfully purchased legacy upgrade: ${LocalizationManager.getString("EN", type.nameKey)}",
-                "Miras güçlendirmesi başarıyla satın alındı: ${LocalizationManager.getString("TR", type.nameKey)}"
-            )
+            onMessage(ActionMessage("msg_upgrade_purchased", listOf(type.nameKey)))
         }
     }
 
@@ -311,10 +290,7 @@ class ProfileViewModel(
         val newQuestsEncoded = quests.joinToString(",")
         
         if (newProgress >= target) {
-            onMessage(
-                "✨ Daily Quest Completed! Claim rewards in Legacy tab.",
-                "✨ Daily Quest Completed! Claim rewards in Legacy tab."
-            )
+            onMessage(ActionMessage("msg_daily_quest_completed"))
         }
         
         return profile.copy(

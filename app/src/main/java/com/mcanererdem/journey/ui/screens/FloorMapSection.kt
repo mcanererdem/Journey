@@ -123,7 +123,7 @@ fun FloorProgressCartographyMap(
     journal: List<JournalEntry>,
     scoutedNodeIndices: Set<Int>,
     onScoutClick: () -> Unit,
-    onLockedClicked: (String, String) -> Unit,
+    onLockedClicked: (String) -> Unit,
     onNextNodeClick: (Int, Int) -> Unit
 ) {
     var isExpanded by remember { mutableStateOf(false) }
@@ -337,10 +337,7 @@ fun FloorProgressCartographyMap(
                                         onClick = {
                                             selectedNodeIdx = nodeIdx
                                             if (!isAccessible) {
-                                                onLockedClicked(
-                                                    LocalizationManager.getString(activeLang, "ui.map_locked_sector_msg"),
-                                                    ""
-                                                )
+                                                onLockedClicked("ui.map_locked_sector_msg")
                                             } else {
                                                 activeModalNode = node
                                             }

@@ -192,9 +192,14 @@ object FloorBlueprintSystem {
     }
 
     private fun parseGameOption(obj: JSONObject, defaultKey: String = ""): GameOption {
+        val labelKey = when {
+            obj.has("textKey") -> obj.getString("textKey")
+            obj.has("labelKey") -> obj.getString("labelKey")
+            else -> if (defaultKey.isNotEmpty()) "$defaultKey.text" else ""
+        }
         return GameOption(
             id = obj.optString("id", UUID.randomUUID().toString()),
-            labelKey = obj.optString("labelKey", if (defaultKey.isNotEmpty()) "$defaultKey.text" else ""),
+            labelKey = labelKey,
             journalKey = obj.optString("journalKey", if (defaultKey.isNotEmpty()) "$defaultKey.journal" else ""),
             effects = ChoiceEffects(
                 alignmentShift = obj.optInt("alignmentShift", 0),
@@ -206,7 +211,11 @@ object FloorBlueprintSystem {
     }
 
     private fun parseNodeChoice(obj: JSONObject, defaultKey: String = ""): NodeChoice {
-        val labelKey = obj.optString("labelKey", if (defaultKey.isNotEmpty()) "$defaultKey.text" else "")
+        val labelKey = when {
+            obj.has("textKey") -> obj.getString("textKey")
+            obj.has("labelKey") -> obj.getString("labelKey")
+            else -> if (defaultKey.isNotEmpty()) "$defaultKey.text" else ""
+        }
         val journalKey = obj.optString("journalKey", if (defaultKey.isNotEmpty()) "$defaultKey.journal" else "")
         
         return NodeChoice(

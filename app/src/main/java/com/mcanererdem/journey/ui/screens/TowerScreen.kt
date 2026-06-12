@@ -49,7 +49,7 @@ fun TowerClimbTab(
     enemyStatuses: List<CombatStatus>,
     currentEnemyIntent: EnemyIntent,
     onScoutClick: () -> Unit,
-    onLockedClicked: (String, String) -> Unit,
+    onLockedClicked: (String) -> Unit,
     onChoiceSelected: (NodeChoice) -> Unit,
     onScenarioChoiceSelected: (GameOption) -> Unit,
     onNextNodeClick: (Int, Int) -> Unit,

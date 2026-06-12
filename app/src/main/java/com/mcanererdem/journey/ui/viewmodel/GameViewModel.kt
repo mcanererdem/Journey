@@ -40,11 +40,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val _activeLanguage = MutableStateFlow("EN") // "TR" or "EN"
     val activeLanguage: StateFlow<String> = _activeLanguage.asStateFlow()
 
-    private val _lastActionMessageEn = MutableStateFlow("Welcome, hero. Your ascent begins.")
-    val lastActionMessageEn: StateFlow<String> = _lastActionMessageEn.asStateFlow()
-
-    private val _lastActionMessageTr = MutableStateFlow("Hoş geldin, kahraman. Yükselişin başlıyor.")
-    val lastActionMessageTr: StateFlow<String> = _lastActionMessageTr.asStateFlow()
+    private val _lastActionMessage = MutableStateFlow(ActionMessage("msg_welcome"))
+    val lastActionMessage: StateFlow<ActionMessage> = _lastActionMessage.asStateFlow()
 
     private val _currentTab = MutableStateFlow(NavigationTab.TOWER)
     val currentTab: StateFlow<NavigationTab> = _currentTab.asStateFlow()
@@ -74,11 +71,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     val enemyStatuses: StateFlow<List<CombatStatus>>
     val currentEnemyIntent: StateFlow<EnemyIntent>
     val activeNarrativeEvent: StateFlow<NarrativeEvent?>
-    val activeSecretBossCombat: StateFlow<SecretBossEncounter?>
-    val activeSecretBossHp: StateFlow<Int?>
 
     val completedEvents: StateFlow<Set<String>>
-    val slainSecretBosses: StateFlow<Set<String>>
 
     init {
         LocalizationManager.init(application)
@@ -130,7 +124,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         profileViewModel = ProfileViewModel(
             repository = repository,
             application = application,
-            onMessage = { en, tr -> showActionMessage(en, tr) },
+            onMessage = { msg -> showActionMessage(msg) },
             activeLanguage = activeLanguage
         )
 
@@ -138,7 +132,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             repository = repository,
             application = application,
             onClearCombat = { combatViewModel.clearCombat() },
-            onMessage = { en, tr -> showActionMessage(en, tr) },
+            onMessage = { msg -> showActionMessage(msg) },
             activeLanguage = activeLanguage,
             onTriggerSpiritFracture = { profile, momentum, gold, aether, side ->
                 triggerSpiritFracture(profile, momentum, gold, aether, side)
@@ -152,7 +146,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             application = application,
             activeLanguage = activeLanguage,
             currentFloorNodes = floorViewModel.currentFloorNodes,
-            onMessage = { en, tr -> showActionMessage(en, tr) },
+            onMessage = { msg -> showActionMessage(msg) },
             onNavigateToTab = { tab -> selectTab(tab) },
             onTriggerSpiritFracture = { profile, momentum, gold, aether, side ->
                 triggerSpiritFracture(profile, momentum, gold, aether, side)
@@ -173,11 +167,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         enemyStatuses = combatViewModel.enemyStatuses
         currentEnemyIntent = combatViewModel.currentEnemyIntent
         activeNarrativeEvent = combatViewModel.activeNarrativeEvent
-        activeSecretBossCombat = combatViewModel.activeSecretBossCombat
-        activeSecretBossHp = combatViewModel.activeSecretBossHp
 
         completedEvents = combatViewModel.completedEvents
-        slainSecretBosses = combatViewModel.slainSecretBosses
 
         // Automatic orchestration logic
         viewModelScope.launch {
@@ -236,17 +227,18 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         )
         repository.savePlayerProfile(updated)
 
-        showActionMessage(
-            "💀 Spirit Fracture triggered! Slipped from Tower back to checkpoint Floor $rollbackFloor.",
-            "💀 Ruh Kırılması Yaşandı! Kule'den güvenli koridor kontrol noktası Kat $rollbackFloor seviyesine savruldun."
-        )
-        _currentTab.value = NavigationTab.OUTER_WORLD
+        showActionMessage(ActionMessage("msg_spirit_fracture", listOf(rollbackFloor)))
+        _currentTab.value = NavigationTab.TOWER
         combatViewModel.clearCombat()
     }
 
-    fun showActionMessage(messageEn: String, messageTr: String) {
-        _lastActionMessageEn.value = messageEn
-        _lastActionMessageTr.value = messageTr
+    fun showActionMessage(message: ActionMessage) {
+        _lastActionMessage.value = message
+        _showNotificationBanner.value = true
+    }
+
+    fun showActionMessage(key: String, args: List<Any> = emptyList()) {
+        showActionMessage(ActionMessage(key, args))
     }
 
     fun changeLanguage(lang: String) {
@@ -337,17 +329,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         combatViewModel.selectNarrativeEventOption(event, choice)
     }
 
-    fun startSecretBossEncounter(boss: SecretBossEncounter) {
-        combatViewModel.startSecretBossEncounter(boss)
-    }
 
-    fun escapeSecretBoss() {
-        combatViewModel.escapeSecretBoss()
-    }
-
-    fun executeSecretBossTurn(action: String) {
-        combatViewModel.executeSecretBossTurn(action)
-    }
 
     fun resetGame() {
         viewModelScope.launch {
@@ -409,10 +391,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             floorViewModel.clearScoutedNodes()
             _currentTab.value = NavigationTab.TOWER
             
-            showActionMessage(
-                "Game restarted. Gained +$earnedPoints Legacy Points! Upgrades retained.",
-                "Zaman döngüsü sıfırlandı. +$earnedPoints Miras Puanı kazanıldı! Kalıcı yükseltmeler korundu."
-            )
+            showActionMessage(ActionMessage("msg_reset_success", listOf(earnedPoints)))
         }
     }
 
@@ -458,10 +437,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             )
             repository.savePlayerProfile(updated)
             
-            showActionMessage(
-                "Watched ad! +5 Legacy Points earned.",
-                "Reklam izlendi! +5 Miras Puanı kazanıldı."
-            )
+            showActionMessage(ActionMessage("msg_ad_watched_success"))
             
             // Set cooldown
             _adCooldownSeconds.value = 60
@@ -481,20 +457,14 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     lastUpdated = System.currentTimeMillis()
                 )
                 repository.savePlayerProfile(updated)
-                showActionMessage(
-                    "Thank you for your purchase! Ad-Free activated.",
-                    "Satın alımınız için teşekkürler! Reklamsız mod aktif edildi."
-                )
+                showActionMessage(ActionMessage("msg_purchase_adfree_success"))
             } else if (skuId == "seasonal_sovereign_pass") {
                 val updated = profile.copy(
                     itemsEncoded = if (profile.itemsEncoded.isEmpty()) "Seasonal Sovereign Pass" else "${profile.itemsEncoded},Seasonal Sovereign Pass",
                     lastUpdated = System.currentTimeMillis()
                 )
                 repository.savePlayerProfile(updated)
-                showActionMessage(
-                    "Sovereign Pass activated! Willpower costs removed.",
-                    "Sovereign Pass aktif edildi! İrade maliyetleri kaldırıldı."
-                )
+                showActionMessage(ActionMessage("msg_purchase_pass_success"))
             }
             _isPurchaseDialogShown.value = false
         }
@@ -508,9 +478,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 val success = FirebaseManager.syncProfileToCloud(profile)
                 _firebaseSyncState.value = if (success) "SUCCESS" else "FAILURE"
                 if (success) {
-                    showActionMessage("Chronology synced to cloud.", "Kronoloji bulut ile senkronize edildi.")
+                    showActionMessage(ActionMessage("msg_sync_success"))
                 } else {
-                    showActionMessage("Cloud sync failed.", "Bulut senkronizasyonu başarısız oldu.")
+                    showActionMessage(ActionMessage("msg_sync_failed"))
                 }
             } else {
                 _firebaseSyncState.value = "FAILURE"
@@ -525,10 +495,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             if (cloudProfile != null) {
                 repository.savePlayerProfile(cloudProfile)
                 _firebaseSyncState.value = "SUCCESS"
-                showActionMessage("Chronology restored from cloud.", "Kronoloji buluttan geri yüklendi.")
+                showActionMessage(ActionMessage("msg_restore_success"))
             } else {
                 _firebaseSyncState.value = "FAILURE"
-                showActionMessage("Cloud restore failed.", "Buluttan yükleme başarısız oldu.")
+                showActionMessage(ActionMessage("msg_restore_failed"))
             }
         }
     }

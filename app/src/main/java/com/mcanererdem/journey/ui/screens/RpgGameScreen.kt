@@ -60,8 +60,7 @@ fun RpgGameScreen(
 
     val scoutedNodeIndices by viewModel.scoutedNodeIndices.collectAsStateWithLifecycle()
 
-    val actionMessageEn by viewModel.lastActionMessageEn.collectAsStateWithLifecycle()
-    val actionMessageTr by viewModel.lastActionMessageTr.collectAsStateWithLifecycle()
+    val actionMessage by viewModel.lastActionMessage.collectAsStateWithLifecycle()
 
     // Add Settings flows collection
     val themeSelection by viewModel.themeSelection.collectAsStateWithLifecycle()
@@ -135,7 +134,7 @@ fun RpgGameScreen(
                         )
                         Spacer(modifier = Modifier.width(Dimens.SpacingS))
                         Text(
-                            text = if (activeLang == "TR") actionMessageTr else actionMessageEn,
+                            text = actionMessage.getFormattedText(activeLang),
                             style = MaterialTheme.typography.bodySmall.copy(
                                 fontWeight = FontWeight.Medium,
                                 fontFamily = FontFamily.Serif
@@ -177,20 +176,13 @@ fun RpgGameScreen(
                         enemyStatuses = enemyStatuses,
                         currentEnemyIntent = currentEnemyIntent,
                         onScoutClick = { viewModel.performScouting() },
-                        onLockedClicked = { en, tr -> viewModel.showActionMessage(en, tr) },
+                        onLockedClicked = { key -> viewModel.showActionMessage(ActionMessage(key)) },
                         onChoiceSelected = { viewModel.selectNodeChoice(it) },
                         onScenarioChoiceSelected = { viewModel.handleRpgChoice(it) },
                         onNextNodeClick = { depth, column -> viewModel.selectNodeAt(depth, column) },
                         onAscendFloorClick = { viewModel.ascendToNextFloor() },
                         onCombatAction = { viewModel.executeCombatTurn(it) },
                         onResetClick = { viewModel.resetGame() }
-                    )
-                    NavigationTab.OUTER_WORLD -> OuterWorldTab(
-                        player = player,
-                        activeLang = activeLang,
-                        onHeal = { viewModel.healAndRest(it) },
-                        onScout = { viewModel.performAbyssScouting() },
-                        onTrade = { viewModel.tradeCurrency(it) }
                     )
                     NavigationTab.CHAR_SHEET -> CharacterSheetTab(
                         player = player,
@@ -206,12 +198,6 @@ fun RpgGameScreen(
                         player = player,
                         viewModel = viewModel,
                         activeLang = activeLang
-                    )
-                    NavigationTab.LEGACY -> LegacyTab(
-                        player = player,
-                        activeLang = activeLang,
-                        onUpgradePurchased = { viewModel.purchaseUpgrade(it) },
-                        onClaimQuestReward = { viewModel.claimDailyQuestReward(it) }
                     )
                     NavigationTab.JOURNAL -> JournalTab(
                         journal = journal,
@@ -1219,10 +1205,8 @@ fun CustomBottomNavigationBar(
         } else {
             LocalizationManager.getString(activeLang, "ui.nav_tower_floor") to "🏰"
         },
-        NavigationTab.OUTER_WORLD to (LocalizationManager.getString(activeLang, "ui.nav_world") to "🌍"),
         NavigationTab.QUESTS to (LocalizationManager.getString(activeLang, "ui.nav_quest") to "📜"),
         NavigationTab.CHAR_SHEET to (LocalizationManager.getString(activeLang, "ui.nav_hero") to "👤"),
-        NavigationTab.LEGACY to (LocalizationManager.getString(activeLang, "ui.nav_legacy") to "💎"),
         NavigationTab.JOURNAL to (LocalizationManager.getString(activeLang, "ui.nav_journal") to "📖"),
         NavigationTab.SETTINGS to (LocalizationManager.getString(activeLang, "ui.nav_settings") to "⚙️")
     )
@@ -1245,10 +1229,8 @@ fun CustomBottomNavigationBar(
                 val isSelected = currentTab == tabId
                 val activeColor = when (tabId) {
                     NavigationTab.TOWER -> if (isPlayerInCombat) ColorDanger else ColorSanctumPrimary
-                    NavigationTab.OUTER_WORLD -> ColorHeal
                     NavigationTab.QUESTS -> ColorWarning
                     NavigationTab.CHAR_SHEET -> ColorCovenantGlow
-                    NavigationTab.LEGACY -> ColorStatGold
                     NavigationTab.JOURNAL -> ColorInfo
                     NavigationTab.SETTINGS -> ColorOnSurfaceMuted
                 }

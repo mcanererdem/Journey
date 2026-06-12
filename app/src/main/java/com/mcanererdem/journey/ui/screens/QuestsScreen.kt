@@ -48,10 +48,7 @@ fun QuestsTab(
     if (player == null) return
 
     val completedEvents by viewModel.completedEvents.collectAsStateWithLifecycle()
-    val slainSecretBosses by viewModel.slainSecretBosses.collectAsStateWithLifecycle()
     val activeNarrativeEvent by viewModel.activeNarrativeEvent.collectAsStateWithLifecycle()
-    val activeSecretBossCombat by viewModel.activeSecretBossCombat.collectAsStateWithLifecycle()
-    val activeSecretBossHp by viewModel.activeSecretBossHp.collectAsStateWithLifecycle()
     val combatLog by viewModel.combatLog.collectAsStateWithLifecycle()
 
     val questsProgress = remember(player) {
@@ -68,16 +65,7 @@ fun QuestsTab(
             onCancel = { viewModel.cancelNarrativeEvent() },
             activeLang = activeLang
         )
-    } else if (activeSecretBossCombat != null && activeSecretBossHp != null) {
-        SecretBossCombatView(
-            boss = activeSecretBossCombat!!,
-            player = player,
-            bossHp = activeSecretBossHp!!,
-            combatLog = combatLog,
-            onAction = { action -> viewModel.executeSecretBossTurn(action) },
-            onEscape = { viewModel.escapeSecretBoss() },
-            activeLang = activeLang
-        )
+
     } else {
         LazyColumn(
             modifier = Modifier
@@ -864,141 +852,6 @@ fun QuestsTab(
                                         onClick = { viewModel.startNarrativeEvent(event) },
                                         modifier = Modifier.fillMaxWidth(),
                                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                                        shape = RoundedCornerShape(Dimens.SpacingS)
-                                    ) {
-                                        Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(Dimens.SpacingL))
-                                        Spacer(modifier = Modifier.width(Dimens.SpacingS))
-                                        Text(
-                                            text = LocalizationManager.getString(activeLang, "ui.btn_initiate").uppercase(),
-                                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold)
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // Show all Secret Bosses from NarrativeEventProcessor
-                item {
-                    Spacer(modifier = Modifier.height(Dimens.SpacingM))
-                    Text(
-                        text = LocalizationManager.getString(activeLang, "ui.quests_boss_encounters"),
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = Dimens.LetterSpacingNormal,
-                            fontFamily = FontFamily.Serif
-                        ),
-                        color = ColorDanger
-                    )
-                    Spacer(modifier = Modifier.height(Dimens.SpacingXs))
-                    Text(
-                        text = LocalizationManager.getString(activeLang, "ui.scout_desc"),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
-                    )
-                }
-
-                NarrativeEventProcessor.secretBosses.forEach { boss ->
-                    item(key = "boss_" + boss.id) {
-                        val isSlain = slainSecretBosses.contains(boss.id)
-                        val canChallenge = boss.checkUnlock(player)
-
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = Dimens.SpacingXs),
-                            colors = CardDefaults.cardColors(
-                                containerColor = if (isSlain) {
-                                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-                                } else if (canChallenge) {
-                                    MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.08f)
-                                } else {
-                                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f)
-                                }
-                            ),
-                            border = BorderStroke(
-                                width = Dimens.BorderThin,
-                                color = if (canChallenge && !isSlain) ColorDanger else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
-                            )
-                        ) {
-                            Column(modifier = Modifier.padding(Dimens.SpacingM)) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Surface(
-                                            color = if (isSlain) Color.Green.copy(alpha = 0.15f) else if (canChallenge) ColorDanger.copy(alpha = 0.15f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
-                                            shape = RoundedCornerShape(Dimens.SpacingXs)
-                                        ) {
-                                            Text(
-                                                text = if (isSlain) "✓ " + LocalizationManager.getString(activeLang, "ui.label_completed")
-                                                       else if (canChallenge) "🔥 " + LocalizationManager.getString(activeLang, "ui.label_active")
-                                                       else "🔒 " + LocalizationManager.getString(activeLang, "ui.node_status_locked"),
-                                                modifier = Modifier.padding(horizontal = Dimens.SpacingS, vertical = Dimens.BorderThick),
-                                                style = MaterialTheme.typography.labelSmall.copy(fontSize = Dimens.TextXxs, fontWeight = FontWeight.Bold),
-                                                color = if (isSlain) Color.Green else if (canChallenge) ColorDanger else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
-                                            )
-                                        }
-                                        Spacer(modifier = Modifier.width(Dimens.SpacingS))
-                                        Text(
-                                            text = if (canChallenge || isSlain) boss.getName(activeLang) else "???",
-                                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
-                                            color = MaterialTheme.colorScheme.onSurface
-                                        )
-                                    }
-                                }
-
-                                Spacer(modifier = Modifier.height(Dimens.SpacingS))
-                                Text(
-                                    text = if (canChallenge || isSlain) boss.getDescription(activeLang) 
-                                           else LocalizationManager.getString(activeLang, "ui.quests_mystery_locked"),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                                )
-
-                                Spacer(modifier = Modifier.height(Dimens.SpacingM))
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text(
-                                        text = LocalizationManager.getString(activeLang, "ui.quests_vortex_requirements"),
-                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                                    )
-                                    Text(
-                                        text = boss.getUnlockRequirement(activeLang),
-                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold, fontStyle = FontStyle.Italic),
-                                        color = if (canChallenge) ColorSanctumPrimary else ColorDanger
-                                    )
-                                }
-
-                                Spacer(modifier = Modifier.height(Dimens.SpacingS))
-                                Column(
-                                    modifier = Modifier
-                                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f), RoundedCornerShape(Dimens.SpacingS))
-                                        .padding(Dimens.SpacingS)
-                                        .fillMaxWidth()
-                                ) {
-                                    Text(
-                                        text = LocalizationManager.getString(activeLang, "ui.quests_veiled_triumph"),
-                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, fontSize = Dimens.TextXxs),
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                    Spacer(modifier = Modifier.height(Dimens.SpacingXs))
-                                    Text(
-                                        text = "+${boss.rewardGold} GP  •  +${boss.rewardAether} Aether  •  🎒 ${boss.rewardItem}",
-                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
-                                        color = ColorSanctumPrimary
-                                    )
-                                }
-
-                                if (canChallenge && !isSlain) {
-                                    Spacer(modifier = Modifier.height(Dimens.SpacingM))
-                                    Button(
-                                        onClick = { viewModel.startSecretBossEncounter(boss) },
-                                        modifier = Modifier.fillMaxWidth(),
-                                        colors = ButtonDefaults.buttonColors(containerColor = ColorDanger),
                                         shape = RoundedCornerShape(Dimens.SpacingS)
                                     ) {
                                         Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(Dimens.SpacingL))

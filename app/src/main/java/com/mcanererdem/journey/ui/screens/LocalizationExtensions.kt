@@ -12,6 +12,7 @@ import com.mcanererdem.journey.data.engine.FloorStateManager
 import com.mcanererdem.journey.data.engine.FloorStateManager.FloorObjective
 
 import com.mcanererdem.journey.data.model.CombatLogEntry
+import com.mcanererdem.journey.data.model.ActionMessage
 
 fun NarrativeEvent.getTitle(lang: String): String = LocalizationManager.getString(lang, titleKey)
 fun NarrativeEvent.getDescription(lang: String): String = LocalizationManager.getString(lang, descriptionKey)
@@ -83,4 +84,25 @@ fun CombatLogEntry.getFormattedText(lang: String): String {
         template
     }
 }
+
+fun ActionMessage.getFormattedText(lang: String): String {
+    val template = LocalizationManager.getString(lang, key)
+    return try {
+        if (args.isEmpty()) {
+            template
+        } else {
+            val resolvedArgs = args.map { arg ->
+                if (arg is String && arg.contains(".")) {
+                    LocalizationManager.getString(lang, arg)
+                } else {
+                    arg
+                }
+            }
+            String.format(template, *resolvedArgs.toTypedArray())
+        }
+    } catch (e: Exception) {
+        template
+    }
+}
+
 

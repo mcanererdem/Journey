@@ -15,7 +15,7 @@ class FloorViewModel(
     private val repository: GameRepository,
     application: Application,
     private val onClearCombat: () -> Unit,
-    private val onMessage: (String, String) -> Unit,
+    private val onMessage: (ActionMessage) -> Unit,
     private val activeLanguage: StateFlow<String>,
     private val onTriggerSpiritFracture: suspend (PlayerProfile, Int, Int, Int, String) -> Unit,
     private val calculatePlayerClass: (String, Int) -> String,
@@ -50,10 +50,7 @@ class FloorViewModel(
             val hasPass = profile.itemsEncoded.split(",").any { it.trim() == "Seasonal Sovereign Pass" }
 
             if (!hasPass && profile.currentWill < 2) {
-                onMessage(
-                    "❌ Climbing to another floor costs 2 Will. Please rest first.",
-                    "❌ Başka bir kata geçmek için 2 İrade gücü gerekir. Kaplıcalarda dinlenin."
-                )
+                onMessage(ActionMessage("msg_climb_will_cost"))
                 return@launch
             }
 
@@ -66,10 +63,7 @@ class FloorViewModel(
                     lastUpdated = System.currentTimeMillis()
                 )
                 repository.savePlayerProfile(updated)
-                onMessage(
-                    "Ultimate Sovereign Conquered the Cosmic Tower!",
-                    "Büyük Hükümdar Kozmik Kuleyi tamamen fethetti!"
-                )
+                onMessage(ActionMessage("msg_ascend_victory"))
                 return@launch
             }
 
@@ -95,10 +89,7 @@ class FloorViewModel(
             
             onClearCombat()
             
-            onMessage(
-                "Ascended towers! Welcome to Floor $nextFloor.",
-                "Boyutsal sınırları aşıp $nextFloor. Kata geçtiniz."
-            )
+            onMessage(ActionMessage("msg_ascend_success", listOf(nextFloor)))
         }
     }
 
@@ -155,7 +146,7 @@ class FloorViewModel(
                         LocalizationManager.getString("TR", res.messageKey)
                     }
 
-                    onMessage(messageEs, messageTr)
+                    onMessage(ActionMessage(res.messageKey, res.messageArgs))
                 }
                 is FloorStateManager.TransitionResult.Failure -> {
                     val reasonEsArgs = res.reasonArgs.map { arg ->
@@ -176,7 +167,7 @@ class FloorViewModel(
                         LocalizationManager.getString("TR", res.reasonKey)
                     }
                     
-                    onMessage("❌ $reasonEs", "❌ $reasonTr")
+                    onMessage(ActionMessage(res.reasonKey, res.reasonArgs))
                 }
             }
         }
@@ -191,10 +182,7 @@ class FloorViewModel(
             val resolvedWillChange = if (hasPass && effects.willChange < 0) 0 else effects.willChange
 
             if (!hasPass && resolvedWillChange < 0 && profile.currentWill < -resolvedWillChange) {
-                onMessage(
-                    "❌ Insufficient Willpower to make this choice!",
-                    "❌ Bu kararı seçmek için yeterli İradeniz yok!"
-                )
+                onMessage(ActionMessage("msg_climb_will_cost"))
                 return@launch
             }
 
@@ -260,10 +248,7 @@ class FloorViewModel(
             )
             repository.insertJournalEntry(logEntry)
 
-            onMessage(
-                LocalizationManager.getString("EN", choice.journalKey),
-                LocalizationManager.getString("TR", choice.journalKey)
-            )
+            onMessage(ActionMessage(choice.journalKey))
 
             val willSpent = if (hasPass) 0 else -resolvedWillChange
             val profileWithQuest = if (willSpent > 0) updateDailyQuestProgress(profile, 2, willSpent) else profile
@@ -337,10 +322,7 @@ class FloorViewModel(
             val targetNode = nodes[depth]
             
             if (targetNode.willCost > profile.currentWill) {
-                onMessage(
-                    "❌ Insufficient Willpower to scout this sector!",
-                    "❌ Bu sektöre girmek için yeterli İradeniz yok!"
-                )
+                onMessage(ActionMessage("msg_scout_no_will"))
                 return@launch
             }
             
@@ -364,7 +346,7 @@ class FloorViewModel(
             val profile = repository.getPlayerProfileDirect() ?: return@launch
             val scoutCost = 1
             if (profile.currentWill < scoutCost) {
-                onMessage("❌ Insufficient Willpower to scout map!", "❌ Harita gözetlemek için yeterli İradeniz yok!")
+                onMessage(ActionMessage("msg_scout_no_will"))
                 return@launch
             }
 
@@ -376,7 +358,7 @@ class FloorViewModel(
             }
 
             if (unScouted.isEmpty()) {
-                onMessage("All future sectors on this floor are already scouted.", "Bu kattaki tüm gelecek sektörler zaten keşfedilmiş durumda.")
+                onMessage(ActionMessage("msg_all_sectors_scouted"))
                 return@launch
             }
 
@@ -415,8 +397,10 @@ class FloorViewModel(
             }
 
             onMessage(
-                "Scout Report: Sector $revealIndex identified as a [$typeDesc].",
-                "Gözcü Raporu: Sektör $revealIndex içerisinde bir [$typeDescTr] tespit edildi."
+                ActionMessage(
+                    "msg_scout_success",
+                    listOf(revealIndex, "ui.node_type_${revealedNode.type.name.lowercase()}")
+                )
             )
         }
     }
@@ -426,7 +410,7 @@ class FloorViewModel(
             val profile = repository.getPlayerProfileDirect() ?: return@launch
             val cost = 20
             if (profile.aether < cost) {
-                onMessage("❌ Insufficient Aether to manifest shadow eye!", "❌ Gölge gözü çağırmak için yeterli Aether yok!")
+                onMessage(ActionMessage("msg_scout_no_aether"))
                 return@launch
             }
 
@@ -441,15 +425,9 @@ class FloorViewModel(
                 val foundGold = 45 + (1..15).random()
                 val innerUpdated = updated.copy(gold = updated.gold + foundGold)
                 repository.savePlayerProfile(innerUpdated)
-                onMessage(
-                    "🔮 Shadow Eye scouted the void. Revealed +$foundGold Gold cache!",
-                    "🔮 Gölge Gözü boşluğu taradı. +$foundGold Altın içeren gizli bir kuyu buldu!"
-                )
+                onMessage(ActionMessage("msg_scout_success_gold", listOf(foundGold)))
             } else {
-                onMessage(
-                    "🔮 Shadow Eye dissolved in the mist. Found nothing useful.",
-                    "🔮 Gölge Gözü sisin içinde kayboldu. Yararlı hiçbir şey bulunamadı."
-                )
+                onMessage(ActionMessage("msg_scout_failed_mist"))
             }
         }
     }
@@ -458,7 +436,7 @@ class FloorViewModel(
         viewModelScope.launch {
             val profile = repository.getPlayerProfileDirect() ?: return@launch
             if (profile.gold < cost) {
-                onMessage("❌ Insufficient Gold to rest!", "❌ Dinlenmek için yeterli Altınınız yok!")
+                onMessage(ActionMessage("msg_rest_no_gold"))
                 return@launch
             }
             val healAmount = profile.maxHp / 2
@@ -469,10 +447,7 @@ class FloorViewModel(
                 lastUpdated = System.currentTimeMillis()
             )
             repository.savePlayerProfile(updated)
-            onMessage(
-                "💖 Rested and restored HP by +$healAmount, Willpower by +5.",
-                "💖 Dinlendiniz. Canınız +$healAmount, İradeniz +5 yenilendi."
-            )
+            onMessage(ActionMessage("msg_rest_success", listOf(healAmount, 5)))
         }
     }
 
@@ -482,7 +457,7 @@ class FloorViewModel(
             if (type == "BUY_AETHER") {
                 val cost = 30
                 if (profile.gold < cost) {
-                    onMessage("❌ Insufficient Gold!", "❌ Yetersiz Altın!")
+                    onMessage(ActionMessage("msg_trade_no_gold"))
                     return@launch
                 }
                 val updated = profile.copy(
@@ -491,7 +466,7 @@ class FloorViewModel(
                     lastUpdated = System.currentTimeMillis()
                 )
                 repository.savePlayerProfile(updated)
-                onMessage("Traded 30 Gold for +10 Aether.", "30 Altın karşılığında +10 Aether alındı.")
+                onMessage(ActionMessage("msg_trade_success_aether"))
             }
         }
     }
@@ -545,10 +520,7 @@ class FloorViewModel(
             )
             repository.insertJournalEntry(logEntry)
 
-            onMessage(
-                LocalizationManager.getString("EN", option.journalKey),
-                LocalizationManager.getString("TR", option.journalKey)
-            )
+            onMessage(ActionMessage(option.journalKey))
 
             if (newHp <= 0) {
                 onTriggerSpiritFracture(profile, newMomentum, newGold, newAether, activeFactionSide)

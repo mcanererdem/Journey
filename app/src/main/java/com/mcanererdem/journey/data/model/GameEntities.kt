@@ -6,10 +6,8 @@ import com.mcanererdem.journey.data.engine.LocalizationManager
 
 enum class NavigationTab {
     TOWER,
-    OUTER_WORLD,
     CHAR_SHEET,
     QUESTS,
-    LEGACY,
     JOURNAL,
     SETTINGS
 }
@@ -114,4 +112,9 @@ data class JournalEntry(
     val alignmentImpact: Int,
     val timestamp: Long = System.currentTimeMillis(),
     val nodeIndex: Int = -1
+)
+
+data class ActionMessage(
+    val key: String,
+    val args: List<Any> = emptyList()
 )
