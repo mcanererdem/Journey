@@ -12,6 +12,99 @@ enum class NodeType {
     SECRET
 }
 
+enum class NodePath {
+    LIGHT,
+    DARK,
+    SHARED
+}
+
+enum class ChoiceWeight {
+    TRIVIAL,
+    MINOR,
+    MODERATE,
+    MAJOR,
+    HEAVY
+}
+
+enum class EnemyForm {
+    NEUTRAL,
+    LIGHT_FORM,
+    DARK_FORM
+}
+
+enum class SecretConditionType {
+    HAS_FLAG,
+    HAS_TITLE,
+    HAS_ITEM,
+    MOMENTUM_RANGE,
+    FLOOR_CLEARED,
+    BOSS_DEFEATED,
+    STAT_CHECK
+}
+
+enum class FloorType {
+    NORMAL,
+    SPECIAL,
+    HUB
+}
+
+data class NodePrereq(
+    val requiredPath: NodePath? = null,
+    val minMomentum: Int? = null,
+    val maxMomentum: Int? = null,
+    val minLevel: Int? = null,
+    val requiredTitleId: String = "",
+    val requiredItemId: String = "",
+    val requiredFlag: String = "",
+    val excludesFlag: String = ""
+)
+
+data class ChoicePrereq(
+    val minMomentum: Int? = null,
+    val maxMomentum: Int? = null,
+    val minLevel: Int? = null,
+    val minHp: Int? = null,
+    val requiredTitleId: String = "",
+    val requiredItemId: String = "",
+    val requiredFlag: String = "",
+    val excludesFlag: String = ""
+)
+
+data class SecretCondition(
+    val type: SecretConditionType,
+    val value: String = "",
+    val minValue: Int = 0,
+    val successNodeId: String = "",
+    val failNodeId: String = ""
+)
+
+data class MerchantStockEntry(
+    val itemId: String,
+    val baseCost: Int,
+    val currency: String = "GOLD",
+    val minMomentum: Int? = null,
+    val maxMomentum: Int? = null,
+    val requiredTitleId: String = "",
+    val requiredItemId: String = "",
+    val discountPercent: Int = 0,
+    val premiumPercent: Int = 0
+)
+
+data class MerchantRef(
+    val merchantId: String,
+    val stock: List<MerchantStockEntry> = emptyList()
+)
+
+data class CampRef(
+    val campId: String,
+    val freeHealAmount: Int = 20,
+    val paidHealAmount: Int = 40,
+    val paidHealCost: Int = 30,
+    val willRestoreAmount: Int = 2,
+    val hasMiniMerchant: Boolean = false,
+    val miniMerchantId: String = ""
+)
+
 data class AdventureNode(
     val id: String,              // e.g., "floor_1_node_0"
     val type: NodeType,
@@ -21,14 +114,27 @@ data class AdventureNode(
     val column: Int = 0,
     val enemy: EnemyRef? = null, // Reference only, no text
     val choices: List<NodeChoice> = emptyList(),
-    val willCost: Int = 0
+    val willCost: Int = 0,
+    val path: NodePath = NodePath.SHARED,
+    val chainId: String? = null,
+    val chainNext: String? = null,
+    val chainExit: Boolean = false,
+    val prereq: NodePrereq? = null,
+    val merchantRef: MerchantRef? = null,
+    val campRef: CampRef? = null,
+    val secretCondition: SecretCondition? = null
 )
 
 data class NodeChoice(
     val id: String,
     val labelKey: String,        // e.g., "floor.1.node.0.choice_a"
     val journalKey: String,      // e.g., "floor.1.node.0.choice_a.journal"
-    val effects: ChoiceEffects
+    val effects: ChoiceEffects,
+    val prereq: ChoicePrereq? = null,
+    val isHidden: Boolean = false,
+    val isIrreversible: Boolean = false,
+    val weight: ChoiceWeight = ChoiceWeight.MINOR,
+    val nextChainNodeId: String? = null
 )
 
 data class ChoiceEffects(
@@ -36,12 +142,16 @@ data class ChoiceEffects(
     val goldChange: Int = 0,
     val aetherChange: Int = 0,
     val expChange: Int = 0,
-    val alignmentShift: Int = 0,
+    val momentumShift: Int = 0,
     val willChange: Int = 0,
     val rewardItemId: String = "",
     val rewardTitleId: String = "",
     val requiredFlag: String = "",
     val setsFlag: String = "",
+    val removesFlag: String = "",
+    val consequenceRing: Int = 0,
+    val consequenceKey: String = "",
+    val triggerChainId: String = "",
     val skipToBoss: Boolean = false,
     val skipToNextFloor: Boolean = false
 )
@@ -49,8 +159,18 @@ data class ChoiceEffects(
 data class EnemyRef(
     val enemyId: String,     // Lookup from global_enemies.json
     val isBoss: Boolean = false,
+    val form: EnemyForm = EnemyForm.NEUTRAL,
+    val scaleFactor: Float = 1.0f,
     val overrideHp: Int? = null,
     val overrideAtk: Int? = null
+)
+
+typealias FloorNode = AdventureNode
+
+data class NodeChain(
+    val chainId: String,
+    val nodes: List<FloorNode>,
+    val exitToPath: Boolean = true
 )
 
 data class FloorScenario(
@@ -69,8 +189,32 @@ data class GameOption(
 
 data class FloorBlueprint(
     val floor: Int,
+    val region: String = "unknown",
+    val type: FloorType = FloorType.NORMAL,
     val titleKey: String,
     val descriptionKey: String,
+    val minSecondsOnFloor: Int = 0,
     val introScenario: FloorScenario,
-    val nodes: List<AdventureNode>
+    val nodes: List<FloorNode>,
+    val intro: FloorNode = introScenario.toAdventureNode(),
+    val pathLight: List<FloorNode> = emptyList(),
+    val pathDark: List<FloorNode> = emptyList(),
+    val shared: List<FloorNode> = nodes,
+    val chains: List<NodeChain> = emptyList(),
+    val boss: EnemyRef? = null
+)
+
+private fun FloorScenario.toAdventureNode(): FloorNode = AdventureNode(
+    id = "floor_${floor}_intro",
+    type = NodeType.NARRATIVE,
+    titleKey = titleKey,
+    descriptionKey = descriptionKey,
+    choices = options.map { option ->
+        NodeChoice(
+            id = option.id,
+            labelKey = option.labelKey,
+            journalKey = option.journalKey,
+            effects = option.effects
+        )
+    }
 )

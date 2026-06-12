@@ -65,8 +65,8 @@ fun NodeChoiceButton(
             ) {
                 val choiceIcon = when {
                     !enabled -> "🔒"
-                    choice.effects.alignmentShift > 0 -> "🙏"
-                    choice.effects.alignmentShift < 0 -> "🗡️"
+                    choice.effects.momentumShift > 0 -> "🙏"
+                    choice.effects.momentumShift < 0 -> "🗡️"
                     else -> "📖"
                 }
                 
@@ -126,8 +126,8 @@ fun NodeChoiceButton(
                             }
                         }
                         
-                        if (choice.effects.alignmentShift != 0) {
-                            val isShiftPositive = choice.effects.alignmentShift > 0
+                        if (choice.effects.momentumShift != 0) {
+                            val isShiftPositive = choice.effects.momentumShift > 0
                             val shiftText = if (isShiftPositive) LocalizationManager.getString(activeLang, "ui.badge_light") else LocalizationManager.getString(activeLang, "ui.badge_corruption")
                             val shiftColor = if (isShiftPositive) ColorSanctumPrimary else ColorCovenantGlow
                             Box(

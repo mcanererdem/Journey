@@ -5,7 +5,6 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.mcanererdem.journey.data.engine.AdventureEngine
 import com.mcanererdem.journey.data.engine.FloorStateManager
-import com.mcanererdem.journey.data.engine.LocalizationManager
 import com.mcanererdem.journey.data.model.*
 import com.mcanererdem.journey.data.repository.GameRepository
 import kotlinx.coroutines.flow.*
@@ -100,73 +99,19 @@ class FloorViewModel(
                 is FloorStateManager.TransitionResult.Success -> {
                     repository.savePlayerProfile(res.updatedProfile)
                     onClearCombat()
-                    
-                    val journalEsArgs = res.journalArgs.map { arg ->
-                        if (arg is String && arg.contains(".")) LocalizationManager.getString("EN", arg) else arg.toString()
-                    }.toTypedArray()
-                    val journalTrArgs = res.journalArgs.map { arg ->
-                        if (arg is String && arg.contains(".")) LocalizationManager.getString("TR", arg) else arg.toString()
-                    }.toTypedArray()
-                    
-                    val actionEs = try {
-                        String.format(LocalizationManager.getString("EN", res.journalKey), *journalEsArgs)
-                    } catch (e: Exception) {
-                        LocalizationManager.getString("EN", res.journalKey)
-                    }
-                    val actionTr = try {
-                        String.format(LocalizationManager.getString("TR", res.journalKey), *journalTrArgs)
-                    } catch (e: Exception) {
-                        LocalizationManager.getString("TR", res.journalKey)
-                    }
 
                     val logEntry = JournalEntry(
                         floor = profile.currentFloor,
-                        actionTakenEs = actionEs,
-                        actionTakenTr = actionTr,
+                        actionKey = res.journalKey,
+                        actionArgsEncoded = JournalEntry.encodeActionArgs(res.journalArgs),
                         sideAlignmentShift = profile.side,
                         alignmentImpact = 0
                     )
                     repository.insertJournalEntry(logEntry)
-                    
-                    val msgEsArgs = res.messageArgs.map { arg ->
-                        if (arg is String && arg.contains(".")) LocalizationManager.getString("EN", arg) else arg.toString()
-                    }.toTypedArray()
-                    val msgTrArgs = res.messageArgs.map { arg ->
-                        if (arg is String && arg.contains(".")) LocalizationManager.getString("TR", arg) else arg.toString()
-                    }.toTypedArray()
-                    
-                    val messageEs = try {
-                        String.format(LocalizationManager.getString("EN", res.messageKey), *msgEsArgs)
-                    } catch (e: Exception) {
-                        LocalizationManager.getString("EN", res.messageKey)
-                    }
-                    val messageTr = try {
-                        String.format(LocalizationManager.getString("TR", res.messageKey), *msgTrArgs)
-                    } catch (e: Exception) {
-                        LocalizationManager.getString("TR", res.messageKey)
-                    }
 
                     onMessage(ActionMessage(res.messageKey, res.messageArgs))
                 }
                 is FloorStateManager.TransitionResult.Failure -> {
-                    val reasonEsArgs = res.reasonArgs.map { arg ->
-                        if (arg is String && arg.contains(".")) LocalizationManager.getString("EN", arg) else arg.toString()
-                    }.toTypedArray()
-                    val reasonTrArgs = res.reasonArgs.map { arg ->
-                        if (arg is String && arg.contains(".")) LocalizationManager.getString("TR", arg) else arg.toString()
-                    }.toTypedArray()
-                    
-                    val reasonEs = try {
-                        String.format(LocalizationManager.getString("EN", res.reasonKey), *reasonEsArgs)
-                    } catch (e: Exception) {
-                        LocalizationManager.getString("EN", res.reasonKey)
-                    }
-                    val reasonTr = try {
-                        String.format(LocalizationManager.getString("TR", res.reasonKey), *reasonTrArgs)
-                    } catch (e: Exception) {
-                        LocalizationManager.getString("TR", res.reasonKey)
-                    }
-                    
                     onMessage(ActionMessage(res.reasonKey, res.reasonArgs))
                 }
             }
@@ -194,7 +139,7 @@ class FloorViewModel(
             val recoveryMultiplier = 1.0f + (recoveryLvl * 0.15f)
             val scaledHpChange = if (effects.hpChange > 0) (effects.hpChange * recoveryMultiplier).toInt() else effects.hpChange
 
-            val newMomentum = (profile.momentum + effects.alignmentShift).coerceIn(0, 100)
+            val newMomentum = (profile.momentum + effects.momentumShift).coerceIn(0, 100)
             val newGold = (profile.gold + scaledGoldChange).coerceAtLeast(0)
             val newAether = (profile.aether + effects.aetherChange).coerceAtLeast(0)
             val newWill = (profile.currentWill + resolvedWillChange).coerceIn(0, profile.maxWill)
@@ -209,6 +154,9 @@ class FloorViewModel(
             var currentFlags = if (profile.storyFlagsEncoded.isEmpty()) emptyList() else profile.storyFlagsEncoded.split(",")
             if (effects.setsFlag.isNotEmpty() && !currentFlags.contains(effects.setsFlag)) {
                 currentFlags = currentFlags + effects.setsFlag
+            }
+            if (effects.removesFlag.isNotEmpty()) {
+                currentFlags = currentFlags.filterNot { it == effects.removesFlag }
             }
             val newStoryFlagsEncoded = currentFlags.joinToString(",")
 
@@ -230,9 +178,9 @@ class FloorViewModel(
                 newHp += 20
             }
 
-            val activeFactionSide = if (profile.side == "NEUTRAL" && effects.alignmentShift != 0) {
-                if (effects.alignmentShift > 0 && newMomentum > 70) "SANCTUM"
-                else if (effects.alignmentShift < 0 && newMomentum < 30) "COVENANT"
+            val activeFactionSide = if (profile.side == "NEUTRAL" && effects.momentumShift != 0) {
+                if (effects.momentumShift > 0 && newMomentum > 70) "SANCTUM"
+                else if (effects.momentumShift < 0 && newMomentum < 30) "COVENANT"
                 else "NEUTRAL"
             } else {
                 profile.side
@@ -240,10 +188,9 @@ class FloorViewModel(
 
             val logEntry = JournalEntry(
                 floor = profile.currentFloor,
-                actionTakenEs = LocalizationManager.getString("EN", choice.journalKey),
-                actionTakenTr = LocalizationManager.getString("TR", choice.journalKey),
-                sideAlignmentShift = if (effects.alignmentShift > 0) "SANCTUM" else if (effects.alignmentShift < 0) "COVENANT" else "NEUTRAL",
-                alignmentImpact = effects.alignmentShift,
+                actionKey = choice.journalKey,
+                sideAlignmentShift = if (effects.momentumShift > 0) "SANCTUM" else if (effects.momentumShift < 0) "COVENANT" else "NEUTRAL",
+                alignmentImpact = effects.momentumShift,
                 nodeIndex = profile.currentNodeIndex
             )
             repository.insertJournalEntry(logEntry)
@@ -484,7 +431,7 @@ class FloorViewModel(
             val recoveryMultiplier = 1.0f + (recoveryLvl * 0.15f)
             val scaledHpChange = if (effects.hpChange > 0) (effects.hpChange * recoveryMultiplier).toInt() else effects.hpChange
 
-            val newMomentum = (profile.momentum + effects.alignmentShift).coerceIn(0, 100)
+            val newMomentum = (profile.momentum + effects.momentumShift).coerceIn(0, 100)
             val newGold = (profile.gold + scaledGoldChange).coerceAtLeast(0)
             val newAether = (profile.aether + effects.aetherChange).coerceAtLeast(0)
             var newHp = profile.currentHp + scaledHpChange
@@ -502,9 +449,9 @@ class FloorViewModel(
                 newHp += 20
             }
 
-            val activeFactionSide = if (profile.side == "NEUTRAL" && effects.alignmentShift != 0) {
-                if (effects.alignmentShift > 0 && newMomentum > 70) "SANCTUM"
-                else if (effects.alignmentShift < 0 && newMomentum < 30) "COVENANT"
+            val activeFactionSide = if (profile.side == "NEUTRAL" && effects.momentumShift != 0) {
+                if (effects.momentumShift > 0 && newMomentum > 70) "SANCTUM"
+                else if (effects.momentumShift < 0 && newMomentum < 30) "COVENANT"
                 else "NEUTRAL"
             } else {
                 profile.side
@@ -512,10 +459,9 @@ class FloorViewModel(
 
             val logEntry = JournalEntry(
                 floor = profile.currentFloor,
-                actionTakenEs = LocalizationManager.getString("EN", option.journalKey),
-                actionTakenTr = LocalizationManager.getString("TR", option.journalKey),
-                sideAlignmentShift = if (effects.alignmentShift > 0) "SANCTUM" else if (effects.alignmentShift < 0) "COVENANT" else "NEUTRAL",
-                alignmentImpact = effects.alignmentShift,
+                actionKey = option.journalKey,
+                sideAlignmentShift = if (effects.momentumShift > 0) "SANCTUM" else if (effects.momentumShift < 0) "COVENANT" else "NEUTRAL",
+                alignmentImpact = effects.momentumShift,
                 nodeIndex = -1
             )
             repository.insertJournalEntry(logEntry)

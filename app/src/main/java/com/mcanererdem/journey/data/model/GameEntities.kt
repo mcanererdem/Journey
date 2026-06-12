@@ -3,6 +3,7 @@ package com.mcanererdem.journey.data.model
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.mcanererdem.journey.data.engine.LocalizationManager
+import org.json.JSONArray
 
 enum class NavigationTab {
     TOWER,
@@ -38,28 +39,14 @@ enum class EnemyFaction {
             val json = LocalizationManager.loadGlobalEnemies()
             val enemyObj = json?.optJSONObject(enemyId)
             val factionStr = enemyObj?.optString("faction")
-            return when (factionStr?.uppercase()) {
+            return fromId(factionStr)
+        }
+
+        fun fromId(factionId: String?): EnemyFaction {
+            return when (factionId?.uppercase()) {
                 "SANCTUM_WRATH" -> SANCTUM_WRATH
                 "VOID_CORRUPTION" -> VOID_CORRUPTION
                 "BLIGHTED_AMALGAM" -> BLIGHTED_AMALGAM
-                else -> fromName(enemyId)
-            }
-        }
-
-        fun fromName(nameEn: String): EnemyFaction {
-            val nameLower = nameEn.lowercase()
-            return when {
-                nameLower.contains("celestial") || nameLower.contains("arbiter") || nameLower.contains("auriel") || 
-                nameLower.contains("angel") || nameLower.contains("purifier") || nameLower.contains("templar") || 
-                nameLower.contains("order") || nameLower.contains("sentinel") || nameLower.contains("guardian") ||
-                nameLower.contains("centurion") || nameLower.contains("paladin") -> SANCTUM_WRATH
-                
-                nameLower.contains("void") || nameLower.contains("abyss") || nameLower.contains("shadow") || 
-                nameLower.contains("stalker") || nameLower.contains("ghoul") || nameLower.contains("necromancer") || 
-                nameLower.contains("terror") || nameLower.contains("sorrow") || nameLower.contains("spectre") || 
-                nameLower.contains("wraith") || nameLower.contains("lord") || nameLower.contains("overlord") ||
-                nameLower.contains("blight") || nameLower.contains("covenant") || nameLower.contains("reaper") -> VOID_CORRUPTION
-                
                 else -> BLIGHTED_AMALGAM
             }
         }
@@ -106,13 +93,31 @@ data class PlayerProfile(
 data class JournalEntry(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val floor: Int,
-    val actionTakenEs: String, // English action description
-    val actionTakenTr: String, // Turkish action description
+    val actionKey: String,
+    val actionArgsEncoded: String = "",
+    val legacyText: String = "",
     val sideAlignmentShift: String, // SANCTUM / COVENANT / NEUTRAL
     val alignmentImpact: Int,
     val timestamp: Long = System.currentTimeMillis(),
     val nodeIndex: Int = -1
-)
+) {
+    fun decodeActionArgs(): List<String> {
+        if (actionArgsEncoded.isBlank()) return emptyList()
+        return try {
+            val array = JSONArray(actionArgsEncoded)
+            List(array.length()) { index -> array.optString(index) }
+        } catch (_: Exception) {
+            emptyList()
+        }
+    }
+
+    companion object {
+        fun encodeActionArgs(args: List<Any>): String {
+            if (args.isEmpty()) return ""
+            return JSONArray(args.map { it.toString() }).toString()
+        }
+    }
+}
 
 data class ActionMessage(
     val key: String,

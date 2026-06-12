@@ -15,13 +15,13 @@ object NarrativeEngine {
                     id = "opt_a",
                     labelKey = "floor.$floor.scenario.opt_a",
                     journalKey = "floor.$floor.scenario.opt_a.journal",
-                    effects = ChoiceEffects(alignmentShift = 5)
+                    effects = ChoiceEffects(momentumShift = 5)
                 ),
                 GameOption(
                     id = "opt_b",
                     labelKey = "floor.$floor.scenario.opt_b",
                     journalKey = "floor.$floor.scenario.opt_b.journal",
-                    effects = ChoiceEffects(alignmentShift = -5)
+                    effects = ChoiceEffects(momentumShift = -5)
                 )
             )
         )

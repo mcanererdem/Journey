@@ -408,13 +408,11 @@ class CombatViewModel(
         }
  
         val enemyNameKey = activeNode.enemy?.enemyId?.let { "enemy.$it.name" } ?: "ui.label_unknown_enemy"
-        val enemyNameEn = LocalizationManager.getString("EN", enemyNameKey)
-        val enemyNameTr = LocalizationManager.getString("TR", enemyNameKey)
  
         val journalEntry = JournalEntry(
             floor = profile.currentFloor,
-            actionTakenEs = "Defeated $enemyNameEn in combat on Floor ${profile.currentFloor}.",
-            actionTakenTr = "${profile.currentFloor}. Katta $enemyNameTr karşısındaki düelloyu kazandınız.",
+            actionKey = "ui.journal_combat_victory",
+            actionArgsEncoded = JournalEntry.encodeActionArgs(listOf(enemyNameKey, profile.currentFloor)),
             sideAlignmentShift = "NEUTRAL",
             alignmentImpact = 0,
             nodeIndex = profile.currentNodeIndex
@@ -422,7 +420,7 @@ class CombatViewModel(
         repository.insertJournalEntry(journalEntry)
  
         _combatLog.value = _combatLog.value + logs
-        onMessage(ActionMessage("msg_defeated_enemy", listOf(enemyNameEn)))
+        onMessage(ActionMessage("msg_defeated_enemy", listOf(enemyNameKey)))
     }
 
     private fun decrementStatuses(statuses: MutableList<CombatStatus>) {
@@ -444,17 +442,10 @@ class CombatViewModel(
             val titleChecked = checkAndUnlockTitles(updated)
             repository.savePlayerProfile(titleChecked)
             
-            val textEn = LocalizationManager.getString("EN", choice.textKey)
-            val titleEn = LocalizationManager.getString("EN", event.titleKey)
-            val outcomeEn = LocalizationManager.getString("EN", choice.outcomeKey)
-            val textTr = LocalizationManager.getString("TR", choice.textKey)
-            val titleTr = LocalizationManager.getString("TR", event.titleKey)
-            val outcomeTr = LocalizationManager.getString("TR", choice.outcomeKey)
-
             val entry = JournalEntry(
                 floor = profile.currentFloor,
-                actionTakenEs = "Decided '$textEn' inside scenario '$titleEn'. Outcome: $outcomeEn",
-                actionTakenTr = "'$titleTr' içindeki kararın: '$textTr'. Sonuç: $outcomeTr",
+                actionKey = "ui.journal_narrative_choice_result",
+                actionArgsEncoded = JournalEntry.encodeActionArgs(listOf(choice.textKey, event.titleKey, choice.outcomeKey)),
                 sideAlignmentShift = if (choice.alignmentImpact > 0) "SANCTUM" else if (choice.alignmentImpact < 0) "COVENANT" else "NEUTRAL",
                 alignmentImpact = choice.alignmentImpact
             )

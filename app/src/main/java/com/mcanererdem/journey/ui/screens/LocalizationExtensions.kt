@@ -30,7 +30,22 @@ fun QuestDef.getDescription(lang: String): String = LocalizationManager.getStrin
 fun QuestDef.getRequirement(lang: String): String = LocalizationManager.getString(lang, requirementKey)
 fun LegacyUpgradeType.getName(lang: String): String = LocalizationManager.getString(lang, nameKey)
 fun LegacyUpgradeType.getDescription(lang: String): String = LocalizationManager.getString(lang, descriptionKey)
-fun JournalEntry.getActionTaken(lang: String): String = if (lang == "TR") actionTakenTr else actionTakenEs
+fun JournalEntry.getActionTaken(lang: String): String {
+    if (actionKey.isBlank()) {
+        return legacyText
+    }
+
+    val template = LocalizationManager.getString(lang, actionKey)
+    val resolvedArgs = decodeActionArgs().map { arg ->
+        if (arg.contains(".")) LocalizationManager.getString(lang, arg) else arg
+    }
+
+    return try {
+        if (resolvedArgs.isEmpty()) template else String.format(template, *resolvedArgs.toTypedArray())
+    } catch (_: Exception) {
+        template
+    }
+}
 fun FloorObjective.getText(lang: String): String {
     // Delegate to the companion object's extension method
     return with(FloorStateManager) { this@getText.getText(lang) }
@@ -104,5 +119,4 @@ fun ActionMessage.getFormattedText(lang: String): String {
         template
     }
 }
-
 

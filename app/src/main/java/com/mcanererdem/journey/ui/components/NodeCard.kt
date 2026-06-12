@@ -156,8 +156,8 @@ fun NodeCard(
                                 text = choiceText,
                                 onClick = { onChoiceSelected(choice) },
                                 accentColor = when {
-                                    choice.effects.alignmentShift > 0 -> ColorSanctumPrimary
-                                    choice.effects.alignmentShift < 0 -> ColorCovenantPrimary
+                                    choice.effects.momentumShift > 0 -> ColorSanctumPrimary
+                                    choice.effects.momentumShift < 0 -> ColorCovenantPrimary
                                     else -> nodeColor
                                 }
                             )

@@ -30,7 +30,7 @@ object AdventureEngine {
                     id = "${id}_choice_b",
                     labelKey = "floor.$floor.node.$index.choice_b",
                     journalKey = "floor.$floor.node.$index.choice_b.journal",
-                    effects = ChoiceEffects(aetherChange = 20, expChange = 25, rewardItemId = "random_item_tier_1", alignmentShift = 5)
+                    effects = ChoiceEffects(aetherChange = 20, expChange = 25, rewardItemId = "random_item_tier_1", momentumShift = 5)
                 )
             )
         )
@@ -48,13 +48,13 @@ object AdventureEngine {
                     id = "${id}_choice_a",
                     labelKey = "floor.$floor.node.$index.choice_a",
                     journalKey = "floor.$floor.node.$index.choice_a.journal",
-                    effects = ChoiceEffects(hpChange = -10, aetherChange = 40, alignmentShift = 6, expChange = 25)
+                    effects = ChoiceEffects(hpChange = -10, aetherChange = 40, momentumShift = 6, expChange = 25)
                 ),
                 NodeChoice(
                     id = "${id}_choice_b",
                     labelKey = "floor.$floor.node.$index.choice_b",
                     journalKey = "floor.$floor.node.$index.choice_b.journal",
-                    effects = ChoiceEffects(goldChange = 40, alignmentShift = -6, expChange = 20)
+                    effects = ChoiceEffects(goldChange = 40, momentumShift = -6, expChange = 20)
                 )
             )
         )

@@ -367,6 +367,8 @@
     "direction_backtracked": "backtracked",
     "transition_success_msg": "Successfully transitioned to Floor %d.",
     "transition_success_journal": "Transitioned floors from %d to %d. Will cost: %d. Direction: %s.",
+    "journal_combat_victory": "Defeated %s in combat on Floor %s.",
+    "journal_narrative_choice_result": "Chose '%s' during '%s'. Outcome: %s.",
     "progress_completed": "100% Completed",
     "progress_locked": "Locked",
     "progress_floor_format": "Floor %d / %d",

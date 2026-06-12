@@ -302,7 +302,7 @@ fun TowerClimbTab(
                         }
                         items(activeNode.choices) { choice ->
                             val hasFlag = choice.effects.requiredFlag.isEmpty() || player.storyFlagsEncoded.split(",").contains(choice.effects.requiredFlag)
-                            NodeChoiceButton(choice = choice, activeLang = activeLang, highlightColor = when { choice.effects.alignmentShift > 0 -> ColorSanctumPrimary; choice.effects.alignmentShift < 0 -> ColorCovenantGlow; else -> ColorNeutralPrimary }, testTagValue = "choice_btn_${choice.id}", enabled = hasFlag, onClick = { onChoiceSelected(choice) })
+                            NodeChoiceButton(choice = choice, activeLang = activeLang, highlightColor = when { choice.effects.momentumShift > 0 -> ColorSanctumPrimary; choice.effects.momentumShift < 0 -> ColorCovenantGlow; else -> ColorNeutralPrimary }, testTagValue = "choice_btn_${choice.id}", enabled = hasFlag, onClick = { onChoiceSelected(choice) })
                             Spacer(modifier = Modifier.height(Dimens.SpacingS))
                         }
                     }

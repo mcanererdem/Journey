@@ -367,6 +367,8 @@
     "direction_backtracked": "geri döndü",
     "transition_success_msg": "Başarıyla %d. Kata geçiş yaptınız.",
     "transition_success_journal": "%d. Kattan %d. Kata geçiş yapıldı. İrade bedeli: %d. Hareket: %s.",
+    "journal_combat_victory": "%s karşısındaki düelloyu %s. katta kazandın.",
+    "journal_narrative_choice_result": "'%2$s' sırasında '%1$s' kararını verdin. Sonuç: %3$s.",
     "progress_completed": "%100 Tamamlandı",
     "progress_locked": "Kilitli",
     "progress_floor_format": "Kat %d / %d",

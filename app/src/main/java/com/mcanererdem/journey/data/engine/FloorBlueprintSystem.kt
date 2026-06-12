@@ -110,13 +110,13 @@ object FloorBlueprintSystem {
                     id = "opt_a",
                     labelKey = "scenarios.$themeId.optA_text",
                     journalKey = "scenarios.$themeId.optA_journal",
-                    effects = ChoiceEffects(alignmentShift = 5)
+                    effects = ChoiceEffects(momentumShift = 5)
                 ),
                 GameOption(
                     id = "opt_b",
                     labelKey = "scenarios.$themeId.optB_text",
                     journalKey = "scenarios.$themeId.optB_journal",
-                    effects = ChoiceEffects(alignmentShift = -5)
+                    effects = ChoiceEffects(momentumShift = -5)
                 ),
                 GameOption(
                     id = "opt_c",
@@ -197,16 +197,12 @@ object FloorBlueprintSystem {
             obj.has("labelKey") -> obj.getString("labelKey")
             else -> if (defaultKey.isNotEmpty()) "$defaultKey.text" else ""
         }
+        val effectsObj = obj.optJSONObject("effects") ?: obj
         return GameOption(
             id = obj.optString("id", UUID.randomUUID().toString()),
             labelKey = labelKey,
             journalKey = obj.optString("journalKey", if (defaultKey.isNotEmpty()) "$defaultKey.journal" else ""),
-            effects = ChoiceEffects(
-                alignmentShift = obj.optInt("alignmentShift", 0),
-                goldChange = obj.optInt("goldChange", 0),
-                aetherChange = obj.optInt("aetherChange", 0),
-                hpChange = obj.optInt("hpChange", 0)
-            )
+            effects = parseChoiceEffects(effectsObj)
         )
     }
 
@@ -217,25 +213,46 @@ object FloorBlueprintSystem {
             else -> if (defaultKey.isNotEmpty()) "$defaultKey.text" else ""
         }
         val journalKey = obj.optString("journalKey", if (defaultKey.isNotEmpty()) "$defaultKey.journal" else "")
+        val effectsObj = obj.optJSONObject("effects") ?: obj
         
         return NodeChoice(
             id = obj.optString("id", UUID.randomUUID().toString()),
             labelKey = labelKey,
             journalKey = journalKey,
-            effects = ChoiceEffects(
-                hpChange = obj.optInt("hpChange", 0),
-                goldChange = obj.optInt("goldChange", 0),
-                aetherChange = obj.optInt("aetherChange", 0),
-                expChange = obj.optInt("expChange", 0),
-                alignmentShift = obj.optInt("alignmentShift", 0),
-                willChange = obj.optInt("willChange", 0),
-                rewardItemId = obj.optString("rewardItem", ""),
-                rewardTitleId = obj.optString("rewardTitle", ""),
-                requiredFlag = obj.optString("requiredStoryFlag", ""),
-                setsFlag = obj.optString("addStoryFlag", ""),
-                skipToBoss = obj.optBoolean("skipToBoss", false),
-                skipToNextFloor = obj.optBoolean("skipToNextFloor", false)
-            )
+            effects = parseChoiceEffects(effectsObj),
+            weight = parseChoiceWeight(obj.optString("weight", "")),
+            isHidden = obj.optBoolean("isHidden", false),
+            isIrreversible = obj.optBoolean("isIrreversible", false),
+            nextChainNodeId = obj.optString("nextChainNodeId").ifBlank { null }
         )
+    }
+
+    private fun parseChoiceEffects(obj: JSONObject): ChoiceEffects {
+        return ChoiceEffects(
+            hpChange = obj.optInt("hpChange", 0),
+            goldChange = obj.optInt("goldChange", 0),
+            aetherChange = obj.optInt("aetherChange", 0),
+            expChange = obj.optInt("expChange", 0),
+            momentumShift = obj.optInt("momentumShift", obj.optInt("alignmentShift", 0)),
+            willChange = obj.optInt("willChange", 0),
+            rewardItemId = obj.optString("rewardItemId", obj.optString("rewardItem", "")),
+            rewardTitleId = obj.optString("rewardTitleId", obj.optString("rewardTitle", "")),
+            requiredFlag = obj.optString("requiredFlag", obj.optString("requiredStoryFlag", "")),
+            setsFlag = obj.optString("setsFlag", obj.optString("addStoryFlag", "")),
+            removesFlag = obj.optString("removesFlag", ""),
+            consequenceRing = obj.optInt("consequenceRing", 0),
+            consequenceKey = obj.optString("consequenceKey", ""),
+            triggerChainId = obj.optString("triggerChainId", ""),
+            skipToBoss = obj.optBoolean("skipToBoss", false),
+            skipToNextFloor = obj.optBoolean("skipToNextFloor", false)
+        )
+    }
+
+    private fun parseChoiceWeight(value: String): ChoiceWeight {
+        return try {
+            if (value.isBlank()) ChoiceWeight.MINOR else ChoiceWeight.valueOf(value.uppercase())
+        } catch (_: IllegalArgumentException) {
+            ChoiceWeight.MINOR
+        }
     }
 }
