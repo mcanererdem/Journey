@@ -2,46 +2,54 @@
   "infested_rat": {
     "enemyId": "infested_rat",
     "nameKey": "enemy_infested_rat_name",
+    "faction": "BLIGHTED_AMALGAM",
     "hp": 42, "maxHp": 42, "atk": 4, "skills": []
   },
   "blighted_wolf": {
     "enemyId": "blighted_wolf",
     "nameKey": "enemy_blighted_wolf_name",
+    "faction": "BLIGHTED_AMALGAM",
     "hp": 65, "maxHp": 65, "atk": 8,
     "skills": [{ "id": "rending_bite", "nameKey": "skill_rending_bite_name", "damage": 12 }]
   },
   "fungal_horror": {
     "enemyId": "fungal_horror",
     "nameKey": "enemy_fungal_horror_name",
+    "faction": "BLIGHTED_AMALGAM",
     "hp": 85, "maxHp": 85, "atk": 9,
     "skills": [{ "id": "spore_cloud", "nameKey": "skill_spore_cloud_name", "damage": 5, "statusEffect": "POISON" }]
   },
   "skeleton_warrior": {
     "enemyId": "skeleton_warrior",
     "nameKey": "enemy_skeleton_warrior_name",
+    "faction": "VOID_CORRUPTION",
     "hp": 70, "maxHp": 70, "atk": 9, "skills": []
   },
   "skeleton_archer": {
     "enemyId": "skeleton_archer",
     "nameKey": "enemy_skeleton_archer_name",
+    "faction": "VOID_CORRUPTION",
     "hp": 60, "maxHp": 60, "atk": 11,
     "skills": [{ "id": "bone_arrow", "nameKey": "skill_bone_arrow_name", "damage": 13 }]
   },
   "skeleton_captain": {
     "enemyId": "skeleton_captain",
     "nameKey": "enemy_skeleton_captain_name",
+    "faction": "VOID_CORRUPTION",
     "hp": 130, "maxHp": 130, "atk": 14,
     "skills": [{ "id": "undead_rally", "nameKey": "skill_undead_rally_name", "damage": 8, "statusEffect": "STUN" }]
   },
   "skeleton_champion": {
     "enemyId": "skeleton_champion",
     "nameKey": "enemy_skeleton_champion_name",
+    "faction": "VOID_CORRUPTION",
     "hp": 200, "maxHp": 200, "atk": 18,
     "skills": [{ "id": "execute", "nameKey": "skill_execute_name", "damage": 25 }]
   },
   "rat_king": {
     "enemyId": "rat_king",
     "nameKey": "enemy_rat_king_name",
+    "faction": "BLIGHTED_AMALGAM",
     "hp": 250, "maxHp": 250, "atk": 10,
     "skills": [{ "id": "plague_bite", "nameKey": "skill_plague_bite_name", "damage": 12, "statusEffect": "POISON" }]
   }

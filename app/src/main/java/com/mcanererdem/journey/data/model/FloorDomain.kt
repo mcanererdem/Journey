@@ -1,6 +1,16 @@
 package com.mcanererdem.journey.data.model
 
-import com.mcanererdem.journey.data.engine.NodeType
+enum class NodeType {
+    NARRATIVE,
+    COMBAT,
+    BOSS,
+    CHEST,
+    SHRINE,
+    MERCHANT,
+    CAMP,
+    EVENT,
+    SECRET
+}
 
 data class AdventureNode(
     val id: String,              // e.g., "floor_1_node_0"
@@ -38,5 +48,29 @@ data class ChoiceEffects(
 
 data class EnemyRef(
     val enemyId: String,     // Lookup from global_enemies.json
-    val isBoss: Boolean = false
+    val isBoss: Boolean = false,
+    val overrideHp: Int? = null,
+    val overrideAtk: Int? = null
+)
+
+data class FloorScenario(
+    val floor: Int,
+    val titleKey: String,
+    val descriptionKey: String,
+    val options: List<GameOption>
+)
+
+data class GameOption(
+    val id: String,
+    val labelKey: String,
+    val journalKey: String,
+    val effects: ChoiceEffects
+)
+
+data class FloorBlueprint(
+    val floor: Int,
+    val titleKey: String,
+    val descriptionKey: String,
+    val introScenario: FloorScenario,
+    val nodes: List<AdventureNode>
 )

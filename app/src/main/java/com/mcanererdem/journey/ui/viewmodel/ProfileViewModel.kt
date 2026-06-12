@@ -1,14 +1,21 @@
 package com.mcanererdem.journey.ui.viewmodel
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.mcanererdem.journey.data.model.JournalEntry
-import com.mcanererdem.journey.data.model.PlayerProfile
+import com.mcanererdem.journey.data.engine.LocalizationManager
+import com.mcanererdem.journey.data.engine.QuestTitleSystem
+import com.mcanererdem.journey.data.model.*
 import com.mcanererdem.journey.data.repository.GameRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-class ProfileViewModel(private val repository: GameRepository) : ViewModel() {
+class ProfileViewModel(
+    private val repository: GameRepository,
+    application: Application,
+    private val onMessage: (String, String) -> Unit,
+    private val activeLanguage: StateFlow<String>
+) : AndroidViewModel(application) {
 
     val playerProfile: StateFlow<PlayerProfile?> = repository.playerProfile.stateIn(
         scope = viewModelScope,
@@ -38,5 +45,314 @@ class ProfileViewModel(private val repository: GameRepository) : ViewModel() {
         viewModelScope.launch {
             repository.clearJournal()
         }
+    }
+
+    fun setPlayerName(name: String) {
+        viewModelScope.launch {
+            val profile = repository.getPlayerProfileDirect() ?: return@launch
+            val updated = profile.copy(
+                playerName = name,
+                lastUpdated = System.currentTimeMillis()
+            )
+            repository.savePlayerProfile(updated)
+            onMessage(
+                "Ascendent identity named: $name",
+                "Yükseliş kimliği belirlendi: $name"
+            )
+        }
+    }
+
+    fun selectFaction(faction: String) {
+        viewModelScope.launch {
+            val profile = repository.getPlayerProfileDirect() ?: return@launch
+            val side = when (faction) {
+                "SANCTUM" -> "SANCTUM"
+                "COVENANT" -> "COVENANT"
+                else -> "NEUTRAL"
+            }
+            val newMomentum = when (side) {
+                "SANCTUM" -> 70
+                "COVENANT" -> 30
+                else -> 50
+            }
+            val updated = profile.copy(
+                side = side,
+                momentum = newMomentum,
+                chosenClass = calculatePlayerClass(side, newMomentum),
+                lastUpdated = System.currentTimeMillis()
+            )
+            repository.savePlayerProfile(updated)
+            onMessage(
+                "Swore an oath of allegiance to: $faction",
+                "Şu tarafa bağlılık yemini edildi: $faction"
+            )
+        }
+    }
+
+    fun renounceAllegiance() {
+        viewModelScope.launch {
+            val profile = repository.getPlayerProfileDirect() ?: return@launch
+            val updated = profile.copy(
+                side = "NEUTRAL",
+                momentum = 50,
+                chosenClass = calculatePlayerClass("NEUTRAL", 50),
+                lastUpdated = System.currentTimeMillis()
+            )
+            repository.savePlayerProfile(updated)
+            onMessage(
+                "Renounced faction covenants. You are now an Outcast.",
+                "Tüm bağlılık yeminleri bozuldu. Artık Aforoz edilmiş bir avaresiniz."
+            )
+        }
+    }
+
+    fun checkAndUnlockTitles(profile: PlayerProfile): PlayerProfile {
+        val currentUnlocked = profile.titlesEncoded.split(",").filter { it.isNotBlank() }.toMutableSet()
+        var changed = false
+        
+        QuestTitleSystem.titles.forEach { title ->
+            if (!currentUnlocked.contains(title.id) && title.meetsPreconditions(profile)) {
+                currentUnlocked.add(title.id)
+                changed = true
+                onMessage(
+                    "👑 UNLOCKED TITLE: ${LocalizationManager.getString("EN", title.nameKey)}!",
+                    "👑 YENİ UNVAN KAZANILDI: ${LocalizationManager.getString("TR", title.nameKey)}!"
+                )
+            }
+        }
+        
+        return if (changed) {
+            profile.copy(
+                titlesEncoded = currentUnlocked.joinToString(","),
+                lastUpdated = System.currentTimeMillis()
+            )
+        } else {
+            profile
+        }
+    }
+
+    fun equipTitle(titleId: String) {
+        viewModelScope.launch {
+            val profile = repository.getPlayerProfileDirect() ?: return@launch
+            val unlocked = profile.titlesEncoded.split(",").filter { it.isNotBlank() }.toSet()
+            if (titleId.isEmpty() || unlocked.contains(titleId)) {
+                val updated = profile.copy(
+                    equippedTitle = titleId,
+                    lastUpdated = System.currentTimeMillis()
+                )
+                repository.savePlayerProfile(updated)
+                onMessage(
+                    if (titleId.isEmpty()) "Unequipped title." else "Equipped: ${QuestTitleSystem.getTitleDef(titleId)?.let { LocalizationManager.getString("EN", it.nameKey) }}",
+                    if (titleId.isEmpty()) "Unvan çıkarıldı." else "Mistik unvan kuşanıldı: ${QuestTitleSystem.getTitleDef(titleId)?.let { LocalizationManager.getString("TR", it.nameKey) }}"
+                )
+            }
+        }
+    }
+
+    fun claimQuestReward(questId: String) {
+        viewModelScope.launch {
+            val profile = repository.getPlayerProfileDirect() ?: return@launch
+            val quest = QuestTitleSystem.quests.find { it.id == questId } ?: return@launch
+            
+            val completedSet = profile.completedQuestsEncoded.split(",").filter { it.isNotBlank() }.toMutableSet()
+            if (completedSet.contains(questId)) return@launch
+            
+            if (!quest.checkProgress(profile)) return@launch
+            
+            completedSet.add(questId)
+            
+            val greedLvl = LegacyUpgradeType.getUpgradeLevel(profile.upgradesEncoded, LegacyUpgradeType.GREED)
+            val greedMultiplier = 1.0f + (greedLvl * 0.20f)
+            val scaledGoldReward = if (quest.rewardGold > 0) (quest.rewardGold * greedMultiplier).toInt() else quest.rewardGold
+
+            val newGold = profile.gold + scaledGoldReward
+            val newAether = profile.aether + quest.rewardAether
+            
+            var newExp = profile.exp + quest.rewardExp
+            var newLevel = profile.level
+            var newMaxExp = profile.maxExp
+            var newMaxHp = profile.maxHp
+            
+            while (newExp >= newMaxExp && newLevel < 100) {
+                newExp -= newMaxExp
+                newLevel++
+                newMaxExp += 25
+                newMaxHp += 15
+            }
+            
+            val currentItems = profile.itemsEncoded.split(",").filter { it.isNotBlank() }.toMutableList()
+            quest.rewardItem?.let { item ->
+                if (!currentItems.contains(item)) {
+                    currentItems.add(item)
+                }
+            }
+            
+            val currentTitles = profile.titlesEncoded.split(",").filter { it.isNotBlank() }.toMutableList()
+            quest.rewardTitle?.let { title ->
+                if (!currentTitles.contains(title)) {
+                    currentTitles.add(title)
+                }
+            }
+            
+            var updated = profile.copy(
+                completedQuestsEncoded = completedSet.joinToString(","),
+                gold = newGold,
+                aether = newAether,
+                level = newLevel,
+                exp = newExp,
+                maxExp = newMaxExp,
+                maxHp = newMaxHp,
+                itemsEncoded = currentItems.joinToString(","),
+                titlesEncoded = currentTitles.joinToString(","),
+                lastUpdated = System.currentTimeMillis()
+            )
+            
+            updated = checkAndUnlockTitles(updated)
+            repository.savePlayerProfile(updated)
+            
+            val questTitleEn = LocalizationManager.getString("EN", quest.titleKey)
+            val questTitleTr = LocalizationManager.getString("TR", quest.titleKey)
+            onMessage(
+                "Quest '$questTitleEn' claimed! Rewards received.",
+                "'$questTitleTr' görevi tamamlandı! Ödülleri aldınız."
+            )
+        }
+    }
+
+    fun claimDailyQuestReward(typeIndex: Int) {
+        viewModelScope.launch {
+            val profile = repository.getPlayerProfileDirect() ?: return@launch
+            val quests = profile.dailyQuestsEncoded.split(",").toMutableList()
+            if (typeIndex !in quests.indices) return@launch
+            
+            val parts = quests[typeIndex].split("/")
+            if (parts.size < 3) return@launch
+            
+            val currentProgress = parts[0].toIntOrNull() ?: 0
+            val target = parts[1].toIntOrNull() ?: 0
+            val claimed = parts[2].toIntOrNull() ?: 0
+            
+            if (currentProgress < target || claimed == 1) return@launch
+            
+            val newParts = parts.toMutableList()
+            newParts[2] = "1" // Mark claimed
+            quests[typeIndex] = newParts.joinToString("/")
+            
+            val newQuestsEncoded = quests.joinToString(",")
+            
+            val baseGold = 50
+            val baseAether = 15
+            val greedLvl = LegacyUpgradeType.getUpgradeLevel(profile.upgradesEncoded, LegacyUpgradeType.GREED)
+            val greedMultiplier = 1.0f + (greedLvl * 0.20f)
+            val finalGold = (baseGold * greedMultiplier).toInt()
+            
+            val updated = profile.copy(
+                dailyQuestsEncoded = newQuestsEncoded,
+                gold = profile.gold + finalGold,
+                aether = profile.aether + baseAether,
+                lastUpdated = System.currentTimeMillis()
+            )
+            repository.savePlayerProfile(updated)
+            
+            onMessage(
+                "Claimed daily quest reward! +$finalGold Gold, +$baseAether Aether",
+                "Günlük görev ödülü alındı! +$finalGold Altın, +$baseAether Aether"
+            )
+        }
+    }
+
+    fun purchaseUpgrade(upgradeKey: String) {
+        viewModelScope.launch {
+            val profile = repository.getPlayerProfileDirect() ?: return@launch
+            val type = LegacyUpgradeType.values().find { it.key == upgradeKey } ?: return@launch
+            val currentLvl = LegacyUpgradeType.getUpgradeLevel(profile.upgradesEncoded, type)
+            
+            if (currentLvl >= type.maxLevel) return@launch
+            
+            val cost = type.getCostForLevel(currentLvl)
+            if (profile.legacyPoints < cost) return@launch
+            
+            val upgradesMap = LegacyUpgradeType.getUpgradesMap(profile.upgradesEncoded).toMutableMap()
+            upgradesMap[type.key] = currentLvl + 1
+            val newUpgradesEncoded = LegacyUpgradeType.encodeUpgrades(upgradesMap)
+            
+            val updated = profile.copy(
+                legacyPoints = profile.legacyPoints - cost,
+                upgradesEncoded = newUpgradesEncoded,
+                lastUpdated = System.currentTimeMillis()
+            )
+            repository.savePlayerProfile(updated)
+            
+            onMessage(
+                "Successfully purchased legacy upgrade: ${LocalizationManager.getString("EN", type.nameKey)}",
+                "Miras güçlendirmesi başarıyla satın alındı: ${LocalizationManager.getString("TR", type.nameKey)}"
+            )
+        }
+    }
+
+    fun updateDailyQuestProgress(profile: PlayerProfile, typeIndex: Int, amount: Int): PlayerProfile {
+        if (profile.dailyQuestsEncoded.isEmpty()) return profile
+        val quests = profile.dailyQuestsEncoded.split(",").toMutableList()
+        if (typeIndex !in quests.indices) return profile
+        val parts = quests[typeIndex].split("/")
+        if (parts.size < 3) return profile
+        
+        val currentProgress = parts[0].toIntOrNull() ?: 0
+        val target = parts[1].toIntOrNull() ?: 0
+        val claimed = parts[2].toIntOrNull() ?: 0
+        
+        if (claimed == 1 || currentProgress >= target) return profile
+        
+        val newProgress = (currentProgress + amount).coerceAtMost(target)
+        val newParts = parts.toMutableList()
+        newParts[0] = newProgress.toString()
+        quests[typeIndex] = newParts.joinToString("/")
+        
+        val newQuestsEncoded = quests.joinToString(",")
+        
+        if (newProgress >= target) {
+            onMessage(
+                "✨ Daily Quest Completed! Claim rewards in Legacy tab.",
+                "✨ Daily Quest Completed! Claim rewards in Legacy tab."
+            )
+        }
+        
+        return profile.copy(
+            dailyQuestsEncoded = newQuestsEncoded,
+            lastUpdated = System.currentTimeMillis()
+        )
+    }
+
+    fun getPlayerClassString(side: String, momentum: Int, lang: String): String {
+        val isLightBand = momentum >= 65
+        val isDarkBand = momentum <= 35
+        
+        return when (side) {
+            "SANCTUM" -> {
+                when {
+                    isLightBand -> if (lang == "TR") "Kutsal Siper (Aydınlık Kademe 3)" else "Holy Aegis (Light Tier 3)"
+                    isDarkBand -> if (lang == "TR") "Işık Muhafızı (Aydınlık Kademe 1)" else "Light Warden (Light Tier 1)"
+                    else -> if (lang == "TR") "Semavi Yazıcı (Aydınlık Kademe 2)" else "Codifier (Light Tier 2)"
+                }
+            }
+            "COVENANT" -> {
+                when {
+                    isDarkBand -> if (lang == "TR") "Gölge Pençesi (Karanlık Kademe 3)" else "Eclipse Shade (Dark Tier 3)"
+                    isLightBand -> if (lang == "TR") "Karanlık Habercisi (Karanlık Kademe 1)" else "Death Herald (Dark Tier 1)"
+                    else -> if (lang == "TR") "Vahşi El (Karanlık Kademe 2)" else "Wildhand (Dark Tier 2)"
+                }
+            }
+            else -> { // NEUTRAL
+                when {
+                    isLightBand -> if (lang == "TR") "Kuduz Fırtına (Denge Kademe 2)" else "Tempest (Balance Tier 2)"
+                    isDarkBand -> if (lang == "TR") "Demir Taht (Denge Kademe 1)" else "Iron Throne (Balance Tier 1)"
+                    else -> if (lang == "TR") "Tarafsız Avare (Denge Kademe 0)" else "Outcast Wanderer (Balance Tier 0)"
+                }
+            }
+        }
+    }
+
+    private fun calculatePlayerClass(side: String, momentum: Int): String {
+        return getPlayerClassString(side, momentum, activeLanguage.value)
     }
 }

@@ -60,90 +60,640 @@
     "exchange_title": "KARABORSA TAKAS TEZGÂHI",
     "buy_aether_title": "Aether Satın Al",
     "buy_aether_desc": "50 Altın ödeyerek 15 Aether alırsınız.",
+    "btn_light_rest": "Hafif Şifa (15🪙)",
+    "btn_deep_rest": "Tam Şifa (30🪙)",
+    "btn_scout_skill": "Kozmik İzleme Yeteneği (25 Altın)",
+    "btn_trade": "Takas Et",
     "welcome_message": "Hoş geldin, kahraman. Yükselişin başlıyor.",
     "reset_message": "Zaman döngüsü sıfırlandı. Macera yeniden başlıyor.",
-    "enemy_infested_rat_name": "Musibetli Fare",
-    "enemy_blighted_wolf_name": "Musibetli Kurt",
-    "enemy_fungal_horror_name": "Mantar Dehşeti",
-    "enemy_skeleton_warrior_name": "İskelet Savaşçı",
-    "enemy_skeleton_archer_name": "İskelet Okçu",
-    "enemy_skeleton_captain_name": "İskelet Yüzbaşı",
-    "enemy_skeleton_champion_name": "İskelet Şampiyon",
-    "enemy_rat_king_name": "Veba Kralı Golgoth",
-    "skill_rending_bite_name": "Parçalayıcı Isırık",
-    "skill_spore_cloud_name": "Spor Bulutu",
-    "skill_bone_arrow_name": "Kemik Oku",
-    "skill_undead_rally_name": "Ölümsüz Çağrısı",
-    "skill_execute_name": "İnfaz",
-    "skill_plague_bite_name": "Veba Isırığı",
-    "floor_1_title": "Musibetli Yamaçlar",
-    "floor_1_desc": "Kulenin temeli zonklayan köklerle kaplı. Hava sporlarla dolu.",
-    "floor_1_intro_title": "Yükselişin Kapısı",
-    "floor_1_intro_desc": "1. Katın devasa demir mührünün önündesin.",
-    "floor_1_intro_optA_text": "Kılıcını ada (+Aether, +Işık)",
-    "floor_1_intro_optA_journal": "Girişte Sanctum'a bağlılık yemini ettin.",
-    "floor_1_intro_optB_text": "Küfü em (+Aether, +Karanlık)",
-    "floor_1_intro_optB_journal": "İradeni güçlendirmek için çürümeyi emdin.",
-    "floor_1_intro_optC_text": "Yağmala (+Altın)",
-    "floor_1_intro_optC_journal": "Girişteki ölüleri yağmaladın.",
-    "floor_2_title": "Derin Orman Sınırları",
-    "floor_2_desc": "Kökler burada daha kalın, hava daha zehirli.",
-    "floor_2_intro_title": "Karanlığın Derinlikleri",
-    "floor_2_intro_desc": "Orman burada yoğunlaşıyor. Sesler artık daha net.",
-    "floor_2_intro_optA_text": "Işığı yay (+Aether)",
-    "floor_2_intro_optA_journal": "Ormanın karanlığını kutsal ışıkla dağıttın.",
-    "floor_2_intro_optB_text": "Gölgeyle bütünleş (+Aether)",
-    "floor_2_intro_optB_journal": "Ormanın karanlık güçlerini ruhuna kabul ettin.",
-    "floor_2_intro_optC_text": "Eski yolları ara (+Gold)",
-    "floor_2_intro_optC_journal": "Kayıp ticaret yollarını bularak ganimet topladın.",
-    "floor_3_title": "Yozlaşmış Koru",
-    "floor_3_desc": "Artık ormanın en tehlikeli bölgesindesin.",
-    "floor_3_intro_title": "Çürümenin Merkezi",
-    "floor_3_intro_desc": "Musibet burada her şeyi ele geçirmiş.",
-    "floor_3_intro_optA_text": "Doğayı kurtar (+Aether)",
-    "floor_3_intro_optA_journal": "Çürümeyi durdurmak için ışığını kullandın.",
-    "floor_3_intro_optB_text": "Çürümeyi kontrol et (+Aether)",
-    "floor_3_intro_optB_journal": "Yozlaşmış doğayı kendi gücüne kattın.",
-    "floor_3_intro_optC_text": "Nadir özleri topla (+Gold)",
-    "floor_3_intro_optC_journal": "Yozlaşmış bitkilerden simyasal özler topladın.",
-    "f2_n0_t": "Karanlık Patika",
-    "f2_n0_d": "Ağaçların arasından sızan mor ışık yolu aydınlatıyor.",
-    "f2_n0_oa": "Işığa odaklan (+EXP)",
-    "f2_n0_ob": "Yolu ara (+Gold)",
-    "f2_n2_t": "Yosunlu Kasa",
-    "f2_n2_oa": "Kilidi aç",
-    "f2_n2_ob": "Kapağı parçala",
-    "f2_n4_t": "Orman Mihrabı",
-    "f2_n4_oa": "Doğa için dua et",
-    "f2_n4_ob": "Güç için feda et",
-    "f2_boss_t": "Orman Muhafızı",
-    "f2_boss_d": "Kadim bir iskelet şampiyon yolunu kesiyor!",
-    "f3_n0_t": "Sporlu Dehliz",
-    "f3_n0_oa": "Nefesini tut ve geç",
-    "f3_n0_ob": "Sporları incele",
-    "f3_boss_t": "Veba Yuvası",
-    "f3_boss_d": "Veba Kralı burada daha güçlü!"
+    "label_skirmish": "Çatışma Sektörü",
+    "desc_skirmish": "Gölgelerden sıyrılan agresif bir tehdit can enerjini sömürmek için saldırıyor.",
+    "label_chest": "Musibetli Kalıntı Lahiti",
+    "desc_chest": "Semavi veya karanlık dalgalarla mırıldayan kilitli kutsal bir mahfaza.",
+    "btn_open": "Aç",
+    "journal_chest_open": "Bir kalıntı sandığı açtınız.",
+    "label_ruins": "Keşfedilmemiş Harabeler",
+    "desc_ruins": "Çatlamış bir sütunda tekinsiz rünler parlıyor.",
+    "btn_explore": "Keşfet",
+    "journal_explore": "Keşfedilmemiş harabeleri araştırdınız.",
+    "label_boss": "PATRON",
+    "desc_notification": "Bildirim",
+    "desc_dismiss": "Kapat",
+    "desc_settings": "Ayarlar",
+    "desc_close": "Kapat",
+    "desc_expand": "Genişlet",
+    "desc_collapse": "Daralt",
+    "desc_select": "Seç",
+    "status_poisoned": "Zehir 🧪",
+    "status_stunned": "Sersem 🌀",
+    "status_blessed": "Kutsal ✨",
+    "status_shielded": "Kalkan 🛡️",
+    "floor_cleared": "Kat Tamamlandı! 🎉",
+    "floor_cleared_desc": "Kulenin bu katındaki tüm sınamaları başarıyla aştınız. Bir sonraki kata yükselmeye hazırsınız.",
+    "combat_sector_label": "— SEKTÖR %d · MUHAREBE —",
+    "combat_your_turn": "SIRA SENDE",
+    "combat_hostility": "DÜŞMANLIK",
+    "combat_vitality": "YAŞAMSAL GÜÇ",
+    "combat_essence": "ÖZ ENERJİ",
+    "combat_battle_register": "SAVAŞ SİCİLİ",
+    "combat_initiated": "Savaş başladı...",
+    "combat_action_strike": "HAMLE",
+    "combat_action_strike_desc": "Temel vuruş",
+    "combat_action_skills": "YETENEKLER",
+    "combat_action_skills_desc": "%d kullanılabilir",
+    "combat_action_item": "EŞYA",
+    "combat_action_item_desc": "Çantada %d adet",
+    "combat_action_defend": "SAVUNMA",
+    "combat_action_defend_desc": "Sonraki blok",
+    "combat_action_flee": "KAÇIŞ",
+    "combat_action_flee_desc": "Güvenli bölgeye kaç",
+    "combat_action_flee_boss_desc": "Mümkün değil — boss dövüşü",
+    "combat_action_covenant_call": "AHİT ÇAĞRISI",
+    "combat_action_covenant_call_desc": "Tek seferlik boss engelleme · Semavi Koro",
+    "combat_encounter_timer": "SAVAŞ ZAMANLAYICISI",
+    "combat_round": "ROUND %d",
+    "combat_essence_cost": "%d Öz Enerji",
+    "combat_log_player_poison": "🧪 Zehirlendiniz! -5 Can aldınız.",
+    "combat_log_player_stunned": "🌀 Sersemlediniz! Sıranızı geçtiniz.",
+    "combat_log_enemy_poison": "🧪 Düşman zehirden -5 hasar aldı.",
+    "combat_log_enemy_stunned": "🌀 Düşman sersemledi ve sırasını geçti.",
+    "combat_log_player_strike": "⚔️ Hafif Vuruş yaptınız! Düşmana %s hasar verdiniz.",
+    "combat_log_player_heavy_blow": "🔥 Ağır Darbe! Düşmana %s hasar verdiniz. (-15 Aether)",
+    "combat_log_player_barrier": "🛡️ Bariyer kullandınız! +%s Can yenilendi ve 2 tur Kalkan kazandınız.",
+    "combat_log_player_escape": "🏃 Dövüşten kaçtınız.",
+    "combat_log_crit": "💥 Kritik Vuruş!",
+    "combat_log_boss_enraged": "😡 PATRON ÖFKELENDİ! Canı %50'nin altına indi, saldırı gücü %50 arttı!",
+    "combat_log_enemy_attack": "👺 Düşman saldırdı! %s hasar aldınız.",
+    "combat_log_shield_reduced": "🛡️ Kalkanınız sayesinde hasar yarıya indi!",
+    "combat_log_enemy_defend": "🛡️ Düşman savunmaya çekildi ve Kalkan kazandı.",
+    "combat_log_enemy_poison_debuff": "🧪 Düşman sizi zehirledi! (3 tur zehir)",
+    "combat_log_enemy_buff": "✨ Düşman kendini kutsadı! Saldırı gücü arttı.",
+    "combat_log_victory": "🎉 ZAFER! Düşman katledildi. +%s Deneyim, +%s Altın kazanıldı.",
+    "combat_log_loot": "🎁 Hazine: [%s] toplandı teçhizat torbana konuldu!",
+    "combat_log_title": "👑 Yeni Unvan Kazandınız: [%s]!",
+    "combat_log_level_up": "⚡ LEVEL UP! Seviye %s oldunuz! Maksimum Canınız arttı.",
+    "combat_log_initiated": "⚔️ %s ile kule yolunda savaşa girdiniz!",
+    "combat_log_insufficient_aether": "❌ Yetersiz Aether!",
+    "combat_log_secret_boss_initiated": "⚔️ GİZLİ TEHLİKE! Kadim %s ile kutsal savaşa tutuştunuz! Can: %s",
+    "combat_log_boss_attack": "👹 %s sarsıcı bir darbe vurdu: -%s Hasar!",
+    "choice_prerequisite": "Gereksinim: %s",
+    "map_label": "HARİTA",
+    "map_floor_label": "KAT",
+    "map_locked_sector_msg": "🔒 Sektör Kilitli! Öncelikle bir önceki sektörü tamamlamalısınız.",
+    "node_cat_combat": "Dövüş ⚔️",
+    "node_cat_boss": "Bölüm Sonu 💀",
+    "node_cat_treasure": "Hazine 💎",
+    "node_cat_mystery": "Gizem 🔮",
+    "node_cat_narrative": "Hikaye 📜",
+    "node_cat_camp": "Kamp ⛺",
+    "node_cat_event": "Etkinlik 🎲",
+    "node_hidden_sector": "Bilinmeyen Sektör",
+    "node_unexplored": "Keşfedilmemiş",
+    "node_status_active": "📍 AKTİF",
+    "node_status_cleared": "✓ GEÇİLDİ",
+    "node_status_locked": "🔒 KİLİTLİ",
+    "node_threat_profile": "⚠️ Tehdit Seviyesi: %s",
+    "node_threat_unknown": "❓ BİLİNMEYEN SEKTÖR (Gözlem yeteneği kullanın)",
+    "node_threat_boss": "☠️ ZİRVE CANAVARI TEHLİKE DÜZEYİ",
+    "node_threat_combat": "🔴 AKTİF DÜŞMAN (Yüksek Risk)",
+    "node_threat_hostile": "AKTİF DÜŞMAN",
+    "node_threat_narrative": "🟡 KARAR SEKTÖRÜ (Normal Tehdit)",
+    "node_threat_safe": "🟢 SAKİN BÖLGE (Güvenli Alan)",
+    "node_cost_profile": "İrade Maliyeti: %s",
+    "node_cost_cleared": "Yok (Temizlendi)",
+    "node_cost_occupied": "Yok (Mevcut Sektör)",
+    "node_cost_movement": "1 İrade (İlerlemek İçin)",
+    "node_cost_locked": "Sıradaki sektör olmalıdır",
+    "node_hostile_info": "✨ Canavar: %s | HP: %d | Saldırı: +%d",
+    "node_type_combat": "Muharebe Sektörü",
+    "node_type_boss": "Kozmik Zirve Mihrabı",
+    "node_type_treasure": "Kayıp Hazine Sandığı",
+    "node_type_shrine": "Kutsal Sunak",
+    "node_type_merchant": "Gezgin Tüccar",
+    "node_type_narrative": "Hikaye Karar Odası",
+    "node_type_camp": "Güvenli Kamp",
+    "node_type_event": "Rastgele Etkinlik",
+    "node_type_secret": "Gizli Bölme",
+    "journal_record_detail": "GÜNLÜK KAYIT DETAYI:",
+    "node_explore_cost": "Keşif İrade Maliyeti: %d İrade",
+    "btn_explore_label": "Yola Çık",
+    "btn_dismiss": "Kapat",
+    "narrative_mystery": "🔮 BOYUTSAL GİZEM",
+    "narrative_destiny": "KADERSEL SEÇİMİNİZ:",
+    "narrative_outcome": "Olası Sonuç: %s",
+    "combat_boss_subtitle": "Kozmik Zirve Ejderhası",
+    "combat_boss_phase1": "🛡️ FAZ 1: Kozmik Hüküm Zırhı Aktif",
+    "combat_boss_phase2": "💥 FAZ 2: EJDERHA GAZABI (Çift Hasar!)",
+    "combat_console_logs": "Savaş Console Logları:",
+    "combat_action_boss_strike": "HÜCUM ET ⚔️",
+    "combat_action_boss_parry": "SAVUNMA 🛡️",
+    "combat_action_boss_heal": "ŞİFA İKSİRİ 🧪",
+    "combat_action_boss_flee": "KAÇIŞ 🏃",
+    "map_tap_to_collapse": "Daraltmak için dokun",
+    "settings_title": "OYUN AYARLARI",
+    "settings_hero_status": "👤 KAHRAMAN DURUMU & STATLAR",
+    "settings_label_name": "İsim:",
+    "settings_label_level_exp": "Seviye / Deneyim (EXP):",
+    "settings_label_momentum": "Momentum:",
+    "settings_momentum_light": "Işık / Aziz (+%d)",
+    "settings_momentum_abyss": "Boşluk / Kaos (%d)",
+    "settings_momentum_neutral": "Nötr (50)",
+    "settings_label_class": "Sınıf (Class):",
+    "settings_label_title": "Kuşanılmış Unvan:",
+    "settings_none": "Yok",
+    "settings_lang_title": "🌐 DİL AYARI",
+    "settings_lang_label": "Oyun Dili",
+    "settings_theme_title": "🎨 GÖRÜNÜM & TEMA SEÇİMİ",
+    "settings_theme_desc": "Nasıl bir kule ambiyansı istersiniz? Hizalanmaya Göre seçeneği, hizalanma puanınıza göre temayı otomatik belirler.",
+    "settings_theme_alignment": "Hizalanmaya Göre (Dinamik)",
+    "settings_theme_light": "Işık Teması (Celestial Sanctum)",
+    "settings_theme_abyss": "Boşluk Teması (Abyss Covenant)",
+    "settings_notif_title": "🔔 BİLDİRİM & GÖRÜNTÜLEME AYARLARI",
+    "settings_notif_banner": "Hızlı Karar Bildirimi",
+    "settings_notif_banner_desc": "Son oyun kararlarını gösteren başlık kartı",
+    "settings_notif_title_prefix": "Unvan Başlığını Göster",
+    "settings_notif_title_prefix_desc": "Kuşanılmış unvanı ismin önünde gösterir",
+    "settings_notif_sound": "Oyun Efekt Sesleri",
+    "settings_notif_sound_desc": "Savaş ve buton tıklama tınıları",
+    "btn_go_back": "Geri Dön",
+    "header_faction_sanctum": "SEMAVİ KORO",
+    "header_faction_covenant": "KARA AHİT",
+    "header_faction_neutral": "SÜRGÜN",
+    "header_detailed_stats": "DETAYLI İSTATİSTİKLER",
+    "header_economy": "EKONOMİ",
+    "header_tap_to_collapse": "Daraltmak için dokun",
+    "label_neutral": "Nötr",
+    "label_sector": "Sektör",
+    "settings_lang_btn": "English (EN)",
+    "label_hp_short": "Can: ",
+    "label_will_short": "İrade: ",
+    "label_exp_short": "Deneyim: ",
+    "action_banner_msg": "Eylem kaydedildi",
+    "path_label": "YOL",
+    "nav_tower_combat": "DÖVÜŞ",
+    "nav_tower_floor": "KAT",
+    "nav_world": "DÜNYA",
+    "nav_quest": "GÖREV",
+    "nav_hero": "KAHRAMAN",
+    "nav_legacy": "MİRAS",
+    "nav_journal": "GÜNLÜK",
+    "quests_titles_header": "ŞANLI MİSTİK UNVANLAR",
+    "quests_titles_desc": "Bu kadim unvanları gerekli şartları sağlayarak açabilir ve kuşanıp pasif can (+HP) bonusu kazanabilirsiniz.",
+    "title_synergies": "Bonus: +%d HP • Şart: %s",
+    "quests_momentum_align": "Momentum Hizalanması: %d / 100",
+    "quests_floor_f": "Kat %d",
+    "quests_floor_title_fmt": "%d. Kat: %s",
+    "quests_btn_backtrack": "Bu Kata Geri Dön (-2 İrade) ↩️",
+    "quests_btn_ascend_will": "Bu Kata Yüksel (-2 İrade) 🚀",
+    "quests_prereq_required": "⚠️ Önce '%s' aşamasını tamamlamış olmalısınız.",
+    "quests_unfolding_conditions": "Giriş Şartları: ",
+    "quests_vortex_requirements": "Aura Şartları: ",
+    "quests_veiled_triumph": "KİLİTLİ ZAFER GANİMETLERİ:",
+    "quests_mystery_pact": "🔒 Bilinmeyen Kadim Sır",
+    "quests_mystery_locked": "Şartlar kule derinliklerinde kilitli kalmış.",
+    "label_unlocked": "KAZANILDI",
+    "quests_btn_equip": "Unvanı Kuşan",
+    "quests_btn_unequip": "Çıkar",
+    "quests_active_badge": "AKTİF",
+    "quests_passive_hp": "+%d Can (Pasif)",
+    "quests_requirements": "Gereksinimler: %s",
+    "quests_world_events": "DÜNYA HİKAYE OLAYLARI",
+    "quests_floor_objectives": "KAT HEDEFLERİ",
+    "quests_floor_objectives_desc": "Bulunduğunuz katın özel hedeflerini, gizli boss savaşlarını ve faksiyon planlarını bu ekrandan takip edebilirsiniz.",
+    "quests_boss_encounters": "GİZLİ ZİRVE DÜELLOLARI",
+    "quests_empty_cat": "Bu kategoride olay bulunamadı.",
+    "label_completed": "TAMAMLANDI",
+    "label_active": "AKTİF",
+    "btn_initiate": "Sınamayı Başlat",
+    "journal_just_now": "Az önce",
+    "journal_moments_ago": "Göz açıp kapayana dek (%d dk önce)",
+    "journal_hours_ago": "%d saat önce",
+    "journal_days_ago": "%d gün önce",
+    "journal_search_placeholder": "Macerada ara...",
+    "journal_entry_header": "Kat %d Güncesi",
+    "journal_stats_decisions": "Kararlar",
+    "journal_stats_light_abyss": "Kutsal / Boşluk",
+    "journal_stats_net_balance": "Net Odak",
+    "journal_no_match": "Aranan kriterlere uygun kayıt bulunamadı.",
+    "legacy_power": "Miras Gücü",
+    "legacy_earn_desc": "Kule tırmanışlarını sıfırlayarak Miras Puanı kazanın.",
+    "legacy_login_streak": "Giriş Serisi",
+    "legacy_active_days": "%d Gün Boyunca Giriş Yapıldı",
+    "legacy_daily_quests": "GÜNLÜK GÖREVLER",
+    "legacy_quest_defeat": "Düşmanları Bertaraf Et",
+    "legacy_quest_pillage": "Hazineleri Yağmala",
+    "legacy_quest_will": "İrade Gücünü Harca",
+    "legacy_quest_defeat_desc": "Kulede 3 dövüş veya bölüm sonu canavarı kazan.",
+    "legacy_quest_pillage_desc": "Kulede 2 Hazine/Sandık hücresiyle etkileşime gir.",
+    "legacy_quest_will_desc": "Kule tırmanışlarında 5 İrade gücü harca.",
+    "legacy_quest_reward": "Ödül: +50 Altın, +15 Işıltı",
+    "legacy_claimed": "Alındı",
+    "legacy_claim_btn": "Ödülü Al",
+    "legacy_in_progress": "Devam Ediyor",
+    "legacy_upgrades_title": "KALICI GÜÇLENDİRMELER",
+    "legacy_max_level": "Maksimum Düzey",
+    "legacy_upgrade_btn": "Yükselt (%d ⚜️)",
+    "label_abyss": "Karanlık",
+    "label_sanctum": "Semavi",
+    "char_save_name": "Güncelle",
+    "char_name_placeholder": "Örn: Lord Aldous",
+    "char_faction_sanctum": "Semavi",
+    "char_faction_covenant": "Kara Ahit",
+    "char_backup_title": "KADER BULUT YEDEĞİ",
+    "char_backup_desc": "İlerlemenizi Firebase bulut veritabanına yedekleyin veya eski bir kaydı geri yükleyin.",
+    "char_backup_btn": "Buluta Yedekle",
+    "char_backing_up": "Yedekleniyor...",
+    "char_restore_btn": "Kayıt Geri Yükle",
+    "char_inventory_empty": "Sırt çantanız boş. Kule çarpışmalarından teçhizat kazanın.",
+    "char_titles_empty": "Henüz kazanılmış bir unvanınız yok. Seçimleriniz kaderi yazar.",
+    "nav_settings": "AYARLAR",
+    "sector_cleared_msg": "Sektör temizlendi. Haritadan bir sonraki hedefinizi seçin.",
+    "loading_sector_data": "Sektör verileri yükleniyor...",
+    "badge_light": "+Işık",
+    "badge_corruption": "+Çürüme",
+    "badge_gleam": "%d Işıltı",
+    "badge_aether": "%d Aether",
+    "badge_item": "+Eşya",
+    "badge_sanctum": "+%d Sanctum",
+    "badge_covenant": "%d Covenant",
+    "badge_gold": "%d Altın",
+    "class_initiate": "Yansıma Adayı",
+    "class_acolyte": "Mühür Rahibi",
+    "class_renegade": "Boşluk Sürgünü",
+    "class_herald": "Ölüm Habercisi",
+    "class_wildhand": "Kaotik Gölge Ustası",
+    "class_tempest": "Özgürlük Savaşçısı",
+    "class_holy_aegis": "Kutsal Siper",
+    "class_codifier": "Kanon Büyücüsü",
+    "class_iron_throne": "Acımasız İnfazcı",
+    "will_recharge_title": "İRADEYİ YENİLE",
+    "will_recharge_desc": "Kule katlarını tırmanmak (-1/sektör, -2/kat transit) ve kararlar seçmek için irade gerekir. Sponsor videoları izleyerek bedava irade kazanın veya sınırsız irade için Sezonluk Geçiş satın alın!",
+    "will_ad_title": "🎬 MİNİ REKLAM BÖLÜMÜ",
+    "will_ad_desc": "Kısa sponsor klibini izleyin ve hediye +5 İrade kazanın! (60sn bekleme süresi vardır)",
+    "will_ad_watching": "Sponsor reklam izleniyor (5sn)...",
+    "will_ad_cooldown": "Bekleme Süresi (%dsn)",
+    "will_ad_btn": "İZLE VE +5 İRADE KAZAN",
+    "will_premium_title": "💎 PREMIUM MARKET TEKLİFLERİ",
+    "will_pack_elixir": "⚡ İrade Özütü İksiri",
+    "will_pack_elixir_desc": "+10 İrade Gücü + 50 Altın bonus",
+    "will_pack_chest": "⚡ Hükümdar İrade Sandığı",
+    "will_pack_chest_desc": "+40 İrade Gücü + 200 Altın bonus",
+    "will_season_pass": "SEZONLUK HÜKÜMDAR KARTI",
+    "will_season_pass_desc": "SINIRSIZ İRADE! Tüm sektör tırmanışları ve transitler bedava olur!",
+    "billing_title": "🤖 Google Play Billing",
+    "billing_desc": "Güvenli Google Play ödemesi simüle ediliyor. Kart onay veya Google Pay arayüzü başlatıldı.",
+    "billing_btn_complete": "Simüle Satın Alımı Tamamla",
+    "billing_btn_cancel": "Vazgeç",
+    "billing_price_label": "Fiyat: ",
+    "billing_merchant": "Satıcı: AI Studio Game Studio s.r.o.",
+    "label_map_tab": "• HARİTA",
+    "objective_intro_format": "Yükseliş geçidini çözümle: '%s'",
+    "objective_node_format": "%s '%s'",
+    "node_prefix_combat": "Dövüş: Alt Et",
+    "node_prefix_boss": "Zirve Canavarı: Yen",
+    "node_prefix_chest": "Keşif: Yağmala",
+    "node_prefix_shrine": "Kutsal Alan: Bağ kur",
+    "node_prefix_merchant": "Ticaret: Pazarlık yap",
+    "node_prefix_narrative": "Hikaye: Şahit ol",
+    "node_prefix_camp": "Kamp: Dinlen",
+    "node_prefix_event": "Etkinlik: Katıl",
+    "node_prefix_secret": "Gizem: Keşfet",
+    "transition_fail_restricted": "Doğrudan bölge geçişleri el yapımı 1-3. Katlar arasında sınırlandırılmıştır.",
+    "transition_fail_already_there": "%d. Katta bulunuyorsunuz.",
+    "transition_fail_sequential": "Sırayla, kat kat yükselmelisiniz. Önce mevcut katı tamamlayın.",
+    "transition_fail_defeat_boss": "Bir üst kata geçmeden önce %d. Katın Zirve Canavarı '%s' liderini yenmelisiniz.",
+    "transition_fail_will": "Yetersiz İrade gücü. Katlar arası geçiş yapmak için %d İrade gerekir.",
+    "direction_ascended": "yükseldi",
+    "direction_backtracked": "geri döndü",
+    "transition_success_msg": "Başarıyla %d. Kata geçiş yaptınız.",
+    "transition_success_journal": "%d. Kattan %d. Kata geçiş yapıldı. İrade bedeli: %d. Hareket: %s.",
+    "progress_completed": "%100 Tamamlandı",
+    "progress_locked": "Kilitli",
+    "progress_floor_format": "Kat %d / %d",
+    "progress_gold_format": "Altın %d / %d",
+    "progress_not_sanctum": "Semavi Değilsiniz",
+    "progress_momentum_format": "Momentum %d / %d",
+    "progress_not_covenant": "Kara Ahit Değilsiniz",
+    "progress_void_momentum_format": "Karanlık Momentum %d / %d",
+    "progress_level_format": "Seviye %d / %d",
+    "progress_fractures_format": "Ruh Kırılması %d / %d",
+    "progress_imbalanced": "Denge Bozuldu (Değer: %d)",
+    "progress_balanced_floor": "Dengeli Kat %d / %d",
+    "progress_momentum_diff_format": "Momentum Farkı %d / %d"
   },
-  "scenarios": {
-    "floor_100": {
-      "title": "Hükümdar Tahtı: Ebedi Düello",
-      "description": "Kule'nin zirvesine ulaştın. Ebedi Çürüme son mühürleri de kırdı.",
-      "optA_text": "Işık ile Yok Et (Zafer Sonu)",
-      "optA_journal": "Çekirdeği mühürledin, Sanctum için Zafer elde ettin.",
-      "optB_text": "Boşluğu Em (Direnç Sonu)",
-      "optB_journal": "Musibeti kendine kattın, karanlığı bastırdın.",
-      "optC_text": "Mühürleri Parçala (Kırılma Sonu)",
-      "optC_journal": "Tüm mühürleri kırdın, dünyayı kaderine bıraktın."
+  "title": {
+    "lightseeker": {
+      "name": "Gayretli Işık Arayıcısı ✨",
+      "desc": "Sizi ileri taşıyan güç Semavi'nin saf ve boyun eğmez kutsal radyasyonudur.",
+      "req": "Seviye 3'e ulaşın & En az 70 Momentum"
     },
-    "bracket_1": {
-      "title": "Musibetli Yamaçlar - K%d",
-      "description": "Kulenin girişi yozlaşmış doğanın nefesiyle sarsılıyor.",
-      "optA_text": "Doğayı arındır (+Aether)",
-      "optA_journal": "%d. Katta yozlaşmış kökleri temizledin.",
-      "optB_text": "Sporları içine çek (+Aether)",
-      "optB_journal": "%d. Katta karanlık bağını güçlendirdin.",
-      "optC_text": "Altın topla (+Altın)",
-      "optC_journal": "%d. Katta köklerin arasından altın çıkardın."
+    "void_reaper": {
+      "name": "Karanlık Boşluk Tırpancısı 💀",
+      "desc": "Gölgeler sizin karanlık bakışınız önünde eğiliyor. Çürümüş ruhların korkulan avcısı.",
+      "req": "Seviye 5'e ulaşın & -35 veya daha az Hizalanma"
+    },
+    "cosmic_observer": {
+      "name": "Kozmik Denge Hakimi ⚖️",
+      "desc": "Yaradılışın kefelerini kusursuz dengede tutan sessiz ve tarafsız izleyici.",
+      "req": "Kulede 10. Kat veya üzerinde Hizalanma değerinizin tam Sıfır (0) olması"
+    },
+    "immortal_phantom": {
+      "name": "Ölümsüz Kırık Hayalet 👻",
+      "desc": "Ruhunuz defalarca parçalandı fakat iradeniz inatla parçalanmayı reddediyor.",
+      "req": "Yolculuğunuzda en az 5 kez Parçalanma (Ölüm) yaşayın"
+    },
+    "spire_conqueror": {
+      "name": "Efsanevi Kule Öncüsü 🏔️",
+      "desc": "Dünyanın en tehlikeli kule tırmanışının yarısını başarıyla fethettiniz.",
+      "req": "En az 50. Kata ulaşın"
+    },
+    "gold_hoarder": {
+      "name": "Kule Loncası Baronu 💰",
+      "desc": "Zenginliği zırh edinmiş bir baron. Altın en büyük manipülasyon aracınız.",
+      "req": "En az 500 Altın biriktirin"
+    },
+    "doomsday_bringer": {
+      "name": "Mutlak Boşluğun Hükümdarı 🪐",
+      "desc": "Kozmik çürümenin ete kemiğe bürünmüş hali. Siz bizzat kıyametsiniz.",
+      "req": "Kara Ahit yeminli, Seviye 15 ve üzeri & En az 15 veya daha az Momentum"
+    },
+    "archon_sage": {
+      "name": "Semavi Güneş Rehberi 👑",
+      "desc": "Eylemlerinizden saf güneş parlaklığı yayılıyor. Kuleler varlığınız önünde eğiliyor.",
+      "req": "Semavi yeminli, Seviye 15 ve üzeri & En az 85 Momentum"
+    },
+    "plague_vanquisher": {
+      "name": "Veba Fatihi 🐀",
+      "desc": "1. katın yozlaşmış Veba Lağım Faresi Kralı Golgoth'u dize getiren kahraman.",
+      "req": "1. Kat Görevini Tamamlayın"
+    },
+    "shard_bearer": {
+      "name": "Kristal Sancaktarı 💎",
+      "desc": "2. katın Işıldayan Kristal Muhafızı Clarith'i yıkan kahraman.",
+      "req": "2. Kat Görevini Tamamlayın"
+    },
+    "crypt_breaker": {
+      "name": "Mezar Kırıcı ⚰️",
+      "desc": "3. katın Gölge Necromancer Kahini Malakar'ı kovup mezarı fetheden kahraman.",
+      "req": "3. Kat Görevini Tamamlayın"
+    }
+  },
+  "quest": {
+    "floor_1_rat_king": {
+      "title": "1. Kat Zirvesi: Veba Fatihi",
+      "desc": "Çöp yığınları üzerine kurulmuş olan devasa Veba Faresi Kralı Golgoth'u dize getirin.",
+      "req": "1. Kat Patronunu yenip 2. Kata yükselin"
+    },
+    "floor_2_crystal_heart": {
+      "title": "2. Kat Zirvesi: Parça Çıkarıcı",
+      "desc": "Işıldayan Kristal Muhafız Clarith'i yenerek kozmik kristal kalbini ortaya çıkarın.",
+      "req": "2. Kat Patronunu yenip 3. Kata yükselin"
+    },
+    "floor_3_oracle_scourge": {
+      "title": "3. Kat Zirvesi: Kahin Kovucu",
+      "desc": "Derin mahzenleri ve gölgeli kutsal alanları koruyan Gölge Kahini Malakar'ı dehlizlerden kovun.",
+      "req": "3. Kat Patronunu yenip 4. Kata yükselin"
+    },
+    "main_foothold": {
+      "title": "Kulede Tutunmak",
+      "desc": "Kulenin alt kesimlerindeki tehlikelere dayanabileceğinizi kanıtlayın.",
+      "req": "5. Kat veya üzerine tırmanın"
+    },
+    "main_midpoint": {
+      "title": "Aegis Orta Noktası",
+      "desc": "Zorlu kule tırmanışında alt katların orta noktasına kadar yükselip hayatta kalın.",
+      "req": "15. Kat veya üzerine tırmanın"
+    },
+    "side_wealth": {
+      "title": "Tüccar Takas Birliği",
+      "desc": "Yeterince zengin olmak göçebelerle gizli ticaret yapabilmenizi sağlar.",
+      "req": "En az 300 Altın biriktirin"
+    },
+    "side_sanctum_purity": {
+      "title": "Semavi Saflık Andı",
+      "desc": "Güneşin hararetini kucaklayın. Semavi birliğine olan bağlılığınızı kanıtlayın.",
+      "req": "Semavi Birliğine Katılın (En az +15 Hizalanma)"
+    },
+    "side_void_alliance": {
+      "title": "Derin Boşluk Anlaşması",
+      "desc": "Boşluğun sesini dinleyin, Kara Ahit'in karanlık tınısının gölgenizi şekillendirmesine izin verin.",
+      "req": "Kara Ahit Birliğine Katılın (En az -15 Hizalanma)"
+    },
+    "chain_ascension_1": {
+      "title": "Çömezin Sınavı (Aşama I)",
+      "desc": "Her kahraman gölgelerde başlar. Kulede ustalaşmak için kendinizi eğitin.",
+      "req": "Karakter Seviyesini En Az 4 Yapın"
+    },
+    "chain_ascension_2": {
+      "title": "Uzman Yükselişi (Aşama II)",
+      "desc": "Temelinizi kanıtladınız. Şimdi daha derin koridorlardaki dehşetlere karşı ruhunuzu çelikleştirin.",
+      "req": "Karakter Seviyesini En Az 12 Yapın"
+    },
+    "chain_ascension_3": {
+      "title": "Derebeyi Fermanı (Aşama III)",
+      "desc": "İnsan sınırlarının son dilimi. En yüksek aşamaya ulaşmak için sonsuz ruhsal gücü serbest bırakın.",
+      "req": "Karakter Seviyesini En Az 20 Yapın"
+    },
+    "hidden_fractured_soul": {
+      "title": "??? (Kırık İncelik)",
+      "desc": "Sadece ruhları defalarca kez parçalanmış olanlara fısıldanan gizli bir yol.",
+      "req": "En az 4 kez Ruh Parçalanması (Ölüm) yaşayın"
+    },
+    "hidden_perfect_balance": {
+      "title": "??? (Mutlak Denge)",
+      "desc": "Kader ipinde her iki tarafa da sapmadan 15. Kata kadar yürüyün.",
+      "req": "15. Kata vardığınızda Hizalanma (Alignment) değerinizi TAM SIFIR (0) tutun"
+    },
+    "normal_climb_3": {
+      "title": "İlk Adımlar",
+      "desc": "Her büyük yolculuk kulenin eteklerinde atılan birkaç cesur adımla başlar.",
+      "req": "3. Kat veya üzerine tırmanın"
+    },
+    "special_alignment_pioneer": {
+      "title": "İnanç Patikası",
+      "desc": "Göksel güneş ışıklarına ya da boşluğun karanlık fısıltılarına güçlü bir bağlılık gösterin.",
+      "req": "Hizalanma >= +45 veya <= -45 olmalı"
+    },
+    "event_solar_zenith": {
+      "title": "Mutlak Güneş Şöleni Enlemi ☀️",
+      "desc": "Kozmik bir göksel hizalama gerçekleşti. Ruhunuzun seviyesini yükseltip andı kutlayın.",
+      "req": "Karakter Seviyesini En Az 6 Yapın"
+    }
+  },
+  "narrative": {
+    "obelisk_whispers": {
+      "title": "Şarkı Söyleyen Zaman Dikilitaşı",
+      "desc": "Katı obsidyenden yapılmış nabız gibi atan bir dikilitaş, yabancı boyutsal enerjiyle mırıldanıyor. Doğrudan zihninize ulaşan dallanıp budaklanan yollar fısıldıyor.",
+      "req": "Karakter Seviyesi >= 2 ve Momentum Kararlı Nötr olmalı (30 ile 70 arası)"
+    },
+    "obelisk_opt_light": {
+      "text": "Frekansı Kutsal Güneş Işınlarına uyarla (+15 Momentum, +30 Aether)",
+      "outcome": "Dikilitaş sıcak, göz kamaştırıcı bir ışın yayarak fiziksel auranızı arındırıyor ve kutsuyor."
+    },
+    "obelisk_opt_void": {
+      "text": "Kristali parçala ve saf Boşluk tınısını çek (-15 Momentum, +30 Aether)",
+      "outcome": "Keskin kara parçaları avuçlarınızı kesiyor fakat ruhunuza akan kaotik dalga içinizdeki ateşi harlıyor."
+    },
+    "obelisk_opt_scholarly": {
+      "text": "Sabırla sembollerin şifresini çöz (+15 Altın, +40 Tecrübe, +1 İrade)",
+      "outcome": "Mekansal bir kısayol formülünü çözerek iradenizi korudunuz ve değerli kadim bilgelikler elde ettiniz."
+    },
+    "shadow_bazaar": {
+      "title": "Karanlık Gölgeler Pazarı",
+      "desc": "Yapısal odaların derinliklerinde, gizli bir kaçakçı simsarı nadir bulunan, illegal çeper mühürleri satıyor.",
+      "req": "Altın >= 150 ve Momentum Boşluk yöneliminde olmalı (<= 35)"
+    },
+    "bazaar_opt_buy": {
+      "text": "Lanetli Geçit Mührünü Satın Al (-100 Altın, -15 HP, +Eşya)",
+      "outcome": "Ağır amblem dondurucu derecede soğuk hissettiriyor, yasaklanmış derin deniz uçurum vizyonunu açtı."
+    },
+    "bazaar_opt_betray": {
+      "text": "Onu Sanctum Tapınakçılarına bildir (+20 Momentum, +40 Aether)",
+      "outcome": "Sanctum şövalyeleri karakola baskın düzenledi. Simsar kaçtı ama ödül dolu bir keseyi geride bıraktı."
+    },
+    "celestial_solstice": {
+      "title": "Yüce Semavi Güneş Mihrabı",
+      "desc": "Kutsal bir fener yıldız radyasyonunu yansıtıyor. Bir ses, ebedi yükseliş karşılığında sembolik bir kan anlaşması talep ediyor.",
+      "req": "Momentum Semavi nizamda (>= 80) ve Karakter Seviyesi >= 3 olmalı"
+    },
+    "sun_opt_blood": {
+      "text": "Güneş alevlerine kan damlat (-20 HP, +120 Tecrübe, +Unvan)",
+      "outcome": "Vücudunuz ilahi bir güçle yanıyor, kalbinizin üzerinde güneş ateşinden bir mühür yapılıyor."
+    },
+    "sun_opt_meditate": {
+      "text": "Isı dalgalarının yanında meditasyon yap (+10 Momentum, +3 İrade)",
+      "outcome": "Kozmik sıcaklık fiziksel toksinlerinizi temizler ve zihinsel odağınızı geri kazandırır."
+    }
+  },
+  "boss": {
+    "abyssal_beast": {
+      "name": "Gölge Yutan Kadim canavar Kharon",
+      "desc": "Ham gölgeler arasından fırlayan devasa bir kabus. Çok sayıda zaman döngüsünde ruhları ufalanmış olan kurbanları yutmaya gelir.",
+      "req": "Momentum <= 10 (Derin Boşluk) ve Toplam Ruh Kırılması >= 2 olmalı"
+    },
+    "celestial_avatar": {
+      "name": "Işığın Görkemli Başmeleği Uriel",
+      "desc": "Beyaz güneş ışınlarının mutlak elçisi. Saf inanç sahiplerine meydan okumak için iner, çeliğin inançlarıyla eşleşip eşleşmediğini sınar.",
+      "req": "Momentum >= 100 (Mutlak Semavi Bağlılık) ve Seviye >= 5 olmalı"
+    },
+    "sentinel_relic": {
+      "name": "Başmuhafız Zaman Dev Obeliski",
+      "desc": "Değerli antik eşyalar ve yüksek miktarda zenginlik kule koordinatlarıyla tınlaştığında canlanan robotik eski muhafız.",
+      "req": "Karakter Altını >= 250 ve en az 2 adet tescilli ekipmana sahip olmalı"
+    }
+  },
+  "floor": {
+    "1": {
+      "title": "Musibetli Yamaçlar",
+      "description": "Kulenin temeli zonklayan köklerle kaplı. Hava sporlarla dolu.",
+      "intro": {
+        "title": "Yükselişin Kapısı",
+        "description": "1. Katın devasa demir mührünün önündesin.",
+        "choice_a": {
+          "text": "Kılıcını ada (+Aether, +Işık)",
+          "journal": "Girişte Sanctum'a bağlılık yemini ettin."
+        },
+        "choice_b": {
+          "text": "Küfü em (+Aether, +Karanlık)",
+          "journal": "İradeni güçlendirmek için çürümeyi emdin."
+        },
+        "choice_c": {
+          "text": "Yağmala (+Altın)",
+          "journal": "Girişteki ölüleri yağmaladın."
+        }
+      },
+      "nodes": {
+        "0": {
+          "title": "Giriş Burcu",
+          "description": "Kırık duvarlardan altın ışık sızıyor. Çekirdeğin nabzını hissedebiliyorsun.",
+          "choice_a": {
+            "text": "Kısa bir arınma mantrası oku (+10 EXP)",
+            "journal": "1. Kattaki tırmanışına odaklanma ve arınma ritüelleriyle başladın."
+          },
+          "choice_b": {
+            "text": "Süs heykellerini altın parçaları için parçala (+20 Altın)",
+            "journal": "Hızlı kazanç için tapınak ikonlarını parçaladın."
+          }
+        },
+        "1": { "title": "Sinsice Gezen Fare", "description": "Mor çürüklere sarılmış mutasyonlu bir kemirgen koridoru kapatıyor." },
+        "2": {
+          "title": "Düşmüş Askerin Kasası",
+          "description": "Musibet yosunuyla kaplı eski bir demir kutu.",
+          "choice_a": {
+            "text": "Dikkatlice aç (-1 İrade, +Maceracı Yüzüğü)",
+            "journal": "1. Kat yamaçlarındaki kasada bir Maceracı Yüzüğü buldun."
+          },
+          "choice_b": {
+            "text": "Altın maymuncukla açmaya çalış (-15 Altın, +İzci Hançeri)",
+            "journal": "Kilidi maymuncukla açarak bir İzci Hançeri kazandın."
+          }
+        },
+        "3": {
+          "title": "Yaban Ocağı Sunağı",
+          "description": "Kutsal alevle parlayan tuğla bir şömineden sıcaklık yayılıyor.",
+          "choice_a": {
+            "text": "Yaşam gücü için dua et (+25 HP)",
+            "journal": "1. Kattaki Yaban Ocağı'nda derin yaralarını iyileştirdin."
+          },
+          "choice_b": {
+            "text": "Güç elde etmek için kanını feda et (-10 HP, +15 Aether)",
+            "journal": "1. Katta Sanctum'un sıcak ışığı için kanını akıttın."
+          }
+        },
+        "4": { "title": "Musibetli Asalak Böcek", "description": "Karanlıkta bekleyen, asit zırhıyla kaplı çok bacaklı bir böcek." },
+        "5": {
+          "title": "Fısıldayan Duvar",
+          "description": "Çatlak bir sütunda tekinsiz rünler parlıyor. Kısık bir ses, inancına karşılık güç vaat ediyor.",
+          "choice_a": {
+            "text": "Sesi reddet ve taşı arındır (+10 Momentum, +20 EXP)",
+            "journal": "Fısıldayan kaotik bir duvarı arındırarak Sanctum düzenine daha çok yaklaştın."
+          },
+          "choice_b": {
+            "text": "Gölgeleri kucakla (+15 Aether, -10 Momentum)",
+            "journal": "Karanlık duvara sırlar fısıldayarak boşluk ruhunu besledin."
+          }
+        }
+      }
+    }
+  },
+  "enemy": {
+    "infested_rat": { "name": "Musibetli Fare İzci" },
+    "blighted_acid_crawler": { "name": "Musibetli Asit Böceği" },
+    "spore_host": { "name": "Yayılan Spor Taşıyıcısı" },
+    "rat_swarm": { "name": "Mağara Sürüsü Kemirgenleri" },
+    "blight_abomination": { "name": "Devasa Musibet Ucubesi" },
+    "tunnel_hound": { "name": "Musibetli Azgın Avcı Tazısı" },
+    "rat_king": { "name": "Veba Kralı Golgoth" }
+  },
+  "item": {
+    "adventurers_ring": { "name": "Maceracı Yüzüğü", "description": "İrade gücü sağlayan basit bir yüzük." },
+    "scout_dagger": { "name": "İzci Hançeri", "description": "Hızlı bir çelik bıçak." }
+  },
+  "skill": {
+    "acid_spray": { "name": "Asit Püskürtme", "description": "Hasar veren ve Zehir uygulayan asit püskürtür" },
+    "toxic_slam": { "name": "Toksik Darbe", "description": "Büyük hasar ve Zehir uygulayan sert bir vuruş" },
+    "plague_bite": { "name": "Veba Isırığı", "description": "Vebalı dişlerle hasar veren ve Zehir uygulayan bir ısırık" }
+  },
+  "legacy": {
+    "VITALITY": {
+      "name": "Semavi Hayatiyet",
+      "desc": "Başlangıç HP limitini seviye başına +10 artırır."
+    },
+    "AETHER_FOCUS": {
+      "name": "Eterik Odak",
+      "desc": "Başlangıç Eter değerini seviye başına +15 artırır."
+    },
+    "FORTITUDE": {
+      "name": "İrade Direnci",
+      "desc": "Maksimum İrade sınırını seviye başına +1 artırır."
+    },
+    "GREED": {
+      "name": "Hükümdar Açgözlülüğü",
+      "desc": "Kazanılan altın miktarını seviye başına %20 artırır."
+    },
+    "RECOVERY": {
+      "name": "Ruhsal Yenilenme",
+      "desc": "Kamp ve eşyalardan gelen HP yenilenmesini seviye başına %15 artırır."
     }
   }
 }

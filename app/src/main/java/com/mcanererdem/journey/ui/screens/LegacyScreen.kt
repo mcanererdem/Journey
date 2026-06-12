@@ -15,6 +15,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import com.mcanererdem.journey.data.engine.LocalizationManager
 import com.mcanererdem.journey.data.model.PlayerProfile
 import com.mcanererdem.journey.data.model.LegacyUpgradeType
 import com.mcanererdem.journey.ui.theme.*
@@ -53,7 +54,7 @@ fun LegacyTab(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = if (activeLang == "TR") "Miras Gücü" else "Legacy Power",
+                        text = LocalizationManager.getString(activeLang, "ui.legacy_power"),
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold, letterSpacing = Dimens.LetterSpacingNormal),
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -65,7 +66,7 @@ fun LegacyTab(
                     )
                     Spacer(modifier = Modifier.height(Dimens.SpacingXs))
                     Text(
-                        text = if (activeLang == "TR") "Kule tırmanışlarını sıfırlayarak Miras Puanı kazanın." else "Earn Legacy Points by resetting your tower climbs.",
+                        text = LocalizationManager.getString(activeLang, "ui.legacy_earn_desc"),
                         style = MaterialTheme.typography.bodySmall,
                         textAlign = TextAlign.Center,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
@@ -98,11 +99,11 @@ fun LegacyTab(
                     Spacer(modifier = Modifier.width(Dimens.SpacingM))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = if (activeLang == "TR") "Giriş Serisi" else "Login Streak",
+                            text = LocalizationManager.getString(activeLang, "ui.legacy_login_streak"),
                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
                         )
                         Text(
-                            text = if (activeLang == "TR") "${player.loginStreak} Gün Boyunca Giriş Yapıldı" else "${player.loginStreak} Day(s) Active Streak",
+                            text = LocalizationManager.formatString(activeLang, "ui.legacy_active_days", player.loginStreak),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                         )
@@ -113,7 +114,7 @@ fun LegacyTab(
                             .padding(horizontal = Dimens.SpacingS, vertical = Dimens.SpacingXs)
                     ) {
                         Text(
-                            text = if (activeLang == "TR") "Aktif" else "Active",
+                            text = LocalizationManager.getString(activeLang, "ui.label_active"),
                             style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = ColorHeal)
                         )
                     }
@@ -125,7 +126,7 @@ fun LegacyTab(
         // Daily Quests Section Title
         item {
             Text(
-                text = if (activeLang == "TR") "GÜNLÜK GÖREVLER" else "DAILY QUESTS",
+                text = LocalizationManager.getString(activeLang, "ui.legacy_daily_quests"),
                 style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold, letterSpacing = Dimens.LetterSpacingNormal),
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                 modifier = Modifier
@@ -146,14 +147,14 @@ fun LegacyTab(
                     val claimed = questParts[2].toIntOrNull() ?: 0
 
                     val title = when (index) {
-                        0 -> if (activeLang == "TR") "Düşmanları Bertaraf Et" else "Defeat Foes"
-                        1 -> if (activeLang == "TR") "Hazineleri Yağmala" else "Pillage Chests"
-                        else -> if (activeLang == "TR") "İrade Gücünü Harca" else "Exert Willpower"
+                        0 -> LocalizationManager.getString(activeLang, "ui.legacy_quest_defeat")
+                        1 -> LocalizationManager.getString(activeLang, "ui.legacy_quest_pillage")
+                        else -> LocalizationManager.getString(activeLang, "ui.legacy_quest_will")
                     }
                     val description = when (index) {
-                        0 -> if (activeLang == "TR") "Kulede 3 dövüş veya bölüm sonu canavarı kazan." else "Win 3 combat or boss encounters in the tower."
-                        1 -> if (activeLang == "TR") "Kulede 2 Hazine/Sandık hücresiyle etkileşime gir." else "Interact with 2 Chest/Treasure nodes in the tower."
-                        else -> if (activeLang == "TR") "Kule tırmanışlarında 5 İrade gücü harca." else "Spend 5 Willpower on tower actions."
+                        0 -> LocalizationManager.getString(activeLang, "ui.legacy_quest_defeat_desc")
+                        1 -> LocalizationManager.getString(activeLang, "ui.legacy_quest_pillage_desc")
+                        else -> LocalizationManager.getString(activeLang, "ui.legacy_quest_will_desc")
                     }
 
                     Card(
@@ -213,7 +214,7 @@ fun LegacyTab(
                                         color = if (progress >= target) ColorHeal else MaterialTheme.colorScheme.primary
                                     )
                                     Text(
-                                        text = if (activeLang == "TR") "Ödül: +50 Altın, +15 Işıltı" else "Reward: +50 Gold, +15 Aether",
+                                        text = LocalizationManager.getString(activeLang, "ui.legacy_quest_reward"),
                                         style = MaterialTheme.typography.labelSmall,
                                         color = ColorSanctumPrimary
                                     )
@@ -230,9 +231,9 @@ fun LegacyTab(
                                 ) {
                                     Text(
                                         text = when {
-                                            claimed == 1 -> if (activeLang == "TR") "Alındı" else "Claimed"
-                                            progress >= target -> if (activeLang == "TR") "Ödülü Al" else "Claim Reward"
-                                            else -> if (activeLang == "TR") "Devam Ediyor" else "In Progress"
+                                            claimed == 1 -> LocalizationManager.getString(activeLang, "ui.legacy_claimed")
+                                            progress >= target -> LocalizationManager.getString(activeLang, "ui.legacy_claim_btn")
+                                            else -> LocalizationManager.getString(activeLang, "ui.legacy_in_progress")
                                         },
                                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                                         color = if (progress >= target && claimed == 0) Color.White else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
@@ -249,7 +250,7 @@ fun LegacyTab(
         item {
             Spacer(modifier = Modifier.height(Dimens.SpacingM))
             Text(
-                text = if (activeLang == "TR") "KALICI GÜÇLENDİRMELER" else "PERMANENT UPGRADES",
+                text = LocalizationManager.getString(activeLang, "ui.legacy_upgrades_title"),
                 style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold, letterSpacing = Dimens.LetterSpacingNormal),
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                 modifier = Modifier
@@ -281,12 +282,12 @@ fun LegacyTab(
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = if (activeLang == "TR") upgrade.nameTr else upgrade.nameEn,
+                                text = upgrade.getName(activeLang),
                                 style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
                                 color = if (lvl > 0) ColorSanctumPrimary else MaterialTheme.colorScheme.onSurface
                             )
                             Text(
-                                text = if (activeLang == "TR") upgrade.descriptionTr else upgrade.descriptionEn,
+                                text = upgrade.getDescription(activeLang),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                             )
@@ -343,9 +344,9 @@ fun LegacyTab(
                     ) {
                         Text(
                             text = if (isMax) {
-                                if (activeLang == "TR") "Maksimum Düzey" else "Maximum Level"
+                                LocalizationManager.getString(activeLang, "ui.legacy_max_level")
                             } else {
-                                if (activeLang == "TR") "Yükselt ($cost ⚜️)" else "Upgrade ($cost ⚜️)"
+                                LocalizationManager.formatString(activeLang, "ui.legacy_upgrade_btn", cost)
                             },
                             style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                             color = if (!isMax && player.legacyPoints >= cost) Color.Black else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)

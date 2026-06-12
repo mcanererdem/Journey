@@ -24,6 +24,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.mcanererdem.journey.data.engine.LocalizationManager
 import com.mcanererdem.journey.data.model.JournalEntry
 import com.mcanererdem.journey.ui.theme.*
 
@@ -35,12 +36,12 @@ fun formatTimestamp(timestamp: Long, lang: String): String {
     val hours = minutes / 60
 
     return when {
-         seconds < 60 -> if (lang == "TR") "Az önce" else "Just now"
-         minutes < 60 -> if (lang == "TR") "Göz açıp kapayana dek ($minutes dk önce)" else "Just moments ago ($minutes m ago)"
-         hours < 24 -> if (lang == "TR") "$hours saat önce" else "$hours hours ago"
+         seconds < 60 -> LocalizationManager.getString(lang, "ui.journal_just_now")
+         minutes < 60 -> LocalizationManager.formatString(lang, "ui.journal_moments_ago", minutes)
+         hours < 24 -> LocalizationManager.formatString(lang, "ui.journal_hours_ago", hours)
          else -> {
              val days = hours / 24
-             if (lang == "TR") "$days gün önce" else "$days days ago"
+             LocalizationManager.formatString(lang, "ui.journal_days_ago", days)
          }
     }
 }
@@ -61,11 +62,8 @@ fun JournalTab(
     val totalNet = journalList.sumOf { it.alignmentImpact }
 
     val filteredJournal = journalList.filter { entry ->
-        val textMatches = if (activeLang == "TR") {
-            entry.actionTakenTr.contains(searchQuery, ignoreCase = true)
-        } else {
-            entry.actionTakenEs.contains(searchQuery, ignoreCase = true)
-        } || "Floor ${entry.floor}".contains(searchQuery, ignoreCase = true) || "Kat ${entry.floor}".contains(searchQuery, ignoreCase = true)
+        val textMatches = entry.getActionTaken(activeLang).contains(searchQuery, ignoreCase = true)
+                || "Floor ${entry.floor}".contains(searchQuery, ignoreCase = true) || "Kat ${entry.floor}".contains(searchQuery, ignoreCase = true)
 
         val filterMatches = when (selectedFilter) {
             "SANCTUM" -> entry.alignmentImpact > 0
@@ -89,7 +87,7 @@ fun JournalTab(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = if (activeLang == "TR") "EBEDİ KRONOLOJİ GÜNCESİ" else "THE ETERNAL CHRONOLOGY",
+                    text = LocalizationManager.getString(activeLang, "ui.chronology_title"),
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold,
                         fontFamily = FontFamily.Serif
@@ -97,11 +95,7 @@ fun JournalTab(
                     color = MaterialTheme.colorScheme.primary
                 )
                 Text(
-                    text = if (activeLang == "TR") {
-                        "Tırmanışınız sırasında verdiğiniz kararların ve kader mühürlerinizin kutsal kaydı."
-                    } else {
-                        "The immutable history of your choices made across the 100 floors of the tower."
-                    },
+                    text = LocalizationManager.getString(activeLang, "ui.chronology_desc"),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                     modifier = Modifier.padding(top = Dimens.SpacingXs, bottom = Dimens.SpacingM)
@@ -117,7 +111,7 @@ fun JournalTab(
             ) {
                 Icon(
                     imageVector = Icons.Default.Delete,
-                    contentDescription = if (activeLang == "TR") "Geçmişi Sıfırla" else "Clear History",
+                    contentDescription = LocalizationManager.getString(activeLang, "ui.desc_dismiss"),
                     tint = ColorDanger
                 )
             }
@@ -146,7 +140,7 @@ fun JournalTab(
                     modifier = Modifier.weight(1f)
                 ) {
                     Text(
-                        text = if (activeLang == "TR") "Kararlar" else "Decisions",
+                        text = LocalizationManager.getString(activeLang, "ui.journal_stats_decisions"),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -163,7 +157,7 @@ fun JournalTab(
                     modifier = Modifier.weight(1f)
                 ) {
                     Text(
-                        text = if (activeLang == "TR") "Kutsal / Boşluk" else "Light / Abyss",
+                        text = LocalizationManager.getString(activeLang, "ui.journal_stats_light_abyss"),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -179,7 +173,7 @@ fun JournalTab(
                     modifier = Modifier.weight(1f)
                 ) {
                     Text(
-                        text = if (activeLang == "TR") "Net Odak" else "Net Balance",
+                        text = LocalizationManager.getString(activeLang, "ui.journal_stats_net_balance"),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -202,7 +196,7 @@ fun JournalTab(
         OutlinedTextField(
             value = searchQuery,
             onValueChange = { searchQuery = it },
-            placeholder = { Text(if (activeLang == "TR") "Macerada ara..." else "Search chronicles...") },
+            placeholder = { Text(LocalizationManager.getString(activeLang, "ui.journal_search_placeholder")) },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = Dimens.SpacingM)
@@ -231,7 +225,7 @@ fun JournalTab(
             verticalAlignment = Alignment.CenterVertically
         ) {
             val filters = listOf(
-                "ALL" to (if (activeLang == "TR") "Hepsi" else "All"),
+                "ALL" to LocalizationManager.getString(activeLang, "ui.label_all"),
                 "SANCTUM" to "✨ Sanctum",
                 "COVENANT" to "🔮 Covenant",
                 "NEUTRAL" to "⚖️ Neutral"
@@ -298,10 +292,10 @@ fun JournalTab(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("📜", fontSize = 48.sp, modifier = Modifier.padding(bottom = Dimens.SpacingS))
                     Text(
-                        text = if (activeLang == "TR") {
-                            if (searchQuery.isNotEmpty() || selectedFilter != "ALL") "Aranan kriterlere uygun kayıt bulunamadı." else "Hala tırmanışa devam ediyorsun. Kronolojide bir kayıt yok."
+                        text = if (searchQuery.isNotEmpty() || selectedFilter != "ALL") {
+                            LocalizationManager.getString(activeLang, "ui.journal_no_match")
                         } else {
-                            if (searchQuery.isNotEmpty() || selectedFilter != "ALL") "No ledger logs match your criteria." else "Your Chronology registry is empty. Begin climbing."
+                            LocalizationManager.getString(activeLang, "ui.chronology_empty")
                         },
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
@@ -401,30 +395,28 @@ fun JournalTab(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = if (activeLang == "TR") "Kat ${entry.floor} Güncesi" else "Floor ${entry.floor} History",
+                                        text = LocalizationManager.formatString(activeLang, "ui.journal_entry_header", entry.floor),
                                         style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
                                         color = MaterialTheme.colorScheme.primary
                                     )
 
+                                    val momentumLabel = LocalizationManager.getString(activeLang, "ui.label_momentum")
+                                    val neutralLabel = LocalizationManager.getString(activeLang, "ui.label_neutral")
+                                    
                                     val shiftSymbol = when {
-                                         entry.alignmentImpact > 0 -> "✨ +${entry.alignmentImpact} Momentum"
-                                         entry.alignmentImpact < 0 -> "🔮 ${entry.alignmentImpact} Momentum"
-                                        else -> "⚖️ Neutral"
-                                    }
-                                    val shiftSymbolTr = when {
-                                         entry.alignmentImpact > 0 -> "✨ +${entry.alignmentImpact} Momentum"
-                                         entry.alignmentImpact < 0 -> "🔮 ${entry.alignmentImpact} Momentum"
-                                        else -> "⚖️ Nötr"
+                                         entry.alignmentImpact > 0 -> "✨ +${entry.alignmentImpact} $momentumLabel"
+                                         entry.alignmentImpact < 0 -> "🔮 ${entry.alignmentImpact} $momentumLabel"
+                                        else -> "⚖️ $neutralLabel"
                                     }
                                     Text(
-                                        text = if (activeLang == "TR") shiftSymbolTr else shiftSymbol,
+                                        text = shiftSymbol,
                                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                                         color = if (entry.alignmentImpact > 0) ColorSanctumPrimary else if (entry.alignmentImpact < 0) ColorCovenantGlow else MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
                                 Spacer(modifier = Modifier.height(Dimens.SpacingS))
                                 Text(
-                                    text = if (activeLang == "TR") entry.actionTakenTr else entry.actionTakenEs,
+                                    text = entry.getActionTaken(activeLang),
                                     style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Serif, lineHeight = Dimens.TextL),
                                     color = MaterialTheme.colorScheme.onSurface
                                 )

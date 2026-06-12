@@ -1,6 +1,6 @@
 package com.mcanererdem.journey.data.engine
 
-import com.mcanererdem.journey.data.model.PlayerProfile
+import com.mcanererdem.journey.data.model.*
 
 object FloorStateManager {
 
@@ -9,11 +9,28 @@ object FloorStateManager {
      */
     data class FloorObjective(
         val id: String,
-        val textEn: String,
-        val textTr: String,
+        val textKey: String,
+        val textArgs: List<Any> = emptyList(),
         val isCompleted: Boolean,
         val nodeIndex: Int? = null // if tied to a specific node index
     )
+
+    fun FloorObjective.getText(lang: String): String {
+        val translatedArgs = textArgs.map { arg ->
+            if (arg is String && arg.contains(".")) {
+                LocalizationManager.getString(lang, arg)
+            } else {
+                arg.toString()
+            }
+        }.toTypedArray()
+        
+        val formatString = LocalizationManager.getString(lang, textKey)
+        return try {
+            String.format(formatString, *translatedArgs)
+        } catch (e: Exception) {
+            formatString
+        }
+    }
 
     /**
      * Gets progress stats (completed nodes, total nodes) for an active floor.
@@ -51,47 +68,36 @@ object FloorStateManager {
         objectives.add(
             FloorObjective(
                 id = "intro_scenario_floor_$floor",
-                textEn = "Resolve the gateway crisis: '${blueprint.introScenario.titleEn}'",
-                textTr = "Yükseliş geçidini çözümle: '${blueprint.introScenario.titleTr}'",
+                textKey = "ui.objective_intro_format",
+                textArgs = listOf(blueprint.introScenario.titleKey),
                 isCompleted = introScenarioCompleted
             )
         )
 
-        // 2. Node objectives from the JSON blueprint
-        blueprint.nodes.forEach { node ->
+        // 2. Node objectives
+        blueprint.nodes.forEachIndexed { index, node ->
             val nodeCompleted = player.currentFloor > floor || 
-                    (player.currentFloor == floor && (player.currentNodeIndex > node.index || (player.currentNodeIndex == node.index && player.currentNodeCompleted)))
+                    (player.currentFloor == floor && (player.currentNodeIndex > index || (player.currentNodeIndex == index && player.currentNodeCompleted)))
             
-            val nodeTypePrefixEn = when (node.type) {
-                NodeType.COMBAT -> "Combat: Conquer"
-                NodeType.BOSS -> "Apex Boss: Defeat"
-                NodeType.CHEST -> "Exploration: Loot"
-                NodeType.SHRINE -> "Sacrament: Pay homage at"
-                NodeType.MERCHANT -> "Trade: Interact with"
-                NodeType.NARRATIVE -> "Narrative: Witness"
-                NodeType.CAMP -> "Camp: Rest at"
-                NodeType.EVENT -> "Event: Participate in"
-                NodeType.SECRET -> "Secret: Discover"
-            }
-            val nodeTypePrefixTr = when (node.type) {
-                NodeType.COMBAT -> "Dövüş: Alt Et"
-                NodeType.BOSS -> "Zirve Canavarı: Yen"
-                NodeType.CHEST -> "Keşif: Yağmala"
-                NodeType.SHRINE -> "Kutsal Alan: Bağ kur"
-                NodeType.MERCHANT -> "Ticaret: Pazarlık yap"
-                NodeType.NARRATIVE -> "Hikaye: Şahit ol"
-                NodeType.CAMP -> "Kamp: Dinlen"
-                NodeType.EVENT -> "Etkinlik: Katıl"
-                NodeType.SECRET -> "Gizem: Keşfet"
+            val nodeTypePrefixKey = when (node.type) {
+                NodeType.COMBAT -> "ui.node_prefix_combat"
+                NodeType.BOSS -> "ui.node_prefix_boss"
+                NodeType.CHEST -> "ui.node_prefix_chest"
+                NodeType.SHRINE -> "ui.node_prefix_shrine"
+                NodeType.MERCHANT -> "ui.node_prefix_merchant"
+                NodeType.NARRATIVE -> "ui.node_prefix_narrative"
+                NodeType.CAMP -> "ui.node_prefix_camp"
+                NodeType.EVENT -> "ui.node_prefix_event"
+                NodeType.SECRET -> "ui.node_prefix_secret"
             }
 
             objectives.add(
                 FloorObjective(
-                    id = "node_obj_${floor}_${node.index}",
-                    textEn = "$nodeTypePrefixEn '${node.title}'",
-                    textTr = "$nodeTypePrefixTr '${node.titleTr}'",
+                    id = "node_obj_${floor}_$index",
+                    textKey = "ui.objective_node_format",
+                    textArgs = listOf(nodeTypePrefixKey, node.titleKey),
                     isCompleted = nodeCompleted,
-                    nodeIndex = node.index
+                    nodeIndex = index
                 )
             )
         }
@@ -103,10 +109,11 @@ object FloorStateManager {
      * Formats objective list for simple progression tracking
      */
     fun getFormattedObjectiveList(floor: Int, player: PlayerProfile, isTr: Boolean): List<String> {
+        val lang = if (isTr) "TR" else "EN"
         val objs = getObjectivesForFloor(floor, player)
         return objs.map { obj ->
             val status = if (obj.isCompleted) "✅" else "⏳"
-            val text = if (isTr) obj.textTr else obj.textEn
+            val text = obj.getText(lang)
             "$status $text"
         }
     }
@@ -129,15 +136,15 @@ object FloorStateManager {
     sealed class TransitionResult {
         data class Success(
             val updatedProfile: PlayerProfile,
-            val messageEn: String,
-            val messageTr: String,
-            val journalEn: String,
-            val journalTr: String
+            val messageKey: String,
+            val messageArgs: List<Any> = emptyList(),
+            val journalKey: String,
+            val journalArgs: List<Any> = emptyList()
         ) : TransitionResult()
 
         data class Failure(
-            val reasonEn: String,
-            val reasonTr: String
+            val reasonKey: String,
+            val reasonArgs: List<Any> = emptyList()
         ) : TransitionResult()
     }
 
@@ -148,16 +155,15 @@ object FloorStateManager {
     fun attemptFloorTransition(player: PlayerProfile, targetFloor: Int): TransitionResult {
         if (targetFloor !in 1..3) {
             return TransitionResult.Failure(
-                reasonEn = "Direct state transitions restricted to Handcrafted Floors 1-3.",
-                reasonTr = "Doğrudan bölge geçişleri el yapımı 1-3. Katlar arasında sınırlandırılmıştır."
+                reasonKey = "ui.transition_fail_restricted"
             )
         }
 
         val currentFloor = player.currentFloor
         if (targetFloor == currentFloor) {
             return TransitionResult.Failure(
-                reasonEn = "Already on Floor $currentFloor.",
-                reasonTr = "$currentFloor. Katta bulunuyorsunuz."
+                reasonKey = "ui.transition_fail_already_there",
+                reasonArgs = listOf(currentFloor)
             )
         }
 
@@ -166,19 +172,17 @@ object FloorStateManager {
             // Must have cleared previous floors sequentially
             if (targetFloor != currentFloor + 1) {
                 return TransitionResult.Failure(
-                    reasonEn = "Sequentially ascend floor by floor. Clear current floor first.",
-                    reasonTr = "Sırayla, kat kat yükselmelisiniz. Önce mevcut katı tamamlayın."
+                    reasonKey = "ui.transition_fail_sequential"
                 )
             }
 
             if (!canAscendToNextFloor(player)) {
                 val blueprint = FloorBlueprintSystem.getBlueprintForFloor(currentFloor, player)
                 val bossNode = blueprint.nodes.lastOrNull()
-                val bossName = bossNode?.title ?: "Boss"
-                val bossNameTr = bossNode?.titleTr ?: "Lider"
+                val bossNameKey = bossNode?.titleKey ?: "ui.label_boss"
                 return TransitionResult.Failure(
-                    reasonEn = "Defeat the Apex Boss '$bossName' of Floor $currentFloor before ascending.",
-                    reasonTr = "Bir üst kata geçmeden önce $currentFloor. Katın Zirve Canavarı '$bossNameTr' liderini yenmelisiniz."
+                    reasonKey = "ui.transition_fail_defeat_boss",
+                    reasonArgs = listOf(bossNameKey, currentFloor)
                 )
             }
         }
@@ -189,8 +193,8 @@ object FloorStateManager {
 
         if (player.currentWill < transitionCost) {
             return TransitionResult.Failure(
-                reasonEn = "Insufficient Will. Requires $transitionCost Will to transcend floor boundaries.",
-                reasonTr = "Yetersiz İrade gücü. Katlar arası geçiş yapmak için $transitionCost İrade gerekir."
+                reasonKey = "ui.transition_fail_will",
+                reasonArgs = listOf(transitionCost)
             )
         }
 
@@ -213,21 +217,14 @@ object FloorStateManager {
             lastUpdated = System.currentTimeMillis()
         )
 
-        val directionWordEn = if (targetFloor > currentFloor) "ascended" else "backtracked"
-        val directionWordTr = if (targetFloor > currentFloor) "yükseldi" else "geri döndü"
-
-        val msgEn = "Successfully transitioned to Floor $targetFloor."
-        val msgTr = "Başarıyla $targetFloor. Kata geçiş yaptınız."
-
-        val journalEn = "Transitioned floors from $currentFloor to $targetFloor. Will cost: $transitionCost. Direction: $directionWordEn."
-        val journalTr = "$currentFloor. Kattan $targetFloor. Kata geçiş yapıldı. İrade bedeli: $transitionCost. Hareket: $directionWordTr."
+        val directionWordKey = if (targetFloor > currentFloor) "ui.direction_ascended" else "ui.direction_backtracked"
 
         return TransitionResult.Success(
             updatedProfile = updated,
-            messageEn = msgEn,
-            messageTr = msgTr,
-            journalEn = journalEn,
-            journalTr = journalTr
+            messageKey = "ui.transition_success_msg",
+            messageArgs = listOf(targetFloor),
+            journalKey = "ui.transition_success_journal",
+            journalArgs = listOf(currentFloor, targetFloor, transitionCost, directionWordKey)
         )
     }
 }

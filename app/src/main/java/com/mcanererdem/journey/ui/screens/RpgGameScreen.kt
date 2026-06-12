@@ -11,8 +11,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import com.mcanererdem.journey.data.engine.AdventureNode
-import com.mcanererdem.journey.data.engine.NodeType
+import com.mcanererdem.journey.data.model.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.*
@@ -111,7 +110,6 @@ fun RpgGameScreen(
                 )
             }
 
-            // Flash action logger alert banner
             if (showNotificationBanner) {
                 Card(
                     modifier = Modifier
@@ -131,7 +129,7 @@ fun RpgGameScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Info,
-                            contentDescription = "Notification",
+                            contentDescription = LocalizationManager.getString(activeLang, "ui.desc_notification"),
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(Dimens.IconS)
                         )
@@ -151,7 +149,7 @@ fun RpgGameScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Close,
-                                contentDescription = "Dismiss",
+                                contentDescription = LocalizationManager.getString(activeLang, "ui.desc_dismiss"),
                                 tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                             )
                         }
@@ -169,6 +167,7 @@ fun RpgGameScreen(
                     NavigationTab.TOWER -> TowerClimbTab(
                         player = player,
                         nodes = currentFloorNodes,
+                        scenario = scenario,
                         activeEnemyHp = activeEnemyHp,
                         combatLog = combatLog,
                         activeLang = activeLang,
@@ -180,6 +179,7 @@ fun RpgGameScreen(
                         onScoutClick = { viewModel.performScouting() },
                         onLockedClicked = { en, tr -> viewModel.showActionMessage(en, tr) },
                         onChoiceSelected = { viewModel.selectNodeChoice(it) },
+                        onScenarioChoiceSelected = { viewModel.handleRpgChoice(it) },
                         onNextNodeClick = { depth, column -> viewModel.selectNodeAt(depth, column) },
                         onAscendFloorClick = { viewModel.ascendToNextFloor() },
                         onCombatAction = { viewModel.executeCombatTurn(it) },
@@ -239,14 +239,14 @@ fun RpgGameScreen(
             onDismissRequest = { viewModel.setPurchaseDialogShown(false) },
             confirmButton = {
                 TextButton(onClick = { viewModel.setPurchaseDialogShown(false) }) {
-                    Text(if (activeLang == "TR") "Kapat" else "Close")
+                    Text(LocalizationManager.getString(activeLang, "ui.btn_dismiss"))
                 }
             },
             title = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text("⚡ ", fontSize = Dimens.TextXl)
                     Text(
-                        text = if (activeLang == "TR") "İRADEYİ YENİLE" else "RECHARGE WILLPOWER",
+                        text = LocalizationManager.getString(activeLang, "ui.will_recharge_title"),
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -258,11 +258,7 @@ fun RpgGameScreen(
                     verticalArrangement = Arrangement.spacedBy(Dimens.SpacingM)
                 ) {
                     Text(
-                        text = if (activeLang == "TR") {
-                            "Kule katlarını tırmanmak (-1/sektör, -2/kat transit) ve kararlar seçmek için irade gerekir. Sponsor videoları izleyerek bedava irade kazanın veya sınırsız irade için Sezonluk Geçiş satın alın!"
-                        } else {
-                            "Willpower is required to climb sectors (-1/sector, -2/floor transit) and unlock critical decisions. Watch sponsor videos to earn free willpower, or acquire seasonal passes for infinite willpower!"
-                        },
+                        text = LocalizationManager.getString(activeLang, "ui.will_recharge_desc"),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -278,17 +274,13 @@ fun RpgGameScreen(
                     ) {
                         Column(modifier = Modifier.padding(Dimens.SpacingM)) {
                             Text(
-                                text = if (activeLang == "TR") "🎬 MİNİ REKLAM BÖLÜMÜ" else "🎬 SPONSOR REWARDED AD",
+                                text = LocalizationManager.getString(activeLang, "ui.will_ad_title"),
                                 style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
                                 color = MaterialTheme.colorScheme.primary
                             )
                             Spacer(modifier = Modifier.height(Dimens.SpacingXs))
                             Text(
-                                text = if (activeLang == "TR") {
-                                    "Kısa sponsor klibini izleyin ve hediye +5 İrade kazanın! (60sn bekleme süresi vardır)"
-                                } else {
-                                    "Watch a quick sponsor clip to claim +5 Willpower! (60s cooldown)"
-                                },
+                                text = LocalizationManager.getString(activeLang, "ui.will_ad_desc"),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -308,7 +300,7 @@ fun RpgGameScreen(
                                     )
                                     Spacer(modifier = Modifier.width(Dimens.SpacingS))
                                     Text(
-                                        text = if (activeLang == "TR") "Sponsor reklam izleniyor (5sn)..." else "Watching sponsor clip (5s)...",
+                                        text = LocalizationManager.getString(activeLang, "ui.will_ad_watching"),
                                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                                         color = MaterialTheme.colorScheme.primary
                                     )
@@ -325,9 +317,9 @@ fun RpgGameScreen(
                                 ) {
                                     Text(
                                         text = if (adCooldownSeconds > 0) {
-                                            if (activeLang == "TR") "Bekleme Süresi (${adCooldownSeconds}sn)" else "Ad on Cooldown (${adCooldownSeconds}s)"
+                                            LocalizationManager.formatString(activeLang, "ui.will_ad_cooldown", adCooldownSeconds)
                                         } else {
-                                            if (activeLang == "TR") "İZLE VE +5 İRADE KAZAN" else "WATCH AD TO GET +5 WILL"
+                                            LocalizationManager.getString(activeLang, "ui.will_ad_btn")
                                         },
                                         style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
                                     )
@@ -339,7 +331,7 @@ fun RpgGameScreen(
                     HorizontalDivider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f))
 
                     Text(
-                        text = if (activeLang == "TR") "💎 PREMIUM MARKET TEKLİFLERİ" else "💎 PREMIUM STORE OFFERS",
+                        text = LocalizationManager.getString(activeLang, "ui.will_premium_title"),
                         style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
                         color = ColorSanctumPrimary
                     )
@@ -358,11 +350,11 @@ fun RpgGameScreen(
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = if (activeLang == "TR") "⚡ İrade Özütü İksiri" else "⚡ Elixir of Willpower",
+                                    text = LocalizationManager.getString(activeLang, "ui.will_pack_elixir"),
                                     style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
                                 )
                                 Text(
-                                    text = if (activeLang == "TR") "+10 İrade Gücü + 50 Altın bonus" else "+10 Willpower + 50 Gold bonus",
+                                    text = LocalizationManager.getString(activeLang, "ui.will_pack_elixir_desc"),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -389,11 +381,11 @@ fun RpgGameScreen(
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = if (activeLang == "TR") "⚡ Hükümdar İrade Sandığı" else "⚡ Sovereign Will Chest",
+                                    text = LocalizationManager.getString(activeLang, "ui.will_pack_chest"),
                                     style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
                                 )
                                 Text(
-                                    text = if (activeLang == "TR") "+40 İrade Gücü + 200 Altın bonus" else "+40 Willpower + 200 Gold bonus",
+                                    text = LocalizationManager.getString(activeLang, "ui.will_pack_chest_desc"),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -422,17 +414,13 @@ fun RpgGameScreen(
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text("👑 ", fontSize = Dimens.TextL)
                                     Text(
-                                        text = if (activeLang == "TR") "SEZONLUK HÜKÜMDAR KARTI" else "SEASONAL SOVEREIGN PASS",
+                                        text = LocalizationManager.getString(activeLang, "ui.will_season_pass"),
                                         style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.ExtraBold),
                                         color = ColorCovenantGlow
                                     )
                                 }
                                 Text(
-                                    text = if (activeLang == "TR") {
-                                        "SINIRSIZ İRADE! Tüm sektör tırmanışları ve transitler bedava olur!"
-                                    } else {
-                                        "INFINITE WILLPOWER! All climbings, transits and event choices won't cost any Willpower!"
-                                    },
+                                    text = LocalizationManager.getString(activeLang, "ui.will_season_pass_desc"),
                                     style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -452,11 +440,12 @@ fun RpgGameScreen(
     // Google Play Simulated Checkout Dialogue
     if (simulatedBillingSku != null) {
         val activeSku = simulatedBillingSku!!
-        val productName = when (activeSku) {
-            "pack_elixir" -> if (activeLang == "TR") "İrade Özütü İksiri" else "Elixir of Willpower"
-            "pack_chest" -> if (activeLang == "TR") "Hükümdar İrade Sandığı" else "Sovereign Will Chest"
-            else -> if (activeLang == "TR") "Sezonluk Hükümdar Kartı" else "Seasonal Sovereign Pass"
+        val productKey = when (activeSku) {
+            "pack_elixir" -> "ui.will_pack_elixir"
+            "pack_chest" -> "ui.will_pack_chest"
+            else -> "ui.will_season_pass"
         }
+        val productName = LocalizationManager.getString(activeLang, productKey)
         val productPrice = when (activeSku) {
             "pack_elixir" -> "$1.99"
             "pack_chest" -> "$3.99"
@@ -473,27 +462,23 @@ fun RpgGameScreen(
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = ColorHeal)
                 ) {
-                    Text(if (activeLang == "TR") "Simüle Satın Alımı Tamamla" else "Simulate Approved Purchase")
+                    Text(LocalizationManager.getString(activeLang, "ui.billing_btn_complete"))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { simulatedBillingSku = null }) {
-                    Text(if (activeLang == "TR") "Vazgeç" else "Cancel")
+                    Text(LocalizationManager.getString(activeLang, "ui.billing_btn_cancel"))
                 }
             },
             title = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("🤖 Google Play Billing", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+                    Text(LocalizationManager.getString(activeLang, "ui.billing_title"), style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
                 }
             },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(Dimens.SpacingM)) {
                     Text(
-                        text = if (activeLang == "TR") {
-                            "Güvenli Google Play ödemesi simüle ediliyor. Kart onay veya Google Pay arayüzü başlatıldı."
-                        } else {
-                            "Secured Google Play payment service is simulated. Card approval flow initialized."
-                        },
+                        text = LocalizationManager.getString(activeLang, "ui.billing_desc"),
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Card(
@@ -507,12 +492,12 @@ fun RpgGameScreen(
                             )
                             Spacer(modifier = Modifier.height(Dimens.SpacingXs))
                             Text(
-                                text = "${if (activeLang == "TR") "Fiyat: " else "Price: "} $productPrice",
+                                text = LocalizationManager.getString(activeLang, "ui.billing_price_label") + productPrice,
                                 style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold)
                             )
                             Spacer(modifier = Modifier.height(Dimens.SpacingS))
                             Text(
-                                text = if (activeLang == "TR") "Satıcı: AI Studio Game Studio s.r.o." else "Merchant: AI Studio Game Studio s.r.o.",
+                                text = LocalizationManager.getString(activeLang, "ui.billing_merchant"),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                             )
@@ -544,326 +529,313 @@ fun SettingsTab(
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
                 imageVector = Icons.Default.Settings,
-                contentDescription = "Settings",
+                contentDescription = LocalizationManager.getString(activeLang, "ui.desc_settings"),
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(end = 8.dp)
             )
             Text(
-                text = if (activeLang == "TR") "OYUN AYARLARI" else "GAME SETTINGS",
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                color = MaterialTheme.colorScheme.primary
-            )
-        }
-
-        // Category 1: Player Account & Stats
-        Text(
-            text = if (activeLang == "TR") "👤 KAHRAMAN DURUMU & STATLAR" else "👤 HERO STATUS & STATS",
-            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+            text = LocalizationManager.getString(activeLang, "ui.settings_title"),
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
             color = MaterialTheme.colorScheme.primary
         )
+    }
 
-        player?.let { p ->
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
-            ) {
-                Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = if (activeLang == "TR") "İsim:" else "Hero Name:",
-                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold)
-                        )
-                        Text(
-                            text = p.playerName,
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = if (activeLang == "TR") "Seviye / Deneyim (EXP):" else "Level / Experience (EXP):",
-                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold)
-                        )
-                        Text(
-                            text = "Lv ${p.level} (${p.exp}/${p.maxExp} EXP)",
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = if (activeLang == "TR") "Momentum:" else "Momentum Score:",
-                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold)
-                        )
-                        val alignText = when {
-                             p.momentum > 50 -> "Light / Saintly (+${p.momentum - 50})"
-                             p.momentum < 50 -> "Abyss / Void (${p.momentum - 50})"
-                             else -> "Neutral (50)"
-                        }
-                        val alignTextTr = when {
-                            p.momentum > 50 -> "Işık / Aziz (+${p.momentum - 50})"
-                            p.momentum < 50 -> "Boşluk / Kaos (${p.momentum - 50})"
-                            else -> "Nötr (50)"
-                        }
-                        Text(
-                            text = if (activeLang == "TR") alignTextTr else alignText,
-                            style = MaterialTheme.typography.bodySmall.copy(
-                                fontWeight = FontWeight.SemiBold,
-                                color = if (p.momentum > 50) ColorSanctumPrimary else if (p.momentum < 50) ColorCovenantGlow else MaterialTheme.colorScheme.onSurface
-                            )
-                        )
-                    }
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = if (activeLang == "TR") "Sınıf (Class):" else "Current Class:",
-                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold)
-                        )
-                        Text(
-                            text = p.chosenClass,
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = if (activeLang == "TR") "Kuşanılmış Unvan:" else "Equipped Title:",
-                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold)
-                        )
-                        Text(
-                            text = p.equippedTitle.ifEmpty { if (activeLang == "TR") "Yok" else "None" },
-                            style = MaterialTheme.typography.bodySmall.copy(fontStyle = FontStyle.Italic)
-                        )
-                    }
-                 }
-            }
-        }
+    // Category 1: Player Account & Stats
+    Text(
+        text = LocalizationManager.getString(activeLang, "ui.settings_hero_status"),
+        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+        color = MaterialTheme.colorScheme.primary
+    )
 
-        HorizontalDivider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f))
-
-        // Language Selection option
-        Column(verticalArrangement = Arrangement.spacedBy(Dimens.SpacingS)) {
-            Text(
-                text = if (activeLang == "TR") "🌐 DİL AYARI" else "🌐 LANGUAGE SETTINGS",
-                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
-                color = MaterialTheme.colorScheme.primary
-            )
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { viewModel.changeLanguage(if (activeLang == "TR") "EN" else "TR") }
-                    .padding(vertical = Dimens.SpacingXs),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = if (activeLang == "TR") "Oyun Dili" else "Game Language",
-                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)
-                )
-                Button(
-                    onClick = { viewModel.changeLanguage(if (activeLang == "TR") "EN" else "TR") },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+    player?.let { p ->
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+        ) {
+            Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = if (activeLang == "TR") "English (EN)" else "Türkçe (TR)",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary
+                        text = LocalizationManager.getString(activeLang, "ui.settings_label_name"),
+                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold)
+                    )
+                    Text(
+                        text = p.playerName,
+                        style = MaterialTheme.typography.bodySmall
                     )
                 }
-            }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = LocalizationManager.getString(activeLang, "ui.settings_label_level_exp"),
+                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold)
+                    )
+                    Text(
+                        text = "Lv ${p.level} (${p.exp}/${p.maxExp} EXP)",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = LocalizationManager.getString(activeLang, "ui.settings_label_momentum"),
+                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold)
+                    )
+                    val alignText = when {
+                         p.momentum > 50 -> LocalizationManager.formatString(activeLang, "ui.settings_momentum_light", p.momentum - 50)
+                         p.momentum < 50 -> LocalizationManager.formatString(activeLang, "ui.settings_momentum_abyss", p.momentum - 50)
+                         else -> LocalizationManager.getString(activeLang, "ui.settings_momentum_neutral")
+                    }
+                    Text(
+                        text = alignText,
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            fontWeight = FontWeight.SemiBold,
+                            color = if (p.momentum > 50) ColorSanctumPrimary else if (p.momentum < 50) ColorCovenantGlow else MaterialTheme.colorScheme.onSurface
+                        )
+                    )
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = LocalizationManager.getString(activeLang, "ui.settings_label_class"),
+                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold)
+                    )
+                    Text(
+                        text = p.chosenClass,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = LocalizationManager.getString(activeLang, "ui.settings_label_title"),
+                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold)
+                    )
+                    Text(
+                        text = p.equippedTitle.ifEmpty { LocalizationManager.getString(activeLang, "ui.settings_none") },
+                        style = MaterialTheme.typography.bodySmall.copy(fontStyle = FontStyle.Italic)
+                    )
+                }
+             }
         }
+    }
 
-        HorizontalDivider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f))
+    HorizontalDivider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f))
 
-        // Category 2: Theme & Palette Settings (with activeThemeSide reactivity)
+    // Language Selection option
+    Column(verticalArrangement = Arrangement.spacedBy(Dimens.SpacingS)) {
         Text(
-            text = if (activeLang == "TR") "🎨 GÖRÜNÜM & TEMA SEÇİMİ" else "🎨 DISPLAY & THEME SETTINGS",
+            text = LocalizationManager.getString(activeLang, "ui.settings_lang_title"),
             style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
             color = MaterialTheme.colorScheme.primary
         )
-
-        Column(verticalArrangement = Arrangement.spacedBy(Dimens.SpacingS)) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { viewModel.changeLanguage(if (activeLang == "TR") "EN" else "TR") }
+                .padding(vertical = Dimens.SpacingXs),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
             Text(
-                text = if (activeLang == "TR") {
-                    "Nasıl bir kule ambiyansı istersiniz? Hizalanmaya Göre seçeneği, hizalanma puanınıza göre temayı otomatik belirler."
-                } else {
-                    "How do you want the environment to look? 'Alignment Driven' dynamically chooses between Sanctum and Abyss based on your alignment score."
-                },
+                text = LocalizationManager.getString(activeLang, "ui.settings_lang_label"),
+                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)
+            )
+            Button(
+                onClick = { viewModel.changeLanguage(if (activeLang == "TR") "EN" else "TR") },
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+            ) {
+                Text(
+                    text = LocalizationManager.getString(activeLang, "ui.settings_lang_btn"),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+    }
+
+    HorizontalDivider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f))
+
+    // Category 2: Theme & Palette Settings (with activeThemeSide reactivity)
+    Text(
+        text = LocalizationManager.getString(activeLang, "ui.settings_theme_title"),
+        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+        color = MaterialTheme.colorScheme.primary
+    )
+
+    Column(verticalArrangement = Arrangement.spacedBy(Dimens.SpacingS)) {
+        Text(
+            text = LocalizationManager.getString(activeLang, "ui.settings_theme_desc"),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        // Alignment Driven option
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { viewModel.setThemeSelection("ALIGNMENT") }
+                .padding(vertical = Dimens.SpacingXs)
+        ) {
+            RadioButton(
+                selected = themeSelection == "ALIGNMENT",
+                onClick = { viewModel.setThemeSelection("ALIGNMENT") },
+                modifier = Modifier.testTag("theme_radio_alignment")
+            )
+            Spacer(modifier = Modifier.width(Dimens.SpacingS))
+            Text(
+                text = LocalizationManager.getString(activeLang, "ui.settings_theme_alignment"),
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
+
+        // Light (Sanctum) option
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { viewModel.setThemeSelection("LIGHT") }
+                .padding(vertical = Dimens.SpacingXs)
+        ) {
+            RadioButton(
+                selected = themeSelection == "LIGHT",
+                onClick = { viewModel.setThemeSelection("LIGHT") },
+                modifier = Modifier.testTag("theme_radio_light")
+            )
+            Spacer(modifier = Modifier.width(Dimens.SpacingS))
+            Text(
+                text = LocalizationManager.getString(activeLang, "ui.settings_theme_light"),
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
+
+        // Abyss (Covenant) option
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { viewModel.setThemeSelection("ABYSS") }
+                .padding(vertical = Dimens.SpacingXs)
+        ) {
+            RadioButton(
+                selected = themeSelection == "ABYSS",
+                onClick = { viewModel.setThemeSelection("ABYSS") },
+                modifier = Modifier.testTag("theme_radio_abyss")
+            )
+            Spacer(modifier = Modifier.width(Dimens.SpacingS))
+            Text(
+                text = LocalizationManager.getString(activeLang, "ui.settings_theme_abyss"),
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
+    }
+
+    HorizontalDivider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f))
+
+    // Category 3: Display Settings & Notifications
+    Text(
+        text = LocalizationManager.getString(activeLang, "ui.settings_notif_title"),
+        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+        color = MaterialTheme.colorScheme.primary
+    )
+
+    // Show Notification Card Switch
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = LocalizationManager.getString(activeLang, "ui.settings_notif_banner"),
+                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)
+            )
+            Text(
+                text = LocalizationManager.getString(activeLang, "ui.settings_notif_banner_desc"),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-
-            // Alignment Driven option
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { viewModel.setThemeSelection("ALIGNMENT") }
-                    .padding(vertical = Dimens.SpacingXs)
-            ) {
-                RadioButton(
-                    selected = themeSelection == "ALIGNMENT",
-                    onClick = { viewModel.setThemeSelection("ALIGNMENT") },
-                    modifier = Modifier.testTag("theme_radio_alignment")
-                )
-                Spacer(modifier = Modifier.width(Dimens.SpacingS))
-                Text(
-                    text = if (activeLang == "TR") "Hizalanmaya Göre (Dinamik)" else "Alignment Driven (Dynamic)",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-
-            // Light (Sanctum) option
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { viewModel.setThemeSelection("LIGHT") }
-                    .padding(vertical = Dimens.SpacingXs)
-            ) {
-                RadioButton(
-                    selected = themeSelection == "LIGHT",
-                    onClick = { viewModel.setThemeSelection("LIGHT") },
-                    modifier = Modifier.testTag("theme_radio_light")
-                )
-                Spacer(modifier = Modifier.width(Dimens.SpacingS))
-                Text(
-                    text = if (activeLang == "TR") "Işık Teması (Celestial Sanctum)" else "Light Theme (Celestial Sanctum)",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-
-            // Abyss (Covenant) option
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { viewModel.setThemeSelection("ABYSS") }
-                    .padding(vertical = Dimens.SpacingXs)
-            ) {
-                RadioButton(
-                    selected = themeSelection == "ABYSS",
-                    onClick = { viewModel.setThemeSelection("ABYSS") },
-                    modifier = Modifier.testTag("theme_radio_abyss")
-                )
-                Spacer(modifier = Modifier.width(Dimens.SpacingS))
-                Text(
-                    text = if (activeLang == "TR") "Boşluk Teması (Abyss Covenant)" else "Abyss Theme (Void Covenant)",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
         }
-
-        HorizontalDivider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f))
-
-        // Category 3: Display Settings & Notifications
-        Text(
-            text = if (activeLang == "TR") {
-                "🔔 BİLDİRİM & GÖRÜNTÜLEME AYARLARI"
-            } else {
-                "🔔 NOTIFICATIONS & PREFERENCES"
-            },
-            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
-            color = MaterialTheme.colorScheme.primary
+        Switch(
+            checked = showNotificationBanner,
+            onCheckedChange = { viewModel.setShowNotificationBanner(it) },
+            modifier = Modifier.testTag("switch_notification_banner")
         )
+    }
 
-        // Show Notification Card Switch
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = if (activeLang == "TR") "Hızlı Karar Bildirimi" else "Action Banner Notification",
-                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)
-                )
-                Text(
-                    text = if (activeLang == "TR") "Son oyun kararlarını gösteren başlık kartı" else "The floating banner showing recent action logs",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            Switch(
-                checked = showNotificationBanner,
-                onCheckedChange = { viewModel.setShowNotificationBanner(it) },
-                modifier = Modifier.testTag("switch_notification_banner")
+    Spacer(modifier = Modifier.height(Dimens.SpacingXs))
+
+    // Prefix Equipped Title Switch
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = LocalizationManager.getString(activeLang, "ui.settings_notif_title_prefix"),
+                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)
+            )
+            Text(
+                text = LocalizationManager.getString(activeLang, "ui.settings_notif_title_prefix_desc"),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+        Switch(
+            checked = showTitlePrefix,
+            onCheckedChange = { viewModel.setShowTitlePrefix(it) },
+            modifier = Modifier.testTag("switch_title_prefix")
+        )
+    }
 
-        Spacer(modifier = Modifier.height(Dimens.SpacingXs))
+    Spacer(modifier = Modifier.height(Dimens.SpacingXs))
 
-        // Prefix Equipped Title Switch
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = if (activeLang == "TR") "Unvan Başlığını Göster" else "Show Active Title Prefix",
-                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)
-                )
-                Text(
-                    text = if (activeLang == "TR") "Kuşanılmış unvanı ismin önünde gösterir" else "Prepends active equipped title before name",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            Switch(
-                checked = showTitlePrefix,
-                onCheckedChange = { viewModel.setShowTitlePrefix(it) },
-                modifier = Modifier.testTag("switch_title_prefix")
+    // Sound Effects Switch
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = LocalizationManager.getString(activeLang, "ui.settings_notif_sound"),
+                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)
+            )
+            Text(
+                text = LocalizationManager.getString(activeLang, "ui.settings_notif_sound_desc"),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
-
-        Spacer(modifier = Modifier.height(Dimens.SpacingXs))
-
-        // Sound Effects Switch
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = if (activeLang == "TR") "Oyun Efekt Sesleri" else "Combat Sound Effects",
-                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)
-                )
-                Text(
-                    text = if (activeLang == "TR") "Savaş ve buton tıklama tınıları" else "Atmospheric audio and selection tones",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            Switch(
-                checked = soundEnabled,
-                onCheckedChange = { viewModel.setSoundEnabled(it) },
-                modifier = Modifier.testTag("switch_sound_effects")
-            )
-        }
-        
-        Spacer(modifier = Modifier.height(24.dp))
-        
-        Button(
-            onClick = { viewModel.selectTab(NavigationTab.TOWER) },
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-        ) {
-            Text(if (activeLang == "TR") "Geri Dön" else "Go Back")
-        }
+        Switch(
+            checked = soundEnabled,
+            onCheckedChange = { viewModel.setSoundEnabled(it) },
+            modifier = Modifier.testTag("switch_sound_effects")
+        )
+    }
+    
+    Spacer(modifier = Modifier.height(24.dp))
+    
+    Button(
+        onClick = { viewModel.selectTab(NavigationTab.TOWER) },
+        modifier = Modifier.fillMaxWidth(),
+        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+    ) {
+        Text(LocalizationManager.getString(activeLang, "ui.btn_go_back"))
+    }
     }
 }
 
@@ -885,19 +857,24 @@ fun HeaderStatsBlock(
     
     val initial = player.playerName.take(1).uppercase()
     val isSovereignPassActive = player.itemsEncoded.split(",").any { it.trim() == "Seasonal Sovereign Pass" }
+    var isHeaderExpanded by remember { mutableStateOf(false) }
     
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 6.dp),
-        verticalAlignment = Alignment.Top,
-        horizontalArrangement = Arrangement.SpaceBetween
+            .clickable { isHeaderExpanded = !isHeaderExpanded }
+            .padding(horizontal = 8.dp, vertical = 6.dp)
     ) {
-        // Left: Avatar + Character Name & Faction
         Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.Top,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
+            // Left: Avatar + Character Name & Faction
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.weight(1f)
+            ) {
             // Circle Avatar
             Box(
                 modifier = Modifier
@@ -935,9 +912,9 @@ fun HeaderStatsBlock(
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     // Faction badge (e.g. LAWFUL CHOIR, COVENANT)
                     val factionText = when (player.side) {
-                        "SANCTUM" -> if (activeLang == "TR") "SEMAVİ KORO" else "LAWFUL CHOIR"
-                        "COVENANT" -> if (activeLang == "TR") "KARA AHİT" else "VOID COVENANT"
-                        else -> if (activeLang == "TR") "SÜRGÜN" else "NEUTRAL"
+                        "SANCTUM" -> LocalizationManager.getString(activeLang, "ui.header_faction_sanctum")
+                        "COVENANT" -> LocalizationManager.getString(activeLang, "ui.header_faction_covenant")
+                        else -> LocalizationManager.getString(activeLang, "ui.header_faction_neutral")
                     }
                     Box(
                         modifier = Modifier
@@ -1035,9 +1012,77 @@ fun HeaderStatsBlock(
                     Text(
                         text = if (isSovereignPassActive) "∞" else "${player.currentWill}",
                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, fontSize = 10.sp),
+                        color = Color.Transparent
+                    )
+                }
+            }
+        }
+    }
+
+    if (isHeaderExpanded) {
+            Spacer(modifier = Modifier.height(8.dp))
+            HorizontalDivider(color = ColorBorderMuted.copy(alpha = 0.5f))
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column {
+                    Text(
+                        text = LocalizationManager.getString(activeLang, "ui.header_detailed_stats"),
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = LocalizationManager.getString(activeLang, "ui.label_hp_short") + "${player.currentHp} / ${player.maxHp}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = ColorOnSurface
+                    )
+                    Text(
+                        text = LocalizationManager.getString(activeLang, "ui.label_will_short") + "${player.currentWill} / ${player.maxWill}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = ColorOnSurface
+                    )
+                    Text(
+                        text = LocalizationManager.getString(activeLang, "ui.label_exp_short") + "${player.exp} / ${player.maxExp}",
+                        style = MaterialTheme.typography.bodySmall,
                         color = ColorOnSurface
                     )
                 }
+                
+                Column(horizontalAlignment = Alignment.End) {
+                    Text(
+                        text = LocalizationManager.getString(activeLang, "ui.header_economy"),
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                        color = ColorStatGold
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = LocalizationManager.getString(activeLang, "ui.label_gold") + ": ${player.gold} 🪙",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = ColorOnSurface
+                    )
+                    Text(
+                        text = LocalizationManager.getString(activeLang, "ui.label_gleam") + ": ${player.aether} ✨",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = ColorOnSurface
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                Text(
+                    text = LocalizationManager.getString(activeLang, "ui.header_tap_to_collapse"),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = ColorOnSurfaceMuted,
+                    fontStyle = FontStyle.Italic
+                )
             }
         }
     }
@@ -1051,7 +1096,7 @@ fun PathTimeline(
 ) {
     if (nodes.isEmpty()) return
     
-    val currentDepth = nodes.firstOrNull { it.index == player.currentNodeIndex }?.depth ?: 0
+    val currentDepth = if (player.currentNodeIndex in nodes.indices) nodes[player.currentNodeIndex].depth else 0
     
     Row(
         modifier = Modifier
@@ -1065,7 +1110,7 @@ fun PathTimeline(
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Text(
-                text = if (activeLang == "TR") "YOL" else "PATH",
+                text = LocalizationManager.getString(activeLang, "ui.path_label"),
                 style = MaterialTheme.typography.labelSmall.copy(
                     fontFamily = FontFamily.Serif,
                     fontWeight = FontWeight.Bold,
@@ -1150,7 +1195,7 @@ fun PathTimeline(
         }
         
         Text(
-            text = if (activeLang == "TR") "• HARİTA" else "• MAP",
+            text = LocalizationManager.getString(activeLang, "ui.label_map_tab"),
             style = MaterialTheme.typography.labelSmall.copy(
                 fontWeight = FontWeight.Bold,
                 fontSize = 8.sp,
@@ -1170,16 +1215,16 @@ fun CustomBottomNavigationBar(
 ) {
     val tabs = listOf(
         NavigationTab.TOWER to if (isPlayerInCombat) {
-            if (activeLang == "TR") "DÖVÜŞ" to "⚔️" else "COMBAT" to "⚔️"
+            LocalizationManager.getString(activeLang, "ui.nav_tower_combat") to "⚔️"
         } else {
-            if (activeLang == "TR") "KAT" to "🏰" else "FLOOR" to "🏰"
+            LocalizationManager.getString(activeLang, "ui.nav_tower_floor") to "🏰"
         },
-        NavigationTab.OUTER_WORLD to (if (activeLang == "TR") "DÜNYA" to "🌍" else "WORLD" to "🌍"),
-        NavigationTab.QUESTS to (if (activeLang == "TR") "GÖREV" to "📜" else "QUEST" to "📜"),
-        NavigationTab.CHAR_SHEET to (if (activeLang == "TR") "KAHRAMAN" to "👤" else "HERO" to "👤"),
-        NavigationTab.LEGACY to (if (activeLang == "TR") "MİRAS" to "💎" else "LEGACY" to "💎"),
-        NavigationTab.JOURNAL to (if (activeLang == "TR") "GÜNLÜK" to "📖" else "JOURNAL" to "📖"),
-        NavigationTab.SETTINGS to (if (activeLang == "TR") "AYARLAR" to "⚙️" else "SETTINGS" to "⚙️")
+        NavigationTab.OUTER_WORLD to (LocalizationManager.getString(activeLang, "ui.nav_world") to "🌍"),
+        NavigationTab.QUESTS to (LocalizationManager.getString(activeLang, "ui.nav_quest") to "📜"),
+        NavigationTab.CHAR_SHEET to (LocalizationManager.getString(activeLang, "ui.nav_hero") to "👤"),
+        NavigationTab.LEGACY to (LocalizationManager.getString(activeLang, "ui.nav_legacy") to "💎"),
+        NavigationTab.JOURNAL to (LocalizationManager.getString(activeLang, "ui.nav_journal") to "📖"),
+        NavigationTab.SETTINGS to (LocalizationManager.getString(activeLang, "ui.nav_settings") to "⚙️")
     )
 
     Surface(

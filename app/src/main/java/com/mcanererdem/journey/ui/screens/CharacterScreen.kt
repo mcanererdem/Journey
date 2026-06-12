@@ -50,7 +50,7 @@ fun CharacterSheetTab(
         // Alignment Scale Widget
         item {
             Text(
-                text = if (activeLang == "TR") "HİZALANMA DURUMU" else "FACTION ALIGNMENT SPECTRUM",
+                text = LocalizationManager.getString(activeLang, "ui.label_momentum"),
                 style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, letterSpacing = Dimens.LetterSpacingNormal),
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
             )
@@ -96,9 +96,9 @@ fun CharacterSheetTab(
                     .padding(top = Dimens.SpacingXs),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text("🔥 Abyss (0)", style = MaterialTheme.typography.labelSmall, color = ColorCovenantGlow)
-                Text("Neutral (${player.momentum})", style = MaterialTheme.typography.labelSmall)
-                Text("Sanctum (100) ✨", style = MaterialTheme.typography.labelSmall, color = ColorSanctumPrimary)
+                Text("🔥 " + LocalizationManager.getString(activeLang, "ui.label_abyss") + " (0)", style = MaterialTheme.typography.labelSmall, color = ColorCovenantGlow)
+                Text(LocalizationManager.getString(activeLang, "ui.label_neutral") + " (${player.momentum})", style = MaterialTheme.typography.labelSmall)
+                Text(LocalizationManager.getString(activeLang, "ui.label_sanctum") + " (100) ✨", style = MaterialTheme.typography.labelSmall, color = ColorSanctumPrimary)
             }
 
             Spacer(modifier = Modifier.height(Dimens.SpacingL))
@@ -112,7 +112,7 @@ fun CharacterSheetTab(
             ) {
                 Column(modifier = Modifier.padding(Dimens.SpacingL)) {
                     Text(
-                        text = if (activeLang == "TR") "KAHRAMAN UNVANI" else "SOVEREIGN TITLE DESIGNATION",
+                        text = LocalizationManager.getString(activeLang, "ui.hero_title"),
                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -124,7 +124,7 @@ fun CharacterSheetTab(
                             .fillMaxWidth()
                             .testTag("char_name_input"),
                         singleLine = true,
-                        placeholder = { Text("E.g. Lord Aldous") }
+                        placeholder = { Text(LocalizationManager.getString(activeLang, "ui.char_name_placeholder")) }
                     )
                     Spacer(modifier = Modifier.height(Dimens.SpacingM))
                     Button(
@@ -133,7 +133,7 @@ fun CharacterSheetTab(
                             .align(Alignment.End)
                             .testTag("save_name_btn")
                     ) {
-                        Text(if (activeLang == "TR") "Güncelle" else "Save Name")
+                        Text(LocalizationManager.getString(activeLang, "ui.char_save_name"))
                     }
                 }
             }
@@ -148,18 +148,14 @@ fun CharacterSheetTab(
             ) {
                 Column(modifier = Modifier.padding(Dimens.SpacingL)) {
                     Text(
-                        text = if (activeLang == "TR") "YEMİNLİ BAĞLILIK ANDI" else "SWEAR AN OATH OF POWER",
+                        text = LocalizationManager.getString(activeLang, "ui.alliance_oath"),
                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.padding(bottom = Dimens.SpacingS)
                     )
 
                     Text(
-                        text = if (activeLang == "TR") {
-                            "Bir cepheye katılmak, moral değerlerine bağlı olarak özel Yansıma Sınıfınızın kilidini açar."
-                        } else {
-                            "Joining a faction unlocks specialized reflection classes (e.g. Holy Aegis, Death Herald) dependent on your core Alignment."
-                        },
+                        text = LocalizationManager.getString(activeLang, "ui.alliance_details"),
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.padding(bottom = Dimens.SpacingM)
                     )
@@ -175,7 +171,7 @@ fun CharacterSheetTab(
                                 .testTag("pledge_sanctum_btn"),
                             colors = ButtonDefaults.buttonColors(containerColor = ColorSanctumPrimary)
                         ) {
-                            Text(if (activeLang == "TR") "Semavi" else "Sanctum")
+                            Text(LocalizationManager.getString(activeLang, "ui.char_faction_sanctum"))
                         }
                         Spacer(modifier = Modifier.width(Dimens.SpacingM))
                         Button(
@@ -185,7 +181,7 @@ fun CharacterSheetTab(
                                 .testTag("pledge_covenant_btn"),
                             colors = ButtonDefaults.buttonColors(containerColor = ColorCovenantGlow)
                         ) {
-                            Text(if (activeLang == "TR") "Kara Ahit" else "Void")
+                            Text(LocalizationManager.getString(activeLang, "ui.char_faction_covenant"))
                         }
                     }
 
@@ -199,7 +195,7 @@ fun CharacterSheetTab(
                             colors = ButtonDefaults.outlinedButtonColors(contentColor = ColorDanger),
                             border = BorderStroke(Dimens.BorderThin, ColorDanger)
                         ) {
-                            Text(if (activeLang == "TR") "Bağlılıktan İhanet Et (Sürgün Ol)" else "Renounce Allegiance (Become Outcast)")
+                            Text(LocalizationManager.getString(activeLang, "ui.renounce_btn"))
                         }
                     }
                 }
@@ -215,14 +211,14 @@ fun CharacterSheetTab(
             ) {
                 Column(modifier = Modifier.padding(Dimens.SpacingL)) {
                     Text(
-                        text = if (activeLang == "TR") "MİSTİK UNVAN KAYDI" else "SOVEREIGN ARCHIVE DECREE",
+                        text = LocalizationManager.getString(activeLang, "ui.archive_decree"),
                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.padding(bottom = Dimens.SpacingM)
                     )
 
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("Active Rank:", style = MaterialTheme.typography.bodyMedium)
+                        Text(LocalizationManager.getString(activeLang, "ui.active_rank_lbl"), style = MaterialTheme.typography.bodyMedium)
                         Text(
                             text = player.rank,
                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
@@ -231,9 +227,9 @@ fun CharacterSheetTab(
                     HorizontalDivider(modifier = Modifier.padding(vertical = Dimens.SpacingS))
 
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("Spirit Fractures:", style = MaterialTheme.typography.bodyMedium)
+                        Text(LocalizationManager.getString(activeLang, "ui.spirit_fractures_lbl"), style = MaterialTheme.typography.bodyMedium)
                         Text(
-                            text = "${player.totalFractures} deaths",
+                            text = LocalizationManager.formatString(activeLang, "ui.spirit_fracture_deaths", player.totalFractures),
                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                             color = ColorDanger
                         )
@@ -251,17 +247,13 @@ fun CharacterSheetTab(
             ) {
                 Column(modifier = Modifier.padding(Dimens.SpacingL)) {
                     Text(
-                        text = if (activeLang == "TR") "KADER BULUT YEDEĞİ" else "SPIRES CLOUD BACKUP",
+                        text = LocalizationManager.getString(activeLang, "ui.char_backup_title"),
                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.padding(bottom = Dimens.SpacingS)
                     )
                     Text(
-                        text = if (activeLang == "TR") {
-                            "İlerlemenizi Firebase bulut veritabanına yedekleyin veya eski bir kaydı geri yükleyin."
-                        } else {
-                            "Backup your character progress to the Firebase cloud database or restore an existing save."
-                        },
+                        text = LocalizationManager.getString(activeLang, "ui.char_backup_desc"),
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.padding(bottom = Dimens.SpacingM)
                     )
@@ -279,9 +271,9 @@ fun CharacterSheetTab(
                         ) {
                             Text(
                                 text = if (firebaseSyncState == "SYNCING") {
-                                    (if (activeLang == "TR") "Yedekleniyor..." else "Backing Up...")
+                                    LocalizationManager.getString(activeLang, "ui.char_backing_up")
                                 } else {
-                                    (if (activeLang == "TR") "Buluta Yedekle" else "Backup Cloud")
+                                    LocalizationManager.getString(activeLang, "ui.char_backup_btn")
                                 }
                             )
                         }
@@ -294,7 +286,7 @@ fun CharacterSheetTab(
                                 .testTag("restore_cloud_btn"),
                             border = BorderStroke(Dimens.BorderThin, MaterialTheme.colorScheme.primary)
                         ) {
-                            Text(if (activeLang == "TR") "Kayıt Geri Yükle" else "Restore Cloud")
+                            Text(LocalizationManager.getString(activeLang, "ui.char_restore_btn"))
                         }
                     }
                 }
@@ -312,7 +304,7 @@ fun CharacterSheetTab(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(text = "🎒 ", fontSize = Dimens.TextXl)
                         Text(
-                            text = LocalizationManager.getString(activeLang, "label_items"),
+                            text = LocalizationManager.getString(activeLang, "ui.label_items"),
                             style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, letterSpacing = Dimens.LetterSpacingNormal),
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -321,7 +313,7 @@ fun CharacterSheetTab(
 
                     if (itemsList.isEmpty()) {
                         Text(
-                            text = if (activeLang == "TR") "Sırt çantanız boş. Kule çarpışmalarından teçhizat kazanın." else "Your inventory is empty. Complete battles to loot gear.",
+                            text = LocalizationManager.getString(activeLang, "ui.char_inventory_empty"),
                             style = MaterialTheme.typography.bodySmall.copy(fontStyle = FontStyle.Italic),
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                         )
@@ -366,7 +358,7 @@ fun CharacterSheetTab(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(text = "👑 ", fontSize = Dimens.TextXl)
                         Text(
-                            text = LocalizationManager.getString(activeLang, "label_titles"),
+                            text = LocalizationManager.getString(activeLang, "ui.label_titles"),
                             style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, letterSpacing = Dimens.LetterSpacingNormal),
                             color = ColorSanctumPrimary
                         )
@@ -375,7 +367,7 @@ fun CharacterSheetTab(
 
                     if (titlesList.isEmpty()) {
                         Text(
-                            text = if (activeLang == "TR") "Henüz kazanılmış bir unvanınız yok. Seçimleriniz kaderi yazar." else "No sovereign titles acquired yet. Make history on higher floors.",
+                            text = LocalizationManager.getString(activeLang, "ui.char_titles_empty"),
                             style = MaterialTheme.typography.bodySmall.copy(fontStyle = FontStyle.Italic),
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                         )

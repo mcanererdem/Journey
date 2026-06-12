@@ -20,9 +20,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import com.mcanererdem.journey.data.engine.AdventureNode
-import com.mcanererdem.journey.data.engine.NodeChoice
-import com.mcanererdem.journey.data.engine.NodeType
+import com.mcanererdem.journey.data.model.AdventureNode
+import com.mcanererdem.journey.data.model.NodeChoice
+import com.mcanererdem.journey.data.model.NodeType
+import com.mcanererdem.journey.data.engine.LocalizationManager
 import com.mcanererdem.journey.ui.theme.*
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -52,11 +53,11 @@ fun NodeCard(
     pastDecisionLabel: String? = null
 ) {
     val nodeColor = nodeTypeColor(node.type)
-    val title = if (lang == "TR") node.titleTr else node.title
-    val description = if (lang == "TR") node.descriptionTr else node.description
+    val title = LocalizationManager.getString(lang, node.titleKey)
+    val description = LocalizationManager.getString(lang, node.descriptionKey)
 
     var visible by remember { mutableStateOf(false) }
-    LaunchedEffect(node.index) { visible = true }
+    LaunchedEffect(node.id) { visible = true }
 
     AnimatedVisibility(
         visible = visible,
@@ -145,18 +146,18 @@ fun NodeCard(
 
             // ── Seçenekler (tamamlanmamış node) ──────────────────────
             if (!isCompleted) {
-                val choices = listOfNotNull(node.optionA, node.optionB, node.optionC)
+                val choices = node.choices
                 if (choices.isNotEmpty()) {
                     Spacer(Modifier.height(Dimens.SpacingL))
                     Column(verticalArrangement = Arrangement.spacedBy(Dimens.SpacingS)) {
                         choices.forEach { choice ->
-                            val choiceText = if (lang == "TR") choice.textTr else choice.textEn
+                            val choiceText = LocalizationManager.getString(lang, choice.labelKey)
                             NodeChoiceButton(
                                 text = choiceText,
                                 onClick = { onChoiceSelected(choice) },
                                 accentColor = when {
-                                    choice.alignmentShift > 0 -> ColorSanctumPrimary
-                                    choice.alignmentShift < 0 -> ColorCovenantPrimary
+                                    choice.effects.alignmentShift > 0 -> ColorSanctumPrimary
+                                    choice.effects.alignmentShift < 0 -> ColorCovenantPrimary
                                     else -> nodeColor
                                 }
                             )

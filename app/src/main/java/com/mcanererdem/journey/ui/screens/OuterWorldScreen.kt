@@ -37,14 +37,14 @@ fun OuterWorldTab(
     ) {
         item {
             Text(
-                text = LocalizationManager.getString(activeLang, "outer_haven_title"),
+                text = LocalizationManager.getString(activeLang, "ui.outer_haven_title"),
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold, fontFamily = FontFamily.Serif),
                 color = MaterialTheme.colorScheme.primary,
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(Dimens.SpacingS))
             Text(
-                text = LocalizationManager.getString(activeLang, "outer_haven_desc"),
+                text = LocalizationManager.getString(activeLang, "ui.outer_haven_desc"),
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
@@ -64,13 +64,13 @@ fun OuterWorldTab(
             ) {
                 Column(modifier = Modifier.padding(Dimens.SpacingL)) {
                     Text(
-                        text = LocalizationManager.getString(activeLang, "action_rest_title"),
+                        text = LocalizationManager.getString(activeLang, "ui.rest_title"),
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, fontFamily = FontFamily.Serif),
                         color = MaterialTheme.colorScheme.primary
                     )
                     Spacer(modifier = Modifier.height(Dimens.SpacingS))
                     Text(
-                        text = LocalizationManager.getString(activeLang, "action_rest_desc"),
+                        text = LocalizationManager.getString(activeLang, "ui.rest_desc"),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
@@ -87,7 +87,7 @@ fun OuterWorldTab(
                             colors = ButtonDefaults.buttonColors(containerColor = ColorHeal)
                         ) {
                             Text(
-                                text = if (activeLang == "TR") "Hafif Şifa (15🪙)" else "Light Rest (15🪙)",
+                                text = LocalizationManager.getString(activeLang, "ui.btn_light_rest"),
                                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold)
                             )
                         }
@@ -99,7 +99,7 @@ fun OuterWorldTab(
                             colors = ButtonDefaults.buttonColors(containerColor = ColorSanctumPrimary)
                         ) {
                             Text(
-                                text = if (activeLang == "TR") "Tam Şifa (30🪙)" else "Deep Rest (30🪙)",
+                                text = LocalizationManager.getString(activeLang, "ui.btn_deep_rest"),
                                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = Color.Black)
                             )
                         }
@@ -120,13 +120,13 @@ fun OuterWorldTab(
             ) {
                 Column(modifier = Modifier.padding(Dimens.SpacingL)) {
                     Text(
-                        text = LocalizationManager.getString(activeLang, "action_scout_title"),
+                        text = LocalizationManager.getString(activeLang, "ui.scout_title"),
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, fontFamily = FontFamily.Serif),
                         color = MaterialTheme.colorScheme.primary
                     )
                     Spacer(modifier = Modifier.height(Dimens.SpacingS))
                     Text(
-                        text = LocalizationManager.getString(activeLang, "action_scout_desc"),
+                        text = LocalizationManager.getString(activeLang, "ui.scout_desc"),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
@@ -139,7 +139,7 @@ fun OuterWorldTab(
                         colors = ButtonDefaults.buttonColors(containerColor = ColorCovenantGlow)
                     ) {
                         Text(
-                            text = if (activeLang == "TR") "Kozmik İzleme Yeteneği (25 Altın)" else "Chronicle Scouting Map (25 Gold)",
+                            text = LocalizationManager.getString(activeLang, "ui.btn_scout_skill"),
                             style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold)
                         )
                     }
@@ -151,7 +151,7 @@ fun OuterWorldTab(
         item {
             Spacer(modifier = Modifier.height(Dimens.SpacingM))
             Text(
-                text = LocalizationManager.getString(activeLang, "market_header"),
+                text = LocalizationManager.getString(activeLang, "ui.exchange_title"),
                 style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, letterSpacing = Dimens.LetterSpacingNormal),
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
                 modifier = Modifier.fillMaxWidth(),
@@ -163,11 +163,12 @@ fun OuterWorldTab(
         // Buy Aether
         item {
             ExchangeCard(
-                title = LocalizationManager.getString(activeLang, "buy_aether_title"),
-                description = LocalizationManager.getString(activeLang, "buy_aether_desc"),
+                title = LocalizationManager.getString(activeLang, "ui.buy_aether_title"),
+                description = LocalizationManager.getString(activeLang, "ui.buy_aether_desc"),
                 goldCost = 50,
                 currentGold = player.gold,
                 badgeColor = ColorSanctumPrimary,
+                activeLang = activeLang,
                 onClick = { onTrade("GOLD_TO_AETHER") },
                 testTagValue = "buy_aether_btn"
             )
@@ -182,6 +183,7 @@ fun ExchangeCard(
     goldCost: Int,
     currentGold: Int,
     badgeColor: Color,
+    activeLang: String,
     onClick: () -> Unit,
     testTagValue: String
 ) {
@@ -212,7 +214,7 @@ fun ExchangeCard(
                 modifier = Modifier.testTag(testTagValue),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = badgeColor)
             ) {
-                Text(text = "Trade")
+                Text(text = LocalizationManager.getString(activeLang, "ui.btn_trade"))
             }
         }
     }

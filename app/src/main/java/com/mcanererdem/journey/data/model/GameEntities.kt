@@ -2,6 +2,7 @@ package com.mcanererdem.journey.data.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.mcanererdem.journey.data.engine.LocalizationManager
 
 enum class NavigationTab {
     TOWER,
@@ -35,6 +36,18 @@ enum class EnemyFaction {
     BLIGHTED_AMALGAM;
 
     companion object {
+        fun fromEnemyId(enemyId: String): EnemyFaction {
+            val json = LocalizationManager.loadGlobalEnemies()
+            val enemyObj = json?.optJSONObject(enemyId)
+            val factionStr = enemyObj?.optString("faction")
+            return when (factionStr?.uppercase()) {
+                "SANCTUM_WRATH" -> SANCTUM_WRATH
+                "VOID_CORRUPTION" -> VOID_CORRUPTION
+                "BLIGHTED_AMALGAM" -> BLIGHTED_AMALGAM
+                else -> fromName(enemyId)
+            }
+        }
+
         fun fromName(nameEn: String): EnemyFaction {
             val nameLower = nameEn.lowercase()
             return when {

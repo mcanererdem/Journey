@@ -2,56 +2,44 @@ package com.mcanererdem.journey.data.model
 
 enum class LegacyUpgradeType(
     val key: String,
-    val nameEn: String,
-    val nameTr: String,
-    val descriptionEn: String,
-    val descriptionTr: String,
+    val nameKey: String,
+    val descriptionKey: String,
     val baseCost: Int,
     val costMultiplier: Int,
     val maxLevel: Int = 5
 ) {
     VITALITY(
         key = "VITALITY",
-        nameEn = "Celestial Vitality",
-        nameTr = "Semavi Hayatiyet",
-        descriptionEn = "Increase starting HP by +10 per level.",
-        descriptionTr = "Başlangıç HP limitini seviye başına +10 artırır.",
+        nameKey = "legacy.VITALITY.name",
+        descriptionKey = "legacy.VITALITY.desc",
         baseCost = 5,
         costMultiplier = 5
     ),
     AETHER_FOCUS(
         key = "AETHER_FOCUS",
-        nameEn = "Aetheric Focus",
-        nameTr = "Eterik Odak",
-        descriptionEn = "Increase starting Aether by +15 per level.",
-        descriptionTr = "Başlangıç Eter değerini seviye başına +15 artırır.",
+        nameKey = "legacy.AETHER_FOCUS.name",
+        descriptionKey = "legacy.AETHER_FOCUS.desc",
         baseCost = 5,
         costMultiplier = 5
     ),
     FORTITUDE(
         key = "FORTITUDE",
-        nameEn = "Willpower Fortitude",
-        nameTr = "İrade Direnci",
-        descriptionEn = "Increase maximum Willpower by +1 per level.",
-        descriptionTr = "Maksimum İrade sınırını seviye başına +1 artırır.",
+        nameKey = "legacy.FORTITUDE.name",
+        descriptionKey = "legacy.FORTITUDE.desc",
         baseCost = 10,
         costMultiplier = 10
     ),
     GREED(
         key = "GREED",
-        nameEn = "Sovereign's Greed",
-        nameTr = "Hükümdar Açgözlülüğü",
-        descriptionEn = "Increase gold rewards by +20% per level.",
-        descriptionTr = "Kazanılan altın miktarını seviye başına %20 artırır.",
+        nameKey = "legacy.GREED.name",
+        descriptionKey = "legacy.GREED.desc",
         baseCost = 8,
         costMultiplier = 8
     ),
     RECOVERY(
         key = "RECOVERY",
-        nameEn = "Soul Recovery",
-        nameTr = "Ruhsal Yenilenme",
-        descriptionEn = "Increase HP recovery from Camp and items by +15% per level.",
-        descriptionTr = "Kamp ve eşyalardan gelen HP yenilenmesini seviye başına %15 artırır.",
+        nameKey = "legacy.RECOVERY.name",
+        descriptionKey = "legacy.RECOVERY.desc",
         baseCost = 6,
         costMultiplier = 6
     );

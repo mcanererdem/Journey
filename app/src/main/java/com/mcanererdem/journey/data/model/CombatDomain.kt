@@ -12,6 +12,21 @@ data class CombatStatus(
     var durationTurns: Int
 )
 
+data class SkillDef(
+    val id: String,
+    val nameKey: String,
+    val descriptionKey: String,
+    val cost: Int,         // Aether cost
+    val damage: Int,
+    val effect: StatusType? = null,
+    val effectDuration: Int = 0
+)
+
+data class CombatLogEntry(
+    val key: String,
+    val args: Map<String, String> = emptyMap()
+)
+
 enum class EnemyIntent {
     ATTACK,
     DEFEND,

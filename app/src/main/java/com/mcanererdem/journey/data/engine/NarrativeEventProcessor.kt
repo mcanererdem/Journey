@@ -8,8 +8,7 @@ import com.mcanererdem.journey.data.model.LegacyUpgradeType
  */
 data class NarrativeBranchOption(
     val id: String,
-    val textEn: String,
-    val textTr: String,
+    val textKey: String,
     val alignmentImpact: Int = 0,
     val goldChange: Int = 0,
     val expReward: Int = 0,
@@ -17,8 +16,7 @@ data class NarrativeBranchOption(
     val hpChange: Int = 0,
     val itemReward: String = "",
     val titleReward: String = "",
-    val outcomeEn: String,
-    val outcomeTr: String,
+    val outcomeKey: String,
     val nextBranchId: String? = null,
     val triggersSecretBossId: String? = null
 )
@@ -28,12 +26,9 @@ data class NarrativeBranchOption(
  */
 data class NarrativeEvent(
     val id: String,
-    val titleEn: String,
-    val titleTr: String,
-    val descriptionEn: String,
-    val descriptionTr: String,
-    val preconditionDescEn: String,
-    val preconditionDescTr: String,
+    val titleKey: String,
+    val descriptionKey: String,
+    val preconditionDescKey: String,
     val checkPreconditions: (PlayerProfile) -> Boolean,
     val options: List<NarrativeBranchOption>
 )
@@ -43,14 +38,11 @@ data class NarrativeEvent(
  */
 data class SecretBossEncounter(
     val id: String,
-    val nameEn: String,
-    val nameTr: String,
+    val nameKey: String,
     val hp: Int,
     val atk: Int,
-    val descriptionEn: String,
-    val descriptionTr: String,
-    val unlockRequirementEn: String,
-    val unlockRequirementTr: String,
+    val descriptionKey: String,
+    val unlockRequirementKey: String,
     val checkUnlock: (PlayerProfile) -> Boolean,
     val rewardGold: Int,
     val rewardAether: Int,
@@ -62,106 +54,83 @@ object NarrativeEventProcessor {
     val events = listOf(
         NarrativeEvent(
             id = "obelisk_whispers",
-            titleEn = "The Singing Chrono-Obelisk",
-            titleTr = "Şarkı Söyleyen Zaman Dikilitaşı",
-            descriptionEn = "A pulsating obelisk of solid obsidian hums with alien spatial energy. It speaks in branching paths directly to your mind.",
-            descriptionTr = "Katı obsidyenden yapılmış nabız gibi atan bir dikilitaş, yabancı boyutsal enerjiyle mırıldanıyor. Doğrudan zihninize ulaşan dallanıp budaklanan yollar fısıldıyor.",
-            preconditionDescEn = "Character Level >= 2 and Momentum is close to Neutral (30 to 70)",
-            preconditionDescTr = "Karakter Seviyesi >= 2 ve Momentum Kararlı Nötr olmalı (30 ile 70 arası)",
+            titleKey = "narrative.obelisk_whispers.title",
+            descriptionKey = "narrative.obelisk_whispers.desc",
+            preconditionDescKey = "narrative.obelisk_whispers.req",
             checkPreconditions = { it.level >= 2 && it.momentum in 30..70 },
             options = listOf(
                 NarrativeBranchOption(
                     id = "obelisk_opt_light",
-                    textEn = "Tune the frequency to the Holy Sunbeams (+15 Momentum, +30 Aether)",
-                    textTr = "Frekansı Kutsal Güneş Işınlarına uyarla (+15 Momentum, +30 Aether)",
+                    textKey = "narrative.obelisk_opt_light.text",
                     alignmentImpact = 15,
                     aetherChange = 30,
                     expReward = 50,
-                    outcomeEn = "The obelisk projects a warm blinding beam, purificating your physical aura.",
-                    outcomeTr = "Dikilitaş sıcak, göz kamaştırıcı bir ışın yayarak fiziksel auranızı arındırıyor ve kutsuyor."
+                    outcomeKey = "narrative.obelisk_opt_light.outcome"
                 ),
                 NarrativeBranchOption(
                     id = "obelisk_opt_void",
-                    textEn = "Shatter the crystal to harness pure Void resonance (-15 Momentum, +30 Aether)",
-                    textTr = "Kristali parçala ve saf Boşluk tınısını çek (-15 Momentum, +30 Aether)",
+                    textKey = "narrative.obelisk_opt_void.text",
                     alignmentImpact = -15,
                     aetherChange = 30,
                     hpChange = -5,
                     expReward = 55,
-                    outcomeEn = "Sharp dark shards slice your palms, but the flowing chaotic feedback fuels your inner pyre.",
-                    outcomeTr = "Keskin kara parçaları avuçlarınızı kesiyor fakat ruhunuza akan kaotik dalga içinizdeki ateşi harlıyor."
+                    outcomeKey = "narrative.obelisk_opt_void.outcome"
                 ),
                 NarrativeBranchOption(
                     id = "obelisk_opt_scholarly",
-                    textEn = "Patiently decode the glyphs (+15 Gold, +40 EXP, +1 Will)",
-                    textTr = "Sabırla sembollerin şifresini çöz (+15 Altın, +40 Tecrübe, +1 İrade)",
+                    textKey = "narrative.obelisk_opt_scholarly.text",
                     alignmentImpact = 0,
                     goldChange = 15,
                     expReward = 80,
-                    outcomeEn = "You decode a spatial shortcut formula, preserving your willpower and gaining valuable ancient wisdom.",
-                    outcomeTr = "Mekansal bir kısayol formülünü çözerek iradenizi korudunuz ve değerli kadim bilgelikler elde ettiniz."
+                    outcomeKey = "narrative.obelisk_opt_scholarly.outcome"
                 )
             )
         ),
         NarrativeEvent(
             id = "shadow_bazaar",
-            titleEn = "Smuggler's Underbelly Bazaar",
-            titleTr = "Karanlık Gölgeler Pazarı",
-            descriptionEn = "Deep inside structural chambers, a covert smuggler broker offers rare, illegal dimensional bypass seals.",
-            descriptionTr = "Yapısal odaların derinliklerinde, gizli bir kaçakçı simsarı nadir bulunan, illegal çeper mühürleri satıyor.",
-            preconditionDescEn = "Gold >= 150 and Momentum <= 35 (Void leaning development)",
-            preconditionDescTr = "Altın >= 150 ve Momentum Boşluk yöneliminde olmalı (<= 35)",
+            titleKey = "narrative.shadow_bazaar.title",
+            descriptionKey = "narrative.shadow_bazaar.desc",
+            preconditionDescKey = "narrative.shadow_bazaar.req",
             checkPreconditions = { it.gold >= 150 && it.momentum <= 35 },
             options = listOf(
                 NarrativeBranchOption(
                     id = "bazaar_opt_buy",
-                    textEn = "Purchase Cursed Seal (-100 Gold, -15 HP, +Item)",
-                    textTr = "Lanetli Geçit Mührünü Satın Al (-100 Altın, -15 HP, +Eşya)",
+                    textKey = "narrative.bazaar_opt_buy.text",
                     goldChange = -100,
                     hpChange = -15,
                     itemReward = "Cursed Abyssal Eye",
-                    outcomeEn = "The heavy emblem feels freezing cold, unlocking forbidden deep-sea abyss vision.",
-                    outcomeTr = "Ağır amblem dondurucu derecede soğuk hissettiriyor, yasaklanmış derin deniz uçurum vizyonunu açtı."
+                    outcomeKey = "narrative.bazaar_opt_buy.outcome"
                 ),
                 NarrativeBranchOption(
                     id = "bazaar_opt_betray",
-                    textEn = "Report him to Sanctum Templars (+20 Momentum, +40 Aether)",
-                    textTr = "Onu Sanctum Tapınakçılarına bildir (+20 Momentum, +40 Aether)",
+                    textKey = "narrative.bazaar_opt_betray.text",
                     alignmentImpact = 20,
                     aetherChange = 40,
                     expReward = 60,
-                    outcomeEn = "Sanctum paladins raid the outpost. The broker retreats but leaves a reward purse behind.",
-                    outcomeTr = "Sanctum şövalyeleri karakola baskın düzenledi. Simsar kaçtı ama ödül dolu bir keseyi geride bıraktı."
+                    outcomeKey = "narrative.bazaar_opt_betray.outcome"
                 )
             )
         ),
         NarrativeEvent(
             id = "celestial_solstice",
-            titleEn = "The Grand Celestial Sun-Altar",
-            titleTr = "Yüce Semavi Güneş Mihrabı",
-            descriptionEn = "A holy beacon reflects stellar radiation. A voice demands a symbolic blood pact in exchange for eternal ascension.",
-            descriptionTr = "Kutsal bir fener yıldız radyasyonunu yansıtıyor. Bir ses, ebedi yükseliş karşılığında sembolik bir kan anlaşması talep ediyor.",
-            preconditionDescEn = "Momentum >= 80 (Celestial leaning development) and Player Level >= 3",
-            preconditionDescTr = "Momentum Semavi nizamda (>= 80) ve Karakter Seviyesi >= 3 olmalı",
+            titleKey = "narrative.celestial_solstice.title",
+            descriptionKey = "narrative.celestial_solstice.desc",
+            preconditionDescKey = "narrative.celestial_solstice.req",
             checkPreconditions = { it.momentum >= 80 && it.level >= 3 },
             options = listOf(
                 NarrativeBranchOption(
                     id = "sun_opt_blood",
-                    textEn = "Drip blood onto solar flames (-20 HP, +120 EXP, +Title)",
-                    textTr = "Güneş alevlerine kan damlat (-20 HP, +120 Tecrübe, +Unvan)",
+                    textKey = "narrative.sun_opt_blood.text",
                     hpChange = -20,
                     expReward = 120,
                     titleReward = "Sunforged Harbinger",
-                    outcomeEn = "Your body burns with divine vigor, forging a sunfire seal on your heart.",
-                    outcomeTr = "Vücudunuz ilahi bir güçle yanıyor, kalbinizin üzerinde güneş ateşinden bir mühür yapılıyor."
+                    outcomeKey = "narrative.sun_opt_blood.outcome"
                 ),
                 NarrativeBranchOption(
                     id = "sun_opt_meditate",
-                    textEn = "Meditate near the heat waves (+10 Momentum, +3 Will)",
-                    textTr = "Isı dalgalarının yanında meditasyon yap (+10 Momentum, +3 İrade)",
+                    textKey = "narrative.sun_opt_meditate.text",
                     alignmentImpact = 10,
-                    outcomeEn = "The cosmic heat purges physical toxins and restores mental focus.",
-                    outcomeTr = "Kozmik sıcaklık fiziksel toksinlerinizi temizler ve zihinsel odağınızı geri kazandırır."
+                    outcomeKey = "narrative.sun_opt_meditate.outcome"
                 )
             )
         )
@@ -170,14 +139,11 @@ object NarrativeEventProcessor {
     val secretBosses = listOf(
         SecretBossEncounter(
             id = "abyssal_beast_boss",
-            nameEn = "Kharon, Sovereign Shadow Devourer",
-            nameTr = "Gölge Yutan Kadim canavar Kharon",
+            nameKey = "boss.abyssal_beast.name",
             hp = 550,
             atk = 32,
-            descriptionEn = "A colossal nightmare bound by raw shadow. He claims souls fractured by excessive tower restarts and dark oaths.",
-            descriptionTr = "Ham gölgeler arasından fırlayan devasa bir kabus. Çok sayıda zaman döngüsünde ruhları ufalanmış olan kurbanları yutmaya gelir.",
-            unlockRequirementEn = "Momentum <= 10 (Deep Void Affinity) and total Spirit Fractures >= 2",
-            unlockRequirementTr = "Momentum <= 10 (Derin Boşluk) ve Toplam Ruh Kırılması >= 2 olmalı",
+            descriptionKey = "boss.abyssal_beast.desc",
+            unlockRequirementKey = "boss.abyssal_beast.req",
             checkUnlock = { it.momentum <= 10 && it.totalFractures >= 2 },
             rewardGold = 250,
             rewardAether = 100,
@@ -185,14 +151,11 @@ object NarrativeEventProcessor {
         ),
         SecretBossEncounter(
             id = "celestial_avatar_boss",
-            nameEn = "Uriel, Archon of Radiant Truth",
-            nameTr = "Işığın Görkemli Başmeleği Uriel",
+            nameKey = "boss.celestial_avatar.name",
             hp = 600,
             atk = 28,
-            descriptionEn = "The absolute herald of white sunbeams. He descends to challenge the pure ones, examining if combat steel matches structural faith.",
-            descriptionTr = "Beyaz güneş ışınlarının mutlak elçisi. Saf inanç sahiplerine meydan okumak için iner, çeliğin inançlarıyla eşleşip eşleşmediğini sınar.",
-            unlockRequirementEn = "Momentum >= 100 (Absolute Celestial Devotion) and Character Level >= 5",
-            unlockRequirementTr = "Momentum >= 100 (Mutlak Semavi Bağlılık) ve Seviye >= 5 olmalı",
+            descriptionKey = "boss.celestial_avatar.desc",
+            unlockRequirementKey = "boss.celestial_avatar.req",
             checkUnlock = { it.momentum >= 100 && it.level >= 5 },
             rewardGold = 200,
             rewardAether = 100,
@@ -200,14 +163,11 @@ object NarrativeEventProcessor {
         ),
         SecretBossEncounter(
             id = "sentinel_relic_boss",
-            nameEn = "Arch-Sentinel Chrono-Golem",
-            nameTr = "Başmuhafız Zaman Dev Obeliski",
+            nameKey = "boss.sentinel_relic.name",
             hp = 700,
             atk = 24,
-            descriptionEn = "A robotic guardian activated when high amounts of ancient items and wealth resonate with floor coordinates.",
-            descriptionTr = "Değerli antik eşyalar ve yüksek miktarda zenginlik kule koordinatlarıyla tınlaştığında canlanan robotik eski muhafız.",
-            unlockRequirementEn = "Player Gold >= 250 and carries at least 2 key items (itemsEncoded has contents)",
-            unlockRequirementTr = "Karakter Altını >= 250 ve en az 2 adet tescilli ekipmana sahip olmalı",
+            descriptionKey = "boss.sentinel_relic.desc",
+            unlockRequirementKey = "boss.sentinel_relic.req",
             checkUnlock = { it.gold >= 250 && it.itemsEncoded.split(",").filter { i -> i.isNotBlank() }.size >= 2 },
             rewardGold = 400,
             rewardAether = 100,
@@ -301,4 +261,3 @@ object NarrativeEventProcessor {
         )
     }
 }
-

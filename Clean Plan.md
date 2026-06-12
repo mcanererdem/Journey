@@ -95,6 +95,32 @@ Tema yok, progression yok, bölge mantığı yok.
 
 ## TEMİZLİK PLANI — AŞAMA SIRASI
 
+---
+
+## AŞAMA 0 ÖNCESİ — KESİNLEŞEN STAT KARARLARI
+
+> Detaylı gerekçe ve kod referansları: `PROJECT_STATUS.md` §2
+
+### Momentum
+- Aralık **0–100**, nötr = **50**. Negatif aralık kullanılmaz.
+- `GameViewModel.kt` içindeki `handleRpgChoice` ve `selectNodeChoice`
+  fonksiyonlarında `coerceIn(-100, 100)` → `coerceIn(0, 100)` olarak
+  düzeltilecek. Bu düzeltme bağımsızdır, AŞAMA 0.1 başlamadan da
+  uygulanabilir (öncelikli bug-fix).
+
+### Aether (Gleam + Pyre)
+- `PlayerProfile.aether: Int` zaten tek/birleşik para birimi — model
+  tarafında EK İŞ YOK.
+- Locale kalıntıları temizlenecek: `en.json` ve `tr.json`'daki
+  `label_gleam` / `label_pyre` key'leri kaldırılıp tek `label_aether`
+  key'i eklenecek. `values/strings.xml` ve `values-en/strings.xml`'deki
+  aynı kalıntılar da (kullanım doğrulandıktan sonra) kaldırılacak.
+- Bu temizlik **AŞAMA 0.2 (locale JSON yapısını genişletme)** ile birlikte
+  yapılacak, ayrı aşama açılmayacak.
+
+---
+
+
 ### AŞAMA 0.1 — Veri Modellerini Temizle
 **Etkilenen dosyalar:** `AdventureEngine.kt`, yeni `FloorDomain.kt`
 

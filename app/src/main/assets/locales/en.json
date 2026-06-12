@@ -60,332 +60,761 @@
     "exchange_title": "BLACK EXCHANGE TRADER",
     "buy_aether_title": "Acquire Aether",
     "buy_aether_desc": "Trade 50 Gold to earn 15 Aether.",
+    "btn_light_rest": "Light Rest (15🪙)",
+    "btn_deep_rest": "Deep Rest (30🪙)",
+    "btn_scout_skill": "Chronicle Scouting Map (25 Gold)",
+    "btn_trade": "Trade",
     "welcome_message": "Welcome, hero. Your ascent begins.",
     "reset_message": "Game restarted. Chronology reset.",
-    "enemy_infested_rat_name": "Infested Rat Scout",
-    "enemy_blighted_acid_crawler_name": "Blighted Acid Crawler",
-    "enemy_spore_host_name": "Spreading Spore Host",
-    "enemy_rat_swarm_name": "Cavern Swarm Nibblers",
-    "enemy_blight_abomination_name": "Gargantuan Blight Abomination",
-    "enemy_tunnel_hound_name": "Blight-Frenzied Ravager Hound",
-    "enemy_rat_king_name": "Plague Rat King Golgoth",
-    "skill_acid_spray_name": "Acid Spray",
-    "skill_acid_spray_desc": "Sprays acid dealing damage and inflicting Poison",
-    "skill_toxic_slam_name": "Toxic Slam",
-    "skill_toxic_slam_desc": "Slams down dealing massive damage and Poison",
-    "skill_plague_bite_name": "Plague Bite",
-    "skill_plague_bite_desc": "Bites with plagued fangs dealing damage and Poison",
-    "item_adventurers_ring_name": "Adventurer's Ring",
-    "item_adventurers_ring_desc": "A simple ring granting extra Will.",
-    "item_scout_dagger_name": "Scout Dagger",
-    "item_scout_dagger_desc": "A quick steel blade.",
-    "floor_1_title": "The Blighted Foothills",
-    "floor_1_desc": "Your climb begins at the root. The atmosphere is damp, thick with blight spores and the skittering of infected creatures.",
-    "floor_1_intro_title": "Gateway to Ascendance",
-    "floor_1_intro_desc": "You stand before the massive iron seal of Floor 1. Cold mist swirls as the wind from the tower corridors whispers secrets.",
-    "floor_1_intro_optA_text": "Pledge your blade to the Spires (+Aether, +Order)",
-    "floor_1_intro_optA_journal": "Pledged alignment to the Sanctum at the base gateway.",
-    "floor_1_intro_optB_text": "Absorb the mold to harden your willpower (+Aether, +Void)",
-    "floor_1_intro_optB_journal": "Absorbed decay energy to strengthen the dark soul.",
-    "floor_1_intro_optC_text": "Loot fallen scouts for equipment tokens (+Gold)",
-    "floor_1_intro_optC_journal": "Prioritized survival equipment tokens over spiritual alignments.",
-    "floor_1_node_0_title": "Entrance Bastion",
-    "floor_1_node_0_desc": "Golden light leaks from broken wall cracks. You feel the pulse of the Core.",
-    "floor_1_node_0_optA_text": "Recite a short purification mantra (+10 EXP)",
-    "floor_1_node_0_optA_journal": "Began the climb on Floor 1 with focus and cleansing rituals.",
-    "floor_1_node_0_optB_text": "Smash decorative statues for gold scraps (+20 Gold)",
-    "floor_1_node_0_optB_journal": "Smashed temple icons for quick currency values.",
-    "floor_1_node_1_title": "The Skittering Rat",
-    "floor_1_node_1_desc": "A mutant rodent swathed in purple rot blocks the hallway.",
-    "floor_1_node_2_title": "Fallen Soldier's Cache",
-    "floor_1_node_2_desc": "An old iron box covered in blight moss.",
-    "floor_1_node_2_optA_text": "Open carefully (-1 Will, +Adventurer's Ring)",
-    "floor_1_node_2_optA_journal": "Discovered an Adventurer's Ring in Flatlands cache on Floor 1.",
-    "floor_1_node_2_optB_text": "Pry it open using gold picks (-15 Gold, +Scout Dagger)",
-    "floor_1_node_2_optB_journal": "Acquired a Scout Dagger by picking locks.",
-    "floor_1_node_3_title": "Altar of the Wild Hearth",
-    "floor_1_node_3_desc": "Warm warmth emanates from a brick fireplace glowing with holy flame.",
-    "floor_1_node_3_optA_text": "Pray for vitality (+25 HP)",
-    "floor_1_node_3_optA_journal": "Healed deep wounds at the Wild Hearth on Floor 1.",
-    "floor_1_node_3_optB_text": "Sacrifice blood to receive power (-10 HP, +15 Aether)",
-    "floor_1_node_3_optB_journal": "Shed blood for the Sanctum's warm light on Floor 1.",
-    "floor_1_node_4_title": "Blight Infested Crawler",
-    "floor_1_node_4_desc": "A many-legged insect coated in acid armor waits in the darkness.",
-    "floor_1_node_5_title": "The Whispering Wall",
-    "floor_1_node_5_desc": "Eerie runes glow on a cracked pillar. A quiet voice promises power in exchange for your faith.",
-    "floor_1_node_5_optA_text": "Reject the voice and cleanse the stone (+10 Alignment, +20 EXP)",
-    "floor_1_node_5_optA_journal": "Purified a whispering chaotic wall, aligning further with Spires Order.",
-    "floor_1_node_5_optB_text": "Embrace the shadows (+15 Aether, -10 Alignment)",
-    "floor_1_node_5_optB_journal": "Whispered secrets back to the dark wall, feeding the void soul.",
-    "floor_1_node_6_title": "Shabby Scavenger",
-    "floor_1_node_6_desc": "A hunched goblin-like figure with a dynamic trading cart filled with metal scraps.",
-    "floor_1_node_6_optA_text": "Buy Scout Boots (-35 Gold, +Scout Leather Boots)",
-    "floor_1_node_6_optA_journal": "Purchased Scout Leather Boots from the shabby scavenger on Floor 1.",
-    "floor_1_node_6_optB_text": "Sell scrap metal pieces (+15 Gold)",
-    "floor_1_node_6_optB_journal": "Traded junk metal parts for solid coins.",
-    "floor_1_node_6_optC_text": "Decline trade",
-    "floor_1_node_6_optC_journal": "Walked past the scavenger merchant without buying.",
-    "floor_1_node_7_title": "Fungal Sporehead",
-    "floor_1_node_7_desc": "A parasitic fungus animation driving a dead skeleton forward.",
-    "floor_1_node_8_title": "Blighted Supply Locker",
-    "floor_1_node_8_desc": "A locked wooden crate smelling of old pine and sulfur.",
-    "floor_1_node_8_optA_text": "Force open lock (+20 Gold, -5 HP)",
-    "floor_1_node_8_optA_journal": "Forced a crate lock open, getting minor splinter damage but discovering gold.",
-    "floor_1_node_8_optB_text": "Leave it untouched for safety (+10 EXP)",
-    "floor_1_node_8_optB_journal": "Exercised caution by ignoring the suspicious locked crate.",
-    "floor_1_node_9_title": "Shrine of Forgotten Moon",
-    "floor_1_node_9_desc": "A moonstone basin filled with glowing dark blue waters.",
-    "floor_1_node_9_optA_text": "Sip moon water (+40 HP, -5 Alignment)",
-    "floor_1_node_9_optA_journal": "Drank moon water on Floor 1, closing all wounds at small spiritual cost.",
-    "floor_1_node_9_optB_text": "Offer gold sacrifice (-20 Gold, +15 Will)",
-    "floor_1_node_9_optB_journal": "Sacrificed material wealth to restore enormous raw mental focus and willpower.",
-    "floor_1_node_10_title": "Old Scout's Sanctuary",
-    "floor_1_node_10_desc": "A hidden camp under stone roots. A dying scout hands you a secret chain journal.",
-    "floor_1_node_10_optA_text": "Vow to deliver the journal to the Spires (+15 Alignment, +20 EXP, +Old Scout Journal)",
-    "floor_1_node_10_optA_journal": "Vowed to complete the dying scout's chain bequest, starting a hidden questline.",
-    "floor_1_node_10_optB_text": "Take his remaining gold and let him rest (+40 Gold, -15 Alignment)",
-    "floor_1_node_10_optB_journal": "Looted the scout's purse, prioritizing coin values over morality.",
-    "floor_1_node_11_title": "Plague Rat Swarm",
-    "floor_1_node_11_desc": "Dozens of tiny red-eyed rodents scurrying and forming an aggressive wall.",
-    "floor_1_node_12_title": "Hidden Grotto Coffer",
-    "floor_1_node_12_desc": "An overgrown chest concealed under hanging moss vines.",
-    "floor_1_node_12_optA_text": "Slice vines carefully (-5 HP, +Iron Guard Ring)",
-    "floor_1_node_12_optA_journal": "Slashed thorn vines to reveal an Iron Guard Ring on Floor 1.",
-    "floor_1_node_12_optB_text": "Exchange void core connection code (-10 Aether, +30 Gold)",
-    "floor_1_node_12_optB_journal": "Exchanged shadow essence for direct coin trade.",
-    "floor_1_node_13_title": "Well of Purifying Solace",
-    "floor_1_node_13_desc": "A quiet well glowing with restorative white energy.",
-    "floor_1_node_13_optA_text": "Pure wash (+30 HP, +5 Alignment)",
-    "floor_1_node_13_optA_journal": "Washed away dark corruption inside the Well of Purifying Solace.",
-    "floor_1_node_13_optB_text": "Drink dark residues (+25 Aether, -15 HP)",
-    "floor_1_node_13_optB_journal": "Drank toxic residue to boost void pyre power at substantial physical damage.",
-    "floor_1_node_14_title": "SECRET BOSS: Blight Abomination",
-    "floor_1_node_14_desc": "An optional giant amalgam of flesh and steel construct lumbering from a side passage! Extreme threat!",
-    "floor_1_node_15_title": "Blight Crypt Alchemist",
-    "floor_1_node_15_desc": "A rogue scholar studying mutations offers a secret chain catalyst infusion.",
-    "floor_1_node_15_optA_text": "Inject the experimental catalyst (+15 Aether, +15 Aether, -10 HP)",
-    "floor_1_node_15_optA_journal": "Accepted experimental chemical injection, unlocking deep catalyst potential.",
-    "floor_1_node_15_optB_text": "Decline chemical experiments (+15 EXP)",
-    "floor_1_node_15_optB_journal": "Safely bypassed suspicious experimental catalyst injections.",
-    "floor_1_node_16_title": "Wandering Herbologist",
-    "floor_1_node_16_desc": "An herbalism druid selling wild roots and healing salves.",
-    "floor_1_node_16_optA_text": "Buy Healing Elixir (-40 Gold, +Deep Cavern Herb Juice)",
-    "floor_1_node_16_optA_journal": "Bought herbal healing juice from wandering druid.",
-    "floor_1_node_16_optB_text": "Trade old seeds (+15 Gold)",
-    "floor_1_node_16_optB_journal": "Sought coins by selling worthless seeds to druid.",
-    "floor_1_node_16_optC_text": "Leave peacefully",
-    "floor_1_node_16_optC_journal": "Left Wandering Druid peacefully.",
-    "floor_1_node_17_title": "Rabid Tunnel Hound",
-    "floor_1_node_17_desc": "A long-toothed beast glowing with unstable blight fury attacks!",
-    "floor_1_node_18_title": "Totem of Deep Earth",
-    "floor_1_node_18_desc": "A heavy stone monolith echoing with ancient earthquakes.",
-    "floor_1_node_18_optA_text": "Vibrate hand on totem (+50 EXP, -12 HP)",
-    "floor_1_node_18_optA_journal": "Touched vibrating earthen monolith, learning deep defensive techniques at minor health loss.",
-    "floor_1_node_18_optB_text": "Offer alignment pledge for willpower (+10 Will, -5 Alignment)",
-    "floor_1_node_18_optB_journal": "Sacrificed minor alignment rigidity to absorb stone willpower.",
-    "floor_1_node_19_title": "Crown of Rat's Nest",
-    "floor_1_node_19_desc": "Golgoth, the Plague Rat King, sits bloated upon a pile of garbage and rusted scepters. Complete all 20 sectors to secure ascension!"
+    "label_skirmish": "Skirmish Sector",
+    "desc_skirmish": "An aggressive threat steps in from the shadows to drain your lifeforce.",
+    "label_chest": "Blighted Relic Urn",
+    "desc_chest": "A sealed decorative chest humming with celestial or dark currents.",
+    "btn_open": "Open",
+    "journal_chest_open": "You opened a relic chest.",
+    "label_ruins": "Uncharted Ruins",
+    "desc_ruins": "Eerie runes glow on a cracked pillar.",
+    "btn_explore": "Explore",
+    "journal_explore": "You explored uncharted ruins.",
+    "label_boss": "BOSS",
+    "desc_notification": "Notification",
+    "desc_dismiss": "Dismiss",
+    "desc_settings": "Settings",
+    "desc_close": "Close",
+    "desc_expand": "Expand",
+    "desc_collapse": "Collapse",
+    "desc_select": "Select",
+    "status_poisoned": "Poison 🧪",
+    "status_stunned": "Stun 🌀",
+    "status_blessed": "Blessed ✨",
+    "status_shielded": "Shield 🛡️",
+    "floor_cleared": "Floor Cleared! 🎉",
+    "floor_cleared_desc": "You have overcome all challenges on this floor. You are ready to ascend to the next level.",
+    "combat_sector_label": "— SECTOR %d · COMBAT —",
+    "combat_your_turn": "YOUR TURN",
+    "combat_hostility": "HOSTILITY",
+    "combat_vitality": "VITALITY",
+    "combat_essence": "ESSENCE",
+    "combat_battle_register": "BATTLE REGISTER",
+    "combat_initiated": "Combat initiated...",
+    "combat_action_strike": "STRIKE",
+    "combat_action_strike_desc": "Basic attack",
+    "combat_action_skills": "SKILLS",
+    "combat_action_skills_desc": "%d available",
+    "combat_action_item": "ITEM",
+    "combat_action_item_desc": "%d in bag",
+    "combat_action_defend": "DEFEND",
+    "combat_action_defend_desc": "Block next",
+    "combat_action_flee": "FLEE",
+    "combat_action_flee_desc": "Escape safely",
+    "combat_action_flee_boss_desc": "Unavailable — boss encounter",
+    "combat_action_covenant_call": "COVENANT CALL",
+    "combat_action_covenant_call_desc": "One-time boss interrupt · Lawful Choir",
+    "combat_encounter_timer": "ENCOUNTER TIMER",
+    "combat_round": "ROUND %d",
+    "combat_essence_cost": "%d Essence",
+    "combat_log_player_poison": "🧪 Poisoned! Took -5 HP damage.",
+    "combat_log_player_stunned": "🌀 Stunned! Your turn is skipped.",
+    "combat_log_enemy_poison": "🧪 Enemy took -5 Poison damage.",
+    "combat_log_enemy_stunned": "🌀 Enemy is stunned and skips turn.",
+    "combat_log_player_strike": "⚔️ Light Strike! Dealt %s damage to the enemy.",
+    "combat_log_player_heavy_blow": "🔥 Heavy Blow! Dealt %s damage to the enemy. (-15 Aether)",
+    "combat_log_player_barrier": "🛡️ Activated Barrier! Recovered +%s HP and gained Shielded status for 2 turns.",
+    "combat_log_player_escape": "🏃 Escaped from combat.",
+    "combat_log_crit": "💥 Critical Hit!",
+    "combat_log_boss_enraged": "😡 BOSS ENRAGED! HP fell below 50%, attack power increased by 50%!",
+    "combat_log_enemy_attack": "👺 Enemy attacked! Dealt %s damage to you.",
+    "combat_log_shield_reduced": "🛡️ Shield reduced incoming damage by 50%!",
+    "combat_log_enemy_defend": "🛡️ Enemy defends and gains Shielded.",
+    "combat_log_enemy_poison_debuff": "🧪 Enemy poisoned you! (Poisoned for 3 turns)",
+    "combat_log_enemy_buff": "✨ Enemy blessed themselves! Attack power increased.",
+    "combat_log_victory": "🎉 VICTORY! Enemy defeated. Won +%s EXP, +%s Gold.",
+    "combat_log_loot": "🎁 Loot Pick: [%s] added to inventory!",
+    "combat_log_title": "👑 Achieved Epic Title: [%s]!",
+    "combat_log_level_up": "⚡ LEVEL UP! Reached Level %s! Max HP increased.",
+    "combat_log_initiated": "⚔️ Engaged in battle with %s!",
+    "combat_log_insufficient_aether": "❌ Insufficient Aether!",
+    "combat_log_secret_boss_initiated": "⚔️ SECRET THREAT! Engaged in legendary trial with %s! HP: %s",
+    "combat_log_boss_attack": "👹 %s retaliates with a crushing blow: -%s DMG!",
+    "choice_prerequisite": "Prerequisite: %s",
+    "map_label": "MAP",
+    "map_floor_label": "FLOOR",
+    "map_locked_sector_msg": "🔒 Sector Locked! Must complete previous sector first.",
+    "node_cat_combat": "Combat ⚔️",
+    "node_cat_boss": "Boss 💀",
+    "node_cat_treasure": "Treasure 💎",
+    "node_cat_mystery": "Mystery 🔮",
+    "node_cat_narrative": "Narrative 📜",
+    "node_cat_camp": "Camp ⛺",
+    "node_cat_event": "Event 🎲",
+    "node_hidden_sector": "Hidden Sector",
+    "node_unexplored": "Unexplored",
+    "node_status_active": "📍 ACTIVE",
+    "node_status_cleared": "✓ CLEARED",
+    "node_status_locked": "🔒 LOCKED",
+    "node_threat_profile": "⚠️ Threat Profile: %s",
+    "node_threat_unknown": "❓ UNKNOWN SECTOR (Scout to analyze)",
+    "node_threat_boss": "☠️ APEX OVERLORD THREAT LEVEL",
+    "node_threat_combat": "🔴 HOSTILE DETECTED (High Risk)",
+    "node_threat_hostile": "HOSTILE",
+    "node_threat_narrative": "🟡 STABLE STORY BRANCH (Neutral)",
+    "node_threat_safe": "🟢 SECURE VAULT COMPARTMENT (Safe)",
+    "node_cost_profile": "Energy Cost: %s",
+    "node_cost_cleared": "None (Cleared)",
+    "node_cost_occupied": "None (Occupied)",
+    "node_cost_movement": "1 Willpower (Movement Entry)",
+    "node_cost_locked": "Requires Sequence Unlock",
+    "node_hostile_info": "✨ Hostile: %s | HP: %d | Atk: +%d",
+    "node_type_combat": "Combat Sector",
+    "node_type_boss": "Apex Boss Sanctum",
+    "node_type_treasure": "Treasure Hoard",
+    "node_type_shrine": "Shrine Altar",
+    "node_type_merchant": "Wandering Merchant",
+    "node_type_narrative": "Narrative Sector",
+    "node_type_camp": "Safe Camp",
+    "node_type_event": "Random Event",
+    "node_type_secret": "Hidden Chamber",
+    "journal_record_detail": "JOURNAL EXPLORE RECORD:",
+    "node_explore_cost": "Exploration Will Cost: %d Will",
+    "btn_explore_label": "Explore",
+    "btn_dismiss": "Dismiss",
+    "narrative_mystery": "🔮 SPATIAL MYSTERY",
+    "narrative_destiny": "CHOOSE YOUR DESTINY:",
+    "narrative_outcome": "Outcome: %s",
+    "combat_boss_subtitle": "Celestial Overlord Dragon",
+    "combat_boss_phase1": "🛡️ PHASE 1: Cosmic Decrees Armor Active",
+    "combat_boss_phase2": "💥 PHASE 2: DRAGON FURY (Double Attack Dmg!)",
+    "combat_console_logs": "Combat Console Log:",
+    "combat_action_boss_strike": "STRIKE ⚔️",
+    "combat_action_boss_parry": "PARRY 🛡️",
+    "combat_action_boss_heal": "HEAL FLASK 🧪",
+    "combat_action_boss_flee": "ESCAPE 🏃",
+    "map_tap_to_collapse": "Tap to collapse",
+    "settings_title": "GAME SETTINGS",
+    "settings_hero_status": "👤 HERO STATUS & STATS",
+    "settings_label_name": "Hero Name:",
+    "settings_label_level_exp": "Level / Experience (EXP):",
+    "settings_label_momentum": "Momentum Score:",
+    "settings_momentum_light": "Light / Saintly (+%d)",
+    "settings_momentum_abyss": "Abyss / Void (%d)",
+    "settings_momentum_neutral": "Neutral (50)",
+    "settings_label_class": "Current Class:",
+    "settings_label_title": "Equipped Title:",
+    "settings_none": "None",
+    "settings_lang_title": "🌐 LANGUAGE SETTINGS",
+    "settings_lang_label": "Game Language",
+    "settings_theme_title": "🎨 DISPLAY & THEME SETTINGS",
+    "settings_theme_desc": "How do you want the environment to look? 'Alignment Driven' dynamically chooses between Sanctum and Abyss based on your alignment score.",
+    "settings_theme_alignment": "Alignment Driven (Dynamic)",
+    "settings_theme_light": "Light Theme (Celestial Sanctum)",
+    "settings_theme_abyss": "Abyss Theme (Void Covenant)",
+    "settings_notif_title": "🔔 NOTIFICATIONS & PREFERENCES",
+    "settings_notif_banner": "Action Banner Notification",
+    "settings_notif_banner_desc": "The floating banner showing recent action logs",
+    "settings_notif_title_prefix": "Show Active Title Prefix",
+    "settings_notif_title_prefix_desc": "Prepends active equipped title before name",
+    "settings_notif_sound": "Combat Sound Effects",
+    "settings_notif_sound_desc": "Atmospheric audio and selection tones",
+    "btn_go_back": "Go Back",
+    "header_faction_sanctum": "LAWFUL CHOIR",
+    "header_faction_covenant": "VOID COVENANT",
+    "header_faction_neutral": "NEUTRAL",
+    "header_detailed_stats": "DETAILED STATS",
+    "header_economy": "ECONOMY",
+    "header_tap_to_collapse": "Tap to collapse",
+    "label_neutral": "Neutral",
+    "label_sector": "Sector",
+    "settings_lang_btn": "Türkçe (TR)",
+    "label_hp_short": "HP: ",
+    "label_will_short": "Will: ",
+    "label_exp_short": "EXP: ",
+    "action_banner_msg": "Action recorded",
+    "path_label": "PATH",
+    "nav_tower_combat": "COMBAT",
+    "nav_tower_floor": "FLOOR",
+    "nav_world": "WORLD",
+    "nav_quest": "QUEST",
+    "nav_hero": "HERO",
+    "nav_legacy": "LEGACY",
+    "nav_journal": "JOURNAL",
+    "quests_titles_header": "ARCHIVE OF SOVEREIGN TITLES",
+    "quests_titles_desc": "Unlock and equip legendary titles by satisfying unique requirements to receive passive Vitality augmentation.",
+    "title_synergies": "Synergies: +%d HP • Goal: %s",
+    "quests_momentum_align": "Momentum Spectrum: %d / 100",
+    "quests_floor_f": "Floor %d",
+    "quests_floor_title_fmt": "Floor %d: %s",
+    "quests_btn_backtrack": "Backtrack to Floor (-2 Will) ↩️",
+    "quests_btn_ascend_will": "Ascend to Floor (-2 Will) 🚀",
+    "quests_prereq_required": "⚠️ Requires preceding trial '%s' complete.",
+    "quests_unfolding_conditions": "Unfolding Conditions: ",
+    "quests_vortex_requirements": "Vortex Requirements: ",
+    "quests_veiled_triumph": "VEILED TRIUMPH REWARDS:",
+    "quests_mystery_pact": "🔒 Mystery Ancient Pact",
+    "quests_mystery_locked": "The conditions are locked in the depths of current era.",
+    "label_unlocked": "UNLOCKED",
+    "quests_btn_equip": "Equip Title",
+    "quests_btn_unequip": "Unequip Title",
+    "quests_active_badge": "ACTIVE",
+    "quests_passive_hp": "+%d HP (Passive)",
+    "quests_requirements": "Requirements: %s",
+    "quests_world_events": "WORLD NARRATIVE EVENTS",
+    "quests_floor_objectives": "FLOOR OBJECTIVES",
+    "quests_floor_objectives_desc": "Track active floor targets, narrative events and secret boss objectives loaded from handcrafted blueprints.",
+    "quests_boss_encounters": "SECRET APEX ENCOUNTERS",
+    "quests_empty_cat": "No events found in this category.",
+    "label_completed": "COMPLETED",
+    "label_active": "ACTIVE",
+    "btn_initiate": "Initiate Trial",
+    "journal_just_now": "Just now",
+    "journal_moments_ago": "Just moments ago (%d m ago)",
+    "journal_hours_ago": "%d hours ago",
+    "journal_days_ago": "%d days ago",
+    "journal_search_placeholder": "Search chronicles...",
+    "journal_entry_header": "Floor %d History",
+    "journal_stats_decisions": "Decisions",
+    "journal_stats_light_abyss": "Light / Abyss",
+    "journal_stats_net_balance": "Net Balance",
+    "journal_no_match": "No ledger logs match your criteria.",
+    "legacy_power": "Legacy Power",
+    "legacy_earn_desc": "Earn Legacy Points by resetting your tower climbs.",
+    "legacy_login_streak": "Login Streak",
+    "legacy_active_days": "%d Day(s) Active Streak",
+    "legacy_daily_quests": "DAILY QUESTS",
+    "legacy_quest_defeat": "Defeat Foes",
+    "legacy_quest_pillage": "Pillage Chests",
+    "legacy_quest_will": "Exert Willpower",
+    "legacy_quest_defeat_desc": "Win 3 combat or boss encounters in the tower.",
+    "legacy_quest_pillage_desc": "Interact with 2 Chest/Treasure nodes in the tower.",
+    "legacy_quest_will_desc": "Spend 5 Willpower on tower actions.",
+    "legacy_quest_reward": "Reward: +50 Gold, +15 Aether",
+    "legacy_claimed": "Claimed",
+    "legacy_claim_btn": "Claim Reward",
+    "legacy_in_progress": "In Progress",
+    "legacy_upgrades_title": "PERMANENT UPGRADES",
+    "legacy_max_level": "Maximum Level",
+    "legacy_upgrade_btn": "Upgrade (%d ⚜️)",
+    "label_abyss": "Abyss",
+    "label_sanctum": "Sanctum",
+    "char_save_name": "Save Name",
+    "char_name_placeholder": "E.g. Lord Aldous",
+    "char_faction_sanctum": "Sanctum",
+    "char_faction_covenant": "Void",
+    "char_backup_title": "SPIRES CLOUD BACKUP",
+    "char_backup_desc": "Backup your character progress to the Firebase cloud database or restore an existing save.",
+    "char_backup_btn": "Backup Cloud",
+    "char_backing_up": "Backing Up...",
+    "char_restore_btn": "Restore Cloud",
+    "char_inventory_empty": "Your inventory is empty. Complete battles to loot gear.",
+    "char_titles_empty": "No sovereign titles acquired yet. Make history on higher floors.",
+    "nav_settings": "SETTINGS",
+    "sector_cleared_msg": "Sector cleared. Select your next destination on the map.",
+    "loading_sector_data": "Loading sector data...",
+    "badge_light": "+Light",
+    "badge_corruption": "+Corruption",
+    "badge_gleam": "%d Gleam",
+    "badge_aether": "%d Aether",
+    "badge_item": "+Item",
+    "badge_sanctum": "+%d Sanctum",
+    "badge_covenant": "%d Covenant",
+    "badge_gold": "%d Gold",
+    "class_initiate": "Initiate",
+    "class_acolyte": "Acolyte of Seal",
+    "class_renegade": "Abyss Renegade",
+    "class_herald": "Death Herald",
+    "class_wildhand": "Wildhand",
+    "class_tempest": "Tempest",
+    "class_holy_aegis": "Holy Aegis",
+    "class_codifier": "Codifier",
+    "class_iron_throne": "Iron Throne",
+    "will_recharge_title": "RECHARGE WILLPOWER",
+    "will_recharge_desc": "Willpower is required to climb sectors (-1/sector, -2/floor transit) and unlock critical decisions. Watch sponsor videos to earn free willpower, or acquire seasonal passes for infinite willpower!",
+    "will_ad_title": "🎬 SPONSOR REWARDED AD",
+    "will_ad_desc": "Watch a quick sponsor clip to claim +5 Willpower! (60s cooldown)",
+    "will_ad_watching": "Watching sponsor clip (5s)...",
+    "will_ad_cooldown": "Ad on Cooldown (%ds)",
+    "will_ad_btn": "WATCH AD TO GET +5 WILL",
+    "will_premium_title": "💎 PREMIUM STORE OFFERS",
+    "will_pack_elixir": "⚡ Elixir of Willpower",
+    "will_pack_elixir_desc": "+10 Willpower + 50 Gold bonus",
+    "will_pack_chest": "⚡ Sovereign Will Chest",
+    "will_pack_chest_desc": "+40 Willpower + 200 Gold bonus",
+    "will_season_pass": "SEASONAL SOVEREIGN PASS",
+    "will_season_pass_desc": "INFINITE WILLPOWER! All climbings, transits and event choices won't cost any Willpower!",
+    "billing_title": "🤖 Google Play Billing",
+    "billing_desc": "Secured Google Play payment service is simulated. Card approval flow initialized.",
+    "billing_btn_complete": "Simulate Approved Purchase",
+    "billing_btn_cancel": "Cancel",
+    "billing_price_label": "Price: ",
+    "billing_merchant": "Merchant: AI Studio Game Studio s.r.o.",
+    "label_map_tab": "• MAP",
+    "objective_intro_format": "Resolve the gateway crisis: '%s'",
+    "objective_node_format": "%s '%s'",
+    "node_prefix_combat": "Combat: Conquer",
+    "node_prefix_boss": "Apex Boss: Defeat",
+    "node_prefix_chest": "Exploration: Loot",
+    "node_prefix_shrine": "Sacrament: Pay homage at",
+    "node_prefix_merchant": "Trade: Interact with",
+    "node_prefix_narrative": "Narrative: Witness",
+    "node_prefix_camp": "Camp: Rest at",
+    "node_prefix_event": "Event: Participate in",
+    "node_prefix_secret": "Secret: Discover",
+    "transition_fail_restricted": "Direct state transitions restricted to Handcrafted Floors 1-3.",
+    "transition_fail_already_there": "Already on Floor %d.",
+    "transition_fail_sequential": "Sequentially ascend floor by floor. Clear current floor first.",
+    "transition_fail_defeat_boss": "Defeat the Apex Boss '%s' of Floor %d before ascending.",
+    "transition_fail_will": "Insufficient Will. Requires %d Will to transcend floor boundaries.",
+    "direction_ascended": "ascended",
+    "direction_backtracked": "backtracked",
+    "transition_success_msg": "Successfully transitioned to Floor %d.",
+    "transition_success_journal": "Transitioned floors from %d to %d. Will cost: %d. Direction: %s.",
+    "progress_completed": "100% Completed",
+    "progress_locked": "Locked",
+    "progress_floor_format": "Floor %d / %d",
+    "progress_gold_format": "Gold %d / %d",
+    "progress_not_sanctum": "Not Sanctum Aligned",
+    "progress_momentum_format": "Momentum %d / %d",
+    "progress_not_covenant": "Not Covenant Aligned",
+    "progress_void_momentum_format": "Void Momentum %d / %d",
+    "progress_level_format": "Level %d / %d",
+    "progress_fractures_format": "Spirit Fractures %d / %d",
+    "progress_imbalanced": "Imbalanced (Alignment: %d)",
+    "progress_balanced_floor": "Balanced Floor %d / %d",
+    "progress_momentum_diff_format": "Momentum Diff %d / %d"
   },
-  "scenarios": {
-    "floor_100": {
-      "title": "The Sovereign Throne: The Eternal Duel",
-      "description": "You have reached the pinnacle of the Tower. The Eternal Blight has breached the final seals. Before you stands the Avatar of the Core. Your side demands the absolute sacrifice. An Eternal Duel must occur to resolve who governs the final seal.",
-      "optA_text": "Annihilate with Light & Seal the Core (Triumph Ending)",
-      "optA_journal": "You sealed the Core in blinding Light, achieving a glorious Triumph for the Sanctum.",
-      "optB_text": "Absorb the Void Core and Evolve (Hold Ending)",
-      "optB_journal": "You absorbed the Blight into your Void Covenant, holding the dark tide by sheer evolutionary dominance.",
-      "optC_text": "Shatter the Seals & Free the Outer World (Fracture Ending)",
-      "optC_journal": "You broke all seals, letting the outer world face its destiny, falling to a grand Spirit Fracture."
+  "title": {
+    "lightseeker": {
+      "name": "Zealous Lightseeker ✨",
+      "desc": "You are driven by the pure, unyielding radiant beam of the Sanctum.",
+      "req": "Reach Level 3 & Momentum 70 minimum"
     },
-    "exarch_council": {
-      "title": "Exarch Grand Council (Floor %d)",
-      "description": "An Exarch is crowned on this floor. High economic and militaristic strategies are debated here. Factions are declaring localized wars to capture the tower sectors. You must declare your stance.",
-      "optA_text": "Fund the Celestial Fleet & Impose Order (+Aether, -Gold)",
-      "optA_journal": "You funded the White Spires fleet on Floor %d to enforce strict Sanctum regulations.",
-      "optB_text": "Smuggle Void-infused Weapons to rebels (+Aether, -Gold)",
-      "optB_journal": "You smuggled forbidden Void armaments on Floor %d to trigger a rebellion.",
-      "optC_text": "Sell Intel to both sides for immense Mercenary profit (+Gold)",
-      "optC_journal": "You played both sides on Floor %d as a shadow broker, amassing clean gold."
+    "void_reaper": {
+      "name": "Hollow Reaper of Void 💀",
+      "desc": "The shadows bend to your malicious gaze. A feared collector of corrupt essence.",
+      "req": "Reach Level 5 & Momentum 15 or lower"
     },
-    "arbiter_threshold": {
-      "title": "Arbiter's Threshold Trial (Floor %d)",
-      "description": "An Arbiter stands in your path, testing your commitment with a trial of blade and spirit. The Blight is concentrated here. Will you force your way, or make a dark offering?",
-      "optA_text": "Invoke the Pure Aegis to smite the Arbiter (-20 HP)",
-      "optA_journal": "You battled through the Floor %d Arbiter trial with pure Celestial shield.",
-      "optB_text": "Offer a piece of your Soul to bypass the ward (-10 HP, Cruel)",
-      "optB_journal": "You fed the Void Covenant's flame on Floor %d by sacrificing raw life force.",
-      "optC_text": "Pay heavy bribery gold to buy safe safe-passage (-150 Gold)",
-      "optC_journal": "You bribed the Arbiter guides on Floor %d to bypass conflict."
+    "cosmic_observer": {
+      "name": "Cosmic Balance Arbiter ⚖️",
+      "desc": "A silent watcher holding the scales of creation in perfect alignment.",
+      "req": "Absolute Momentum Neutral (exactly 50) at Floor 10+"
     },
-    "theme_0": {
-      "title": "The Blighted Vaults - F%d",
-      "description": "Thick purple roots of the Eternal Blight wrap around crumbling stone chests. Skeletons dressed in silver armor lie frozen in prayer.",
-      "optA_text": "Purify the bones and lay them to rest (+Aether)",
-      "optA_journal": "On Floor %d, you consecrated fallen soldiers of the Sanctum.",
-      "optB_text": "Drain the residual Blight essence (+Aether)",
-      "optB_journal": "On Floor %d, you harvested corrupted Blight nodes to fuel Void rituals.",
-      "optC_text": "Loot the gold coins from the frozen coffers (+Gold)",
-      "optC_journal": "On Floor %d, you prioritized material gold over spiritual matters."
+    "immortal_phantom": {
+      "name": "Undying Fractured Specter 👻",
+      "desc": "Your soul has fractured many times, yet your core remains stubbornly unbroken.",
+      "req": "Suffer 5+ Spirit Fractures (Deaths) in your journey"
     },
-    "bracket_1": {
-      "title": "The Blighted Foothills - F%d",
-      "description": "The tower's entrance shakes with the breath of corrupted nature. Airborne spores cloud your mind while purple veins on the floor move as if alive.",
-      "optA_text": "Purify nature and spread holy light (+Aether)",
-      "optA_journal": "On Floor %d, you cleansed corrupted roots with holy light.",
-      "optB_text": "Inhale the spores and merge with corruption (+Aether)",
-      "optB_journal": "On Floor %d, you breathed in toxic spores to strengthen your dark bond.",
-      "optC_text": "Gather gold from fallen warriors among the roots (+Gold)",
-      "optC_journal": "On Floor %d, you risked safety to extract gold from the roots."
+    "spire_conqueror": {
+      "name": "Legendary Spire Pioneer 🏔️",
+      "desc": "You have conquered half of the world's most dangerous tower heights.",
+      "req": "Reach Floor 50 or higher"
     },
-    "bracket_2": {
-      "title": "The Sunken Necropolis - F%d",
-      "description": "Stone walls are weeping. Tombs of forgotten kings are submerged. Whispers from beneath the dark waters call you into the depths.",
-      "optA_text": "Grant peace to spirits and sanctify the waters (+Aether)",
-      "optA_journal": "On Floor %d, you appeased restless spirits.",
-      "optB_text": "Awaken the ancient dark power beneath the waters (+Aether)",
-      "optB_journal": "On Floor %d, you summoned ancient power from the necropolis depths.",
-      "optC_text": "Find valuables from semi-submerged sarcophagi (+Gold)",
-      "optC_journal": "On Floor %d, you scavenged loot like a grave robber."
+    "gold_hoarder": {
+      "name": "Spire Guild Tycoon 💰",
+      "desc": "Riches beyond imagination. Gold is your ultimate tool of manipulation.",
+      "req": "Amass 500+ Gold coins"
     },
-    "bracket_3": {
-      "title": "The Scorched Spire - F%d",
-      "description": "Rivers of lava flow through corridors. The smell of sulfur takes your breath away. With every step, the ground feels as if it's melting beneath you.",
-      "optA_text": "Suppress the flames with a holy shield (+Aether)",
-      "optA_journal": "On Floor %d, you used holy will against hellish heat.",
-      "optB_text": "Accept the dark fire into your soul and grow stronger (+Aether)",
-      "optB_journal": "On Floor %d, you claimed the burning power of lava with a dark ritual.",
-      "optC_text": "Collect molten metal fragments (+Gold)",
-      "optC_journal": "On Floor %d, you scraped precious metals from dangerous lava flows."
+    "doomsday_bringer": {
+      "name": "Sovereign of Absolute Void 🪐",
+      "desc": "The embodiment of cosmic decay. You are the doomsday itself.",
+      "req": "Covenant Aligned with Level 15+ & Momentum 15 or lower"
     },
-    "bracket_4": {
-      "title": "The Whispering Gardens - F%d",
-      "description": "Plants here don't just feed on sunlight. Every flower murmurs with the memories of its victims. Beauty is the greatest trap here.",
-      "optA_text": "Burn corrupted vines with holy fire (+Aether)",
-      "optA_journal": "On Floor %d, you pruned the wild garden with holy wrath.",
-      "optB_text": "Listen to the plants' whispers and learn secrets (+Aether)",
-      "optB_journal": "On Floor %d, you gained forbidden knowledge from the plants' dark murmurs.",
-      "optC_text": "Gather rare alchemical essences (+Gold)",
-      "optC_journal": "On Floor %d, you collected expensive plant essences from the garden."
+    "archon_sage": {
+      "name": "Paragon Solar Archon 👑",
+      "desc": "Pure solar glory radiates from your actions. Spires bow to your presence.",
+      "req": "Sanctum Aligned with Level 15+ & Momentum 85 or higher"
     },
-    "bracket_5": {
-      "title": "The Crystal Desolation - F%d",
-      "description": "A perfect silence. Crystals reflect every movement thousands of times. Here, even your own reflection might be trying to steal something from you.",
-      "optA_text": "Break crystal reflections with pure light (+Aether)",
-      "optA_journal": "On Floor %d, you dispelled illusions with pure willpower.",
-      "optB_text": "Make a deal with the dark shadow in your reflection (+Aether)",
-      "optB_journal": "On Floor %d, you entered a dark bargain with your own shadow.",
-      "optC_text": "Remove valuable crystal shards (+Gold)",
-      "optC_journal": "On Floor %d, you tore priceless crystals from the walls."
+    "plague_vanquisher": {
+      "name": "Plague Vanquisher 🐀",
+      "desc": "Slayer of Golgoth, the corrupted Plague Rat King of floor 1.",
+      "req": "Complete Floor 1 Quest"
     },
-    "bracket_6": {
-      "title": "The Abyssal Archive - F%d",
-      "description": "Billions of pages are whispering. This is home to everything the universe wants to forget. Even gravity bends here with the weight of information.",
-      "optA_text": "Seal forbidden books and protect the light (+Aether)",
-      "optA_journal": "On Floor %d, you sealed dangerous information forever.",
-      "optB_text": "Read forbidden runes in dark scrolls (+Aether)",
-      "optB_journal": "On Floor %d, you etched the archive's darkest secrets into your soul.",
-      "optC_text": "Take rare ancient volumes with you (+Gold)",
-      "optC_journal": "On Floor %d, you smuggled away priceless manuscripts."
+    "shard_bearer": {
+      "name": "Shard Bearer 💎",
+      "desc": "Slayer of Clarith, the Shimmering Crystal Guardian of floor 2.",
+      "req": "Complete Floor 2 Quest"
     },
-    "bracket_7": {
-      "title": "The Celestial Forge - F%d",
-      "description": "Where cosmic energy is forged with steel. Giant wheels weave the fabric of reality. Only the strongest souls can take shape here.",
-      "optA_text": "Sanctify the anvil with a holy prayer (+Aether)",
-      "optA_journal": "On Floor %d, you aligned the forge's energy with light.",
-      "optB_text": "Feed the forge's heat with dark ambition (+Aether)",
-      "optB_journal": "On Floor %d, you fueled the cosmic furnace with dark greed.",
-      "optC_text": "Collect leftover holy alloys (+Gold)",
-      "optC_journal": "On Floor %d, you gathered precious leftover alloys from the forge."
+    "crypt_breaker": {
+      "name": "Crypt Breaker ⚰️",
+      "desc": "Slayer of Malakar, the Shadow Necromancer Oracle of floor 3.",
+      "req": "Complete Floor 3 Quest"
+    }
+  },
+  "quest": {
+    "floor_1_rat_king": {
+      "title": "Floor 1 Apex: Plague Vanquisher",
+      "desc": "Defeat Golgoth, the Plague Rat King who sits bloated upon his pile of garbage.",
+      "req": "Conquer Floor 1 Boss and ascend to Floor 2"
     },
-    "bracket_8": {
-      "title": "The Void Sanctum - F%d",
-      "description": "The very heart of nothingness. Here the boundary between being and non-being vanishes. Stars fade away beneath your feet.",
-      "optA_text": "Be a beacon of light in the void (+Aether)",
-      "optA_journal": "On Floor %d, you lit an unquenchable light in the heart of darkness.",
-      "optB_text": "Embrace the infinite power of the void (+Aether)",
-      "optB_journal": "On Floor %d, you surrendered your being to the void itself.",
-      "optC_text": "Collect astral fragments drifting from the void (+Gold)",
-      "optC_journal": "On Floor %d, you gathered astral remains from beyond reality."
+    "floor_2_crystal_heart": {
+      "title": "Floor 2 Apex: Shard Unearther",
+      "desc": "Unearth crystal hearts by defeating Clarith, the Shimmering Crystal Guardian.",
+      "req": "Conquer Floor 2 Boss and ascend to Floor 3"
     },
-    "bracket_9": {
-      "title": "The Mirror Dimension - F%d",
-      "description": "Reality is split into thousands of fragments. Which reflection is real, which you is you? Every corner holds a whisper of another life.",
-      "optA_text": "Fix reality with your pure will (+Aether)",
-      "optA_journal": "On Floor %d, you gathered the scattered reality with holy power.",
-      "optB_text": "Claim the chaos among reflections (+Aether)",
-      "optB_journal": "On Floor %d, you drew power from the chaotic whispers of the multiverse.",
-      "optC_text": "Collect ancient coins from different dimensions (+Gold)",
-      "optC_journal": "On Floor %d, you amassed wealth through interdimensional trade."
+    "floor_3_oracle_scourge": {
+      "title": "Floor 3 Apex: Oracle Banisher",
+      "desc": "Banish Malakar, the Shadow Necromancer Oracle guarding the deep sub-cathedrals.",
+      "req": "Conquer Floor 3 Boss and ascend to Floor 4"
     },
-    "bracket_10": {
-      "title": "The Sovereign Peak - F%d",
-      "description": "Only a breath away from the summit. The world below looks like a cloud of dust. The Tower's will puts you through your heaviest trial here.",
-      "optA_text": "Declare your sovereignty with light and justice (+Aether)",
-      "optA_journal": "On Floor %d, you began a glorious march toward the peak.",
-      "optB_text": "Transform the Tower into a dark throne (+Aether)",
-      "optB_journal": "On Floor %d, you prepared the summit for dark dominion.",
-      "optC_text": "Find pure gold veins at the Tower's root (+Gold)",
-      "optC_journal": "On Floor %d, you looted cosmic riches at the summit."
+    "main_foothold": {
+      "title": "Tower Foothold",
+      "desc": "Prove you have the stamina to climb the lower segments of the tower floors.",
+      "req": "Climb to Floor 5 or higher"
     },
-    "theme_1": {
-      "title": "The Shimmering Mirror - F%d",
-      "description": "A pool of heavy liquid starlight reflects your true Momentum. It whispers your secret class potential and beckons your soul to commit.",
-      "optA_text": "Kneel and pledge to the White Spires (+Aether, -10 HP)",
-      "optA_journal": "On Floor %d, you knelt before the White Spires mirror pool.",
-      "optB_text": "Shatter the mirror to absorb the cosmic shadow (+Aether, -10 HP)",
-      "optB_journal": "On Floor %d, you shattered the reflective pool, drawing power from its shards.",
-      "optC_text": "Drink from it to restore physical vitality (+20 HP)",
-      "optC_journal": "On Floor %d, you drank the mystical waters to heal your broken shell."
+    "main_midpoint": {
+      "title": "Aegis Midpoint",
+      "desc": "Survive the grueling trial and rise beyond the midpoint of lower floors.",
+      "req": "Climb to Floor 15 or higher"
     },
-    "theme_2": {
-      "title": "The Ruined Shrine of Sealing - F%d",
-      "description": "A broken altar still floats in mid-air, casting flickering golden protection spells. It is slowly collapsing under the pressure of the Blight shadows.",
-      "optA_text": "Sacrifice blood to rejuvenate the ward (-15 HP, +Aether)",
-      "optA_journal": "On Floor %d, you sacrificed blood to keep the ancient seals alive.",
-      "optB_text": "Infect the altar with Void-essence to extract Pyre (+Aether)",
-      "optB_journal": "On Floor %d, you desecrated the sealing altar to fuel your dark covenants.",
-      "optC_text": "Scavenge gold-infused runes from the pillars (+Gold)",
-      "optC_journal": "On Floor %d, you pried rare runes from the ancient walls."
+    "side_wealth": {
+      "title": "Merchant Barter Guild",
+      "desc": "Earning enough treasure allows you to trade secrets with the high nomads.",
+      "req": "Acquire 300+ Gold coins"
     },
-    "theme_3": {
-      "title": "The Spires Caravan - F%d",
-      "description": "Neutral nomadic traders traveling along the safe sectors are selling artifacts. They whisper of a fierce skirmish nearby and are willing to barter or trade info.",
-      "optA_text": "Buy Sanctum holy relic (-80 Gold, +Aether)",
-      "optA_journal": "On Floor %d, you purchased a holy relic from the wandering caravan.",
-      "optB_text": "Buy Covenant forbidden grimoire (-80 Gold, +Aether)",
-      "optB_journal": "On Floor %d, you acquired a forbidden codex of Void spells.",
-      "optC_text": "Sell your old equipment for safety items (+Gold, +10 HP)",
-      "optC_journal": "On Floor %d, you traded equipment with merchants and patched up."
+    "side_sanctum_purity": {
+      "title": "Vow of Celestial Purity",
+      "desc": "Embrace the solar radiance. Prove your alignment with the divine Sanctum faction.",
+      "req": "Become Sanctum Aligned (Momentum 65 or higher)"
     },
-    "theme_4": {
-      "title": "The Weeping Void Outpost - F%d",
-      "description": "A vanguard outpost of the Void Covenant is in disarray. Dying scouts are muttering about the White Spires purifying squads hunting them down.",
-      "optA_text": "Deliver peaceful mercy-kills to scouts (+Aether, Spirit Momentum)",
-      "optA_journal": "On Floor %d, you offered mercy to the dying Void outcasts.",
-      "optB_text": "Harvest their life embers to resurrect them as void thralls (+Aether)",
-      "optB_journal": "On Floor %d, you animated the dead scouts into mindless thralls of the Covenant.",
-      "optC_text": "Search their bags for forgotten supply bags (+Gold)",
-      "optC_journal": "On Floor %d, you scavenged abandoned supplies from the warzone."
+    "side_void_alliance": {
+      "title": "Deep Abyss Alliance",
+      "desc": "Whisper to the void, let the dark echo of the Covenant shape your shadows.",
+      "req": "Become Covenant Aligned (Momentum 35 or lower)"
     },
-    "theme_5": {
-      "title": "The Whispering Fount - F%d",
-      "description": "A natural steam geyser filled with hot mineral water is shimmering. The air smells of sulphur, and whispers of the ancient Sovereign echoes in the mist.",
-      "optA_text": "Perform an Order cleansing ritual (+Aether, -10 HP)",
-      "optA_journal": "On Floor %d, you sanctied the mineral hotspring.",
-      "optB_text": "Infuse it with Blight blood to unlock power (+Aether, -10 HP)",
-      "optB_journal": "On Floor %d, you tainted the fount to summon chaotic whispers.",
-      "optC_text": "Bathe in the hot mineral waters to restore vitality (+30 HP, -20 Gold)",
-      "optC_journal": "On Floor %d, you rested in the mineral fount, restoring major strength."
+    "chain_ascension_1": {
+      "title": "Initiate's Trial (Chain I)",
+      "desc": "Every hero begins in shadows. Train your core skills to become an expert crawler.",
+      "req": "Reach Character Level 4+"
     },
-    "theme_6": {
-      "title": "The Iron Threshold - F%d",
-      "description": "Heavy blast doors block the tunnel. Inscriptions demand a tribute of Momentum or pure gold to open.",
-      "optA_text": "Force the iron doors using pure faith (+Aether, -15 HP)",
-      "optA_journal": "On Floor %d, you forced the Iron Threshold with Holy zeal.",
-      "optB_text": "Sunder the locks using Void lightning (+Aether, -15 HP)",
-      "optB_journal": "On Floor %d, you tore the blast doors down with Void lightning.",
-      "optC_text": "Pay the automated tribute mechanism (-50 Gold)",
-      "optC_journal": "On Floor %d, you bypassed the gatekeeper's tax using gold."
+    "chain_ascension_2": {
+      "title": "Expert Ascendancy (Chain II)",
+      "desc": "You have proven your basics. Now steel your soul against deeper corridor horrors.",
+      "req": "Reach Character Level 12+"
+    },
+    "chain_ascension_3": {
+      "title": "Apex Overlord Decree (Chain III)",
+      "desc": "The final segment of human limits. Unleash infinite spiritual potential to reach maximum tier.",
+      "req": "Reach Character Level 20+"
+    },
+    "hidden_fractured_soul": {
+      "title": "??? (Fractured Resiliency)",
+      "desc": "A secret path revealed only to those whose spirits have shattered repeatedly.",
+      "req": "Trigger 4 or more Spirit Fractures (Deaths)"
+    },
+    "hidden_perfect_balance": {
+      "title": "??? (True Neutrality)",
+      "desc": "Walk the tightrope of destiny without leaning to heaven or hell up to Floor 15.",
+      "req": "Reach Floor 15 while maintaining EXACTLY 50 Momentum"
+    },
+    "normal_climb_3": {
+      "title": "The First Steps",
+      "desc": "Every long trek begins with a few courageous steps up the tower base.",
+      "req": "Ascend to Floor 3 or higher"
+    },
+    "special_alignment_pioneer": {
+      "title": "Avenue of Conviction",
+      "desc": "Commit strongly to either the celestial sun rays or the depth of the void.",
+      "req": "Momentum >= 75 (Celestial) or <= 25 (Void)"
+    },
+    "event_solar_zenith": {
+      "title": "Sovereign Meridian Zenith ☀️",
+      "desc": "A temporal star solstice has aligned. Unleash your soul's level capabilities.",
+      "req": "Reach Character Level 6+"
+    }
+  },
+  "narrative": {
+    "obelisk_whispers": {
+      "title": "The Singing Chrono-Obelisk",
+      "desc": "A pulsating obelisk of solid obsidian hums with alien spatial energy. It speaks in branching paths directly to your mind.",
+      "req": "Character Level >= 2 and Momentum is close to Neutral (30 to 70)"
+    },
+    "obelisk_opt_light": {
+      "text": "Tune the frequency to the Holy Sunbeams (+15 Momentum, +30 Aether)",
+      "outcome": "The obelisk projects a warm blinding beam, purificating your physical aura."
+    },
+    "obelisk_opt_void": {
+      "text": "Shatter the crystal to harness pure Void resonance (-15 Momentum, +30 Aether)",
+      "outcome": "Sharp dark shards slice your palms, but the flowing chaotic feedback fuels your inner pyre."
+    },
+    "obelisk_opt_scholarly": {
+      "text": "Patiently decode the glyphs (+15 Gold, +40 EXP, +1 Will)",
+      "outcome": "You decode a spatial shortcut formula, preserving your willpower and gaining valuable ancient wisdom."
+    },
+    "shadow_bazaar": {
+      "title": "Smuggler's Underbelly Bazaar",
+      "desc": "Deep inside structural chambers, a covert smuggler broker offers rare, illegal dimensional bypass seals.",
+      "req": "Gold >= 150 and Momentum <= 35 (Void leaning development)"
+    },
+    "bazaar_opt_buy": {
+      "text": "Purchase Cursed Seal (-100 Gold, -15 HP, +Item)",
+      "outcome": "The heavy emblem feels freezing cold, unlocking forbidden deep-sea abyss vision."
+    },
+    "bazaar_opt_betray": {
+      "text": "Report him to Sanctum Templars (+20 Momentum, +40 Aether)",
+      "outcome": "Sanctum paladins raid the outpost. The broker retreats but leaves a reward purse behind."
+    },
+    "celestial_solstice": {
+      "title": "The Grand Celestial Sun-Altar",
+      "desc": "A holy beacon reflects stellar radiation. A voice demands a symbolic blood pact in exchange for eternal ascension.",
+      "req": "Momentum >= 80 (Celestial leaning development) and Player Level >= 3"
+    },
+    "sun_opt_blood": {
+      "text": "Drip blood onto solar flames (-20 HP, +120 EXP, +Title)",
+      "outcome": "Your body burns with divine vigor, forging a sunfire seal on your heart."
+    },
+    "sun_opt_meditate": {
+      "text": "Meditate near the heat waves (+10 Momentum, +3 Will)",
+      "outcome": "The cosmic heat purges physical toxins and restores mental focus."
+    }
+  },
+  "boss": {
+    "abyssal_beast": {
+      "name": "Kharon, Sovereign Shadow Devourer",
+      "desc": "A colossal nightmare bound by raw shadow. He claims souls fractured by excessive tower restarts and dark oaths.",
+      "req": "Momentum <= 10 (Deep Void Affinity) and total Spirit Fractures >= 2"
+    },
+    "celestial_avatar": {
+      "name": "Uriel, Archon of Radiant Truth",
+      "desc": "The absolute herald of white sunbeams. He descends to challenge the pure ones, examining if combat steel matches structural faith.",
+      "req": "Momentum >= 100 (Absolute Celestial Devotion) and Character Level >= 5"
+    },
+    "sentinel_relic": {
+      "name": "Arch-Sentinel Chrono-Golem",
+      "desc": "A robotic guardian activated when high amounts of ancient items and wealth resonate with floor coordinates.",
+      "req": "Player Gold >= 250 and carries at least 2 key items"
+    }
+  },
+  "floor": {
+    "1": {
+      "title": "The Blighted Foothills",
+      "description": "Your climb begins at the root. The atmosphere is damp, thick with blight spores and the skittering of infected creatures.",
+      "intro": {
+        "title": "Gateway to Ascendance",
+        "description": "You stand before the massive iron seal of Floor 1. Cold mist swirls as the wind from the tower corridors whispers secrets.",
+        "choice_a": {
+          "text": "Pledge your blade to the Spires (+Aether, +Order)",
+          "journal": "Pledged alignment to the Sanctum at the base gateway."
+        },
+        "choice_b": {
+          "text": "Absorb the mold to harden your willpower (+Aether, +Void)",
+          "journal": "Absorbed decay energy to strengthen the dark soul."
+        },
+        "choice_c": {
+          "text": "Loot fallen scouts for equipment tokens (+Gold)",
+          "journal": "Prioritized survival equipment tokens over spiritual alignments."
+        }
+      },
+      "nodes": {
+        "0": {
+          "title": "Entrance Bastion",
+          "description": "Golden light leaks from broken wall cracks. You feel the pulse of the Core.",
+          "choice_a": {
+            "text": "Recite a short purification mantra (+10 EXP)",
+            "journal": "Began the climb on Floor 1 with focus and cleansing rituals."
+          },
+          "choice_b": {
+            "text": "Smash decorative statues for gold scraps (+20 Gold)",
+            "journal": "Smashed temple icons for quick currency values."
+          }
+        },
+        "1": { "title": "The Skittering Rat", "description": "A mutant rodent swathed in purple rot blocks the hallway." },
+        "2": {
+          "title": "Fallen Soldier's Cache",
+          "description": "An old iron box covered in blight moss.",
+          "choice_a": {
+            "text": "Open carefully (-1 Will, +Adventurer's Ring)",
+            "journal": "Discovered an Adventurer's Ring in Flatlands cache on Floor 1."
+          },
+          "choice_b": {
+            "text": "Pry it open using gold picks (-15 Gold, +Scout Dagger)",
+            "journal": "Acquired a Scout Dagger by picking locks."
+          }
+        },
+        "3": {
+          "title": "Altar of the Wild Hearth",
+          "description": "Warm warmth emanates from a brick fireplace glowing with holy flame.",
+          "choice_a": {
+            "text": "Pray for vitality (+25 HP)",
+            "journal": "Healed deep wounds at the Wild Hearth on Floor 1."
+          },
+          "choice_b": {
+            "text": "Sacrifice blood to receive power (-10 HP, +15 Aether)",
+            "journal": "Shed blood for the Sanctum's warm light on Floor 1."
+          }
+        },
+        "4": { "title": "Blight Infested Crawler", "description": "A many-legged insect coated in acid armor waits in the darkness." },
+        "5": {
+          "title": "The Whispering Wall",
+          "description": "Eerie runes glow on a cracked pillar. A quiet voice promises power in exchange for your faith.",
+          "choice_a": {
+            "text": "Reject the voice and cleanse the stone (+10 Alignment, +20 EXP)",
+            "journal": "Purified a whispering chaotic wall, aligning further with Spires Order."
+          },
+          "choice_b": {
+            "text": "Embrace the shadows (+15 Aether, -10 Alignment)",
+            "journal": "Whispered secrets back to the dark wall, feeding the void soul."
+          }
+        },
+        "6": {
+          "title": "Shabby Scavenger",
+          "description": "A hunched goblin-like figure with a dynamic trading cart filled with metal scraps.",
+          "choice_a": {
+            "text": "Buy Scout Boots (-35 Gold, +Scout Leather Boots)",
+            "journal": "Purchased Scout Leather Boots from the shabby scavenger on Floor 1."
+          },
+          "choice_b": {
+            "text": "Sell scrap metal pieces (+15 Gold)",
+            "journal": "Traded junk metal parts for solid coins."
+          },
+          "choice_c": {
+            "text": "Decline trade",
+            "journal": "Walked past the scavenger merchant without buying."
+          }
+        },
+        "7": { "title": "Fungal Sporehead", "description": "A parasitic fungus animation driving a dead skeleton forward." },
+        "8": {
+          "title": "Blighted Supply Locker",
+          "description": "A locked wooden crate smelling of old pine and sulfur.",
+          "choice_a": {
+            "text": "Force open lock (+20 Gold, -5 HP)",
+            "journal": "Forced a crate lock open, getting minor splinter damage but discovering gold."
+          },
+          "choice_b": {
+            "text": "Leave it untouched for safety (+10 EXP)",
+            "journal": "Exercised caution by ignoring the suspicious locked crate."
+          }
+        },
+        "9": {
+          "title": "Shrine of Forgotten Moon",
+          "description": "A moonstone basin filled with glowing dark blue waters.",
+          "choice_a": {
+            "text": "Sip moon water (+40 HP, -5 Alignment)",
+            "journal": "Drank moon water on Floor 1, closing all wounds at small spiritual cost."
+          },
+          "choice_b": {
+            "text": "Offer gold sacrifice (-20 Gold, +15 Will)",
+            "journal": "Sacrificed material wealth to restore enormous raw mental focus and willpower."
+          }
+        },
+        "10": {
+          "title": "Old Scout's Sanctuary",
+          "description": "A hidden camp under stone roots. A dying scout hands you a secret chain journal.",
+          "choice_a": {
+            "text": "Vow to deliver the journal to the Spires (+15 Alignment, +20 EXP, +Old Scout Journal)",
+            "journal": "Vowed to complete the dying scout's chain bequest, starting a hidden questline."
+          },
+          "choice_b": {
+            "text": "Take his remaining gold and let him rest (+40 Gold, -15 Alignment)",
+            "journal": "Looted the scout's purse, prioritizing coin values over morality."
+          }
+        },
+        "11": { "title": "Plague Rat Swarm", "description": "Dozens of tiny red-eyed rodents scurrying and forming an aggressive wall." },
+        "12": {
+          "title": "Hidden Grotto Coffer",
+          "description": "An overgrown chest concealed under hanging moss vines.",
+          "choice_a": {
+            "text": "Slice vines carefully (-5 HP, +Iron Guard Ring)",
+            "journal": "Slashed thorn vines to reveal an Iron Guard Ring on Floor 1."
+          },
+          "choice_b": {
+            "text": "Exchange void core connection code (-10 Aether, +30 Gold)",
+            "journal": "Exchanged shadow essence for direct coin trade."
+          }
+        },
+        "13": {
+          "title": "Well of Purifying Solace",
+          "description": "A quiet well glowing with restorative white energy.",
+          "choice_a": {
+            "text": "Pure wash (+30 HP, +5 Alignment)",
+            "journal": "Washed away dark corruption inside the Well of Purifying Solace."
+          },
+          "choice_b": {
+            "text": "Drink dark residues (+25 Aether, -15 HP)",
+            "journal": "Drank toxic residue to boost void pyre power at substantial physical damage."
+          }
+        },
+        "14": { "title": "SECRET BOSS: Blight Abomination", "description": "An optional giant amalgam of flesh and steel construct lumbering from a side passage! Extreme threat!" },
+        "15": {
+          "title": "Blight Crypt Alchemist",
+          "description": "A rogue scholar studying mutations offers a secret chain catalyst infusion.",
+          "choice_a": {
+            "text": "Inject the experimental catalyst (+15 Aether, +15 Aether, -10 HP)",
+            "journal": "Accepted experimental chemical injection, unlocking deep catalyst potential."
+          },
+          "choice_b": {
+            "text": "Decline chemical experiments (+15 EXP)",
+            "journal": "Safely bypassed suspicious experimental catalyst injections."
+          }
+        },
+        "16": {
+          "title": "Wandering Herbologist",
+          "description": "An herbalism druid selling wild roots and healing salves.",
+          "choice_a": {
+            "text": "Buy Healing Elixir (-40 Gold, +Deep Cavern Herb Juice)",
+            "journal": "Bought herbal healing juice from wandering druid."
+          },
+          "choice_b": {
+            "text": "Trade old seeds (+15 Gold)",
+            "journal": "Sought coins by selling worthless seeds to druid."
+          },
+          "choice_c": {
+            "text": "Leave peacefully",
+            "journal": "Left Wandering Druid peacefully."
+          }
+        },
+        "17": { "title": "Rabid Tunnel Hound", "description": "A long-toothed beast glowing with unstable blight fury attacks!" },
+        "18": {
+          "title": "Totem of Deep Earth",
+          "description": "A heavy stone monolith echoing with ancient earthquakes.",
+          "choice_a": {
+            "text": "Vibrate hand on totem (+50 EXP, -12 HP)",
+            "journal": "Touched vibrating earthen monolith, learning deep defensive techniques at minor health loss."
+          },
+          "choice_b": {
+            "text": "Offer alignment pledge for willpower (+10 Will, -5 Alignment)",
+            "journal": "Sacrificed minor alignment rigidity to absorb stone willpower."
+          }
+        },
+        "19": { "title": "Crown of Rat's Nest", "description": "Golgoth, the Plague Rat King, sits bloated upon a pile of garbage and rusted scepters. Complete all 20 sectors to secure ascension!" }
+      }
+    }
+  },
+  "enemy": {
+    "infested_rat": { "name": "Infested Rat Scout" },
+    "blighted_acid_crawler": { "name": "Blighted Acid Crawler" },
+    "spore_host": { "name": "Spreading Spore Host" },
+    "rat_swarm": { "name": "Cavern Swarm Nibblers" },
+    "blight_abomination": { "name": "Gargantuan Blight Abomination" },
+    "tunnel_hound": { "name": "Blight-Frenzied Ravager Hound" },
+    "rat_king": { "name": "Plague Rat King Golgoth" }
+  },
+  "item": {
+    "adventurers_ring": { "name": "Adventurer's Ring", "description": "A simple ring granting extra Will." },
+    "scout_dagger": { "name": "Scout Dagger", "description": "A quick steel blade." }
+  },
+  "skill": {
+    "acid_spray": { "name": "Acid Spray", "description": "Sprays acid dealing damage and inflicting Poison" },
+    "toxic_slam": { "name": "Toxic Slam", "description": "Slams down dealing massive damage and Poison" },
+    "plague_bite": { "name": "Plague Bite", "description": "Bites with plagued fangs dealing damage and Poison" }
+  },
+  "legacy": {
+    "VITALITY": {
+      "name": "Celestial Vitality",
+      "desc": "Increase starting HP by +10 per level."
+    },
+    "AETHER_FOCUS": {
+      "name": "Aetheric Focus",
+      "desc": "Increase starting Aether by +15 per level."
+    },
+    "FORTITUDE": {
+      "name": "Willpower Fortitude",
+      "desc": "Increase maximum Willpower by +1 per level."
+    },
+    "GREED": {
+      "name": "Sovereign's Greed",
+      "desc": "Increase gold rewards by +20% per level."
+    },
+    "RECOVERY": {
+      "name": "Soul Recovery",
+      "desc": "Increase HP recovery from Camp and items by +15% per level."
     }
   }
 }

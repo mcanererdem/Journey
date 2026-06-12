@@ -31,11 +31,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mcanererdem.journey.data.engine.FloorBlueprintSystem
 import com.mcanererdem.journey.data.engine.FloorStateManager
 import com.mcanererdem.journey.data.engine.NarrativeEventProcessor
+import com.mcanererdem.journey.data.engine.LocalizationManager
 import com.mcanererdem.journey.data.engine.QuestTitleSystem
 import com.mcanererdem.journey.data.engine.QuestType
 import com.mcanererdem.journey.data.model.PlayerProfile
 import com.mcanererdem.journey.ui.theme.*
 import com.mcanererdem.journey.ui.viewmodel.GameViewModel
+import com.mcanererdem.journey.ui.screens.*
 
 @Composable
 fun QuestsTab(
@@ -95,18 +97,14 @@ fun QuestsTab(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text("👑 ", fontSize = Dimens.TextXxl)
                         Text(
-                            text = if (activeLang == "TR") "ŞANLI MİSTİK UNVANLAR" else "ARCHIVE OF SOVEREIGN TITLES",
+                            text = LocalizationManager.getString(activeLang, "ui.quests_titles_header"),
                             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold, letterSpacing = Dimens.LetterSpacingNormal),
                             color = ColorSanctumPrimary
                         )
                     }
                     Spacer(modifier = Modifier.height(Dimens.SpacingM))
                     Text(
-                        text = if (activeLang == "TR") {
-                            "Bu kadim unvanları gerekli şartları sağlayarak açabilir ve kuşanıp pasif can (+HP) bonusu kazanabilirsiniz."
-                        } else {
-                            "Unlock and equip legendary titles by satisfying unique requirements to receive passive Vitality augmentation."
-                        },
+                        text = LocalizationManager.getString(activeLang, "ui.quests_titles_desc"),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
@@ -134,12 +132,12 @@ fun QuestsTab(
                                     Text("🔒 ", fontSize = Dimens.TextL)
                                     Column {
                                         Text(
-                                            text = if (activeLang == "TR") "Bilinmeyen Kadim Sır" else "🔒 Mystery Ancient Pact",
+                                            text = LocalizationManager.getString(activeLang, "ui.quests_mystery_pact"),
                                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                                         )
                                         Text(
-                                            text = if (activeLang == "TR") "Şartlar kule derinliklerinde kilitli kalmış." else "The conditions are locked in the depths of current era.",
+                                            text = LocalizationManager.getString(activeLang, "ui.quests_mystery_locked"),
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
                                         )
@@ -173,7 +171,7 @@ fun QuestsTab(
                                     Column(modifier = Modifier.weight(1f)) {
                                         Row(verticalAlignment = Alignment.CenterVertically) {
                                             Text(
-                                                text = if (activeLang == "TR") title.nameTr else title.nameEn,
+                                                text = title.getName(activeLang),
                                                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                                                 color = if (isUnlocked) ColorSanctumPrimary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                                             )
@@ -185,7 +183,7 @@ fun QuestsTab(
                                                         .padding(horizontal = Dimens.SpacingXs, vertical = Dimens.BorderThick)
                                                 ) {
                                                     Text(
-                                                        text = if (activeLang == "TR") "KAZANILDI" else "UNLOCKED",
+                                                        text = LocalizationManager.getString(activeLang, "ui.label_unlocked"),
                                                         style = MaterialTheme.typography.labelSmall.copy(fontSize = Dimens.TextXxs, fontWeight = FontWeight.Bold),
                                                         color = ColorSanctumPrimary
                                                     )
@@ -193,13 +191,13 @@ fun QuestsTab(
                                             }
                                         }
                                         Text(
-                                            text = if (activeLang == "TR") title.descTr else title.descEn,
+                                            text = title.getDescription(activeLang),
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                                         )
                                         Spacer(modifier = Modifier.height(Dimens.SpacingXs))
                                         Text(
-                                            text = if (activeLang == "TR") "Bonus: +${title.hpBonus} HP • Şart: ${title.requirementDescTr}" else "Synergies: +${title.hpBonus} HP • Goal: ${title.requirementDescEn}",
+                                            text = LocalizationManager.formatString(activeLang, "ui.title_synergies", title.hpBonus, title.getRequirementDesc(activeLang)),
                                             style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium),
                                             color = if (isUnlocked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                                         )
@@ -223,9 +221,9 @@ fun QuestsTab(
                                         ) {
                                             Text(
                                                 text = if (isEquipped) {
-                                                    if (activeLang == "TR") "ÇIKAR" else "REMOVE"
+                                                    LocalizationManager.getString(activeLang, "ui.quests_btn_unequip").uppercase()
                                                 } else {
-                                                    if (activeLang == "TR") "KUŞAN" else "EQUIP"
+                                                    LocalizationManager.getString(activeLang, "ui.quests_btn_equip").uppercase()
                                                 },
                                                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold)
                                             )
@@ -237,7 +235,7 @@ fun QuestsTab(
                                                 .padding(horizontal = Dimens.SpacingM, vertical = Dimens.SpacingS)
                                         ) {
                                             Text(
-                                                text = if (activeLang == "TR") "KİLİTLİ" else "LOCKED",
+                                                text = LocalizationManager.getString(activeLang, "ui.node_status_locked"),
                                                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
                                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
                                             )
@@ -262,18 +260,14 @@ fun QuestsTab(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text("📐 ", fontSize = Dimens.TextXxl)
                         Text(
-                            text = if (activeLang == "TR") "KAT PLANI HEDEFLERİ" else "HANDCRAFTED FLOOR OBJECTIVES",
+                            text = LocalizationManager.getString(activeLang, "ui.quests_floor_objectives"),
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                             color = MaterialTheme.colorScheme.onBackground
                         )
                     }
                     Spacer(modifier = Modifier.height(Dimens.SpacingS))
                     Text(
-                        text = if (activeLang == "TR") {
-                            "Bulunduğunuz katın özel hedeflerini, gizli boss savaşlarını ve faksiyon planlarını bu ekrandan takip edebilirsiniz."
-                        } else {
-                            "Track active floor targets, narrative events and secret boss objectives loaded from handcrafted blueprints."
-                        },
+                        text = LocalizationManager.getString(activeLang, "ui.quests_floor_objectives_desc"),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
                     )
@@ -300,7 +294,7 @@ fun QuestsTab(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = (if (activeLang == "TR") "Kat $f" else "Floor $f") + if (isPlayerHere) " 📍" else "",
+                                    text = LocalizationManager.formatString(activeLang, "ui.quests_floor_f", f) + if (isPlayerHere) " 📍" else "",
                                     style = MaterialTheme.typography.labelSmall.copy(
                                         fontWeight = FontWeight.Bold,
                                         color = if (isActive) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
@@ -322,8 +316,8 @@ fun QuestsTab(
             var expanded by remember(floorNum) { mutableStateOf(true) }
             
             val blueprint = FloorBlueprintSystem.getBlueprintForFloor(floorNum, player)
-            val floorTitle = if (activeLang == "TR") blueprint.titleTr else blueprint.titleEn
-            val floorDesc = if (activeLang == "TR") blueprint.descriptionTr else blueprint.descriptionEn
+            val floorTitle = LocalizationManager.getString(activeLang, blueprint.titleKey)
+            val floorDesc = LocalizationManager.getString(activeLang, blueprint.descriptionKey)
 
             Card(
                 modifier = Modifier
@@ -363,7 +357,7 @@ fun QuestsTab(
                                     Spacer(modifier = Modifier.width(Dimens.SpacingS))
                                 }
                                 Text(
-                                    text = if (activeLang == "TR") "$floorNum. Kat: $floorTitle" else "Floor $floorNum: $floorTitle",
+                                    text = LocalizationManager.formatString(activeLang, "ui.quests_floor_title_fmt", floorNum, floorTitle),
                                     style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
                                     color = if (player.currentFloor == floorNum) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                                 )
@@ -426,7 +420,7 @@ fun QuestsTab(
                                 )
                                 Spacer(modifier = Modifier.width(Dimens.SpacingM))
                                 Text(
-                                    text = if (activeLang == "TR") obj.textTr else obj.textEn,
+                                    text = obj.getText(activeLang),
                                     style = MaterialTheme.typography.bodySmall.copy(
                                         fontWeight = if (obj.isCompleted) FontWeight.Normal else FontWeight.Medium
                                     ),
@@ -451,9 +445,9 @@ fun QuestsTab(
                             ) {
                                 Text(
                                     text = if (player.currentFloor > floorNum) {
-                                        if (activeLang == "TR") "Bu Kata Geri Dön (-2 İrade) ↩️" else "Backtrack to Floor (-2 Will) ↩️"
+                                        LocalizationManager.getString(activeLang, "ui.quests_btn_backtrack")
                                     } else {
-                                        if (activeLang == "TR") "Bu Kata Yüksel (-2 İrade) 🚀" else "Ascend to Floor (-2 Will) 🚀"
+                                        LocalizationManager.getString(activeLang, "ui.quests_btn_ascend_will")
                                     },
                                     style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold)
                                 )
@@ -468,20 +462,16 @@ fun QuestsTab(
         item {
             Spacer(modifier = Modifier.height(Dimens.SpacingM))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("📁 ", fontSize = Dimens.TextXl)
+                Text("📁 ", fontSize = Dimens.TextXxl)
                 Text(
-                    text = if (activeLang == "TR") "KULE GÖREVLERİ DEKRETİ" else "SPIRE QUESTS & DECREES",
+                    text = LocalizationManager.getString(activeLang, "ui.chronology_title"),
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.onBackground
                 )
             }
             Spacer(modifier = Modifier.height(Dimens.SpacingXs))
             Text(
-                text = if (activeLang == "TR") {
-                    "Kategorize edilmiş görev turlarını tamamlayarak kadim paralar, şanlı unvanlar ve mühürlü ekipmanlar kazanın."
-                } else {
-                    "Complete special trials of power to capture currency bags, royal titles and high artifacts."
-                },
+                text = LocalizationManager.getString(activeLang, "ui.chronology_desc"),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
             )
@@ -490,14 +480,14 @@ fun QuestsTab(
         // --- FILTER CHIPS CONTROLLER ---
         item {
             val categories = listOf(
-                "ALL" to (if (activeLang == "TR") "HEPSİ" else "ALL"),
-                "MAIN" to (if (activeLang == "TR") "ANA" else "MAIN"),
-                "SIDE" to (if (activeLang == "TR") "YAN" else "SIDE"),
-                "NORMAL" to (if (activeLang == "TR") "NORMAL" else "NORMAL"),
-                "SPECIAL" to (if (activeLang == "TR") "ÖZEL" else "SPECIAL"),
-                "CHAIN" to (if (activeLang == "TR") "ZİNCİR" else "CHAIN"),
-                "HIDDEN" to (if (activeLang == "TR") "GİZLİ" else "HIDDEN"),
-                "EVENT" to (if (activeLang == "TR") "ETKİNLİK" else "EVENT")
+                "ALL" to LocalizationManager.getString(activeLang, "ui.label_all"),
+                "MAIN" to LocalizationManager.getString(activeLang, "ui.label_main"),
+                "SIDE" to LocalizationManager.getString(activeLang, "ui.label_side"),
+                "NORMAL" to LocalizationManager.getString(activeLang, "ui.label_normal"),
+                "SPECIAL" to LocalizationManager.getString(activeLang, "ui.label_special"),
+                "CHAIN" to LocalizationManager.getString(activeLang, "ui.label_chain"),
+                "HIDDEN" to LocalizationManager.getString(activeLang, "ui.label_hidden"),
+                "EVENT" to LocalizationManager.getString(activeLang, "ui.label_event")
             )
 
             LazyRow(
@@ -548,7 +538,7 @@ fun QuestsTab(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = if (activeLang == "TR") "Bu kategoride henüz ferman bulunmuyor." else "No decrees in this category list currently.",
+                            text = LocalizationManager.getString(activeLang, "ui.quests_empty_cat"),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                         )
@@ -615,9 +605,9 @@ fun QuestsTab(
                                 Spacer(modifier = Modifier.width(Dimens.SpacingS))
 
                                 val displayTitle = if (q.type == QuestType.HIDDEN && !qStatus.isCompleted && !qStatus.requirementMet) {
-                                    if (activeLang == "TR") "🔒 BİLİNMEYEN GİZEMLİ BULMACA" else "🔒 MYSTICLE TEMPLATE"
+                                    LocalizationManager.getString(activeLang, "ui.quests_mystery_pact")
                                 } else {
-                                    if (activeLang == "TR") q.titleTr else q.titleEn
+                                    q.getTitle(activeLang)
                                 }
                                 Text(
                                     text = displayTitle,
@@ -636,9 +626,9 @@ fun QuestsTab(
                         Spacer(modifier = Modifier.height(Dimens.SpacingS))
 
                         val displayDesc = if (q.type == QuestType.HIDDEN && !qStatus.isCompleted && !qStatus.requirementMet) {
-                            if (activeLang == "TR") "Kozmos eylemlerinizi sayıyor. Doğru katalizörü bulana dek devam edin." else "The matrix monitors your ascension metrics. Prove your power to unfold details."
+                            LocalizationManager.getString(activeLang, "ui.quests_mystery_locked")
                         } else {
-                            if (activeLang == "TR") q.descTr else q.descEn
+                            q.getDescription(activeLang)
                         }
                         Text(
                             text = displayDesc,
@@ -651,11 +641,11 @@ fun QuestsTab(
                         val displayGoal = if (q.type == QuestType.HIDDEN && !qStatus.isCompleted && !qStatus.requirementMet) {
                             "??? (???)"
                         } else {
-                            if (activeLang == "TR") q.requirementTr else q.requirementEn
+                            q.getRequirement(activeLang)
                         }
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                text = if (activeLang == "TR") "Koşul: " else "Goal: ",
+                                text = LocalizationManager.getString(activeLang, "ui.choice_prerequisite"),
                                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                             )
@@ -666,7 +656,7 @@ fun QuestsTab(
                             )
                         }
 
-                        val (progressLabel, progressFraction) = qStatus.getProgressLabelAndFraction(player, activeLang == "TR")
+                        val (progressLabel, progressFraction) = qStatus.getProgressLabelAndFraction(player, activeLang)
                         if (progressLabel.isNotEmpty()) {
                             Spacer(modifier = Modifier.height(Dimens.SpacingS))
                             Row(
@@ -675,7 +665,7 @@ fun QuestsTab(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = if (activeLang == "TR") "İlerleme" else "Progress",
+                                    text = LocalizationManager.getString(activeLang, "ui.label_momentum"),
                                     style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                                 )
@@ -705,7 +695,7 @@ fun QuestsTab(
                                 .fillMaxWidth()
                         ) {
                             Text(
-                                text = if (activeLang == "TR") "VAADEDİLEN GANİMETLER:" else "PROMISED LOOT REWARDS:",
+                                text = LocalizationManager.getString(activeLang, "ui.exchange_title"),
                                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, fontSize = Dimens.TextXxs),
                                 color = MaterialTheme.colorScheme.primary
                             )
@@ -717,7 +707,7 @@ fun QuestsTab(
                             q.rewardItem?.let { rList.add("🎒 $it") }
                             q.rewardTitle?.let {
                                 val tObj = QuestTitleSystem.getTitleDef(it)
-                                val tName = if (tObj != null) (if (activeLang == "TR") tObj.nameTr else tObj.nameEn) else it
+                                val tName = tObj?.getName(activeLang) ?: it
                                 rList.add("👑 Name Title: $tName")
                             }
                             Text(
@@ -737,7 +727,7 @@ fun QuestsTab(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = if (activeLang == "TR") "✓ ÖDÜLLER TAMAMEN ALINDI" else "✓ REWARDS FULLY CLAIMED",
+                                    text = "✓ " + LocalizationManager.getString(activeLang, "ui.label_completed").uppercase(),
                                     style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                                     color = Color.Green
                                 )
@@ -755,16 +745,16 @@ fun QuestsTab(
                                 Icon(Icons.Default.Star, contentDescription = null, modifier = Modifier.size(Dimens.SpacingL))
                                 Spacer(modifier = Modifier.width(Dimens.SpacingS))
                                 Text(
-                                    text = if (activeLang == "TR") "ÖDÜLLERİ HEYBEYE EKLE 🎁" else "RECEIVE DECREE REWARDS 🎁",
+                                    text = LocalizationManager.getString(activeLang, "ui.btn_trade").uppercase(),
                                     style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold)
                                 )
                             }
                         } else if (!qStatus.isUnlocked && q.prerequisiteQuestId != null) {
                             Spacer(modifier = Modifier.height(Dimens.SpacingS))
                             val preQuest = QuestTitleSystem.quests.find { it.id == q.prerequisiteQuestId }
-                            val preName = if (preQuest != null) (if (activeLang == "TR") preQuest.titleTr else preQuest.titleEn) else q.prerequisiteQuestId
+                            val preName = preQuest?.getTitle(activeLang) ?: q.prerequisiteQuestId
                             Text(
-                                text = if (activeLang == "TR") "⚠️ Önce '${preName}' aşamasını tamamlamış olmalısınız." else "⚠️ Requires preceding trial '${preName}' complete.",
+                                text = LocalizationManager.formatString(activeLang, "ui.quests_prereq_required", preName),
                                 style = MaterialTheme.typography.labelSmall.copy(fontStyle = FontStyle.Italic),
                                 color = ColorDanger
                             )
@@ -775,28 +765,24 @@ fun QuestsTab(
         }
 
         if (selectedCategory == "ALL" || selectedCategory == "EVENT" || selectedCategory == "HIDDEN") {
-                item {
-                    Spacer(modifier = Modifier.height(Dimens.SpacingM))
-                    Text(
-                        text = if (activeLang == "TR") "🔮 ZAMANSAL KRONİKLER: DİNAMİK SIRLAR" else "🔮 CHRONICLES OF TIME: DISSOLVED SECRETS",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = Dimens.LetterSpacingNormal,
-                            fontFamily = FontFamily.Serif
-                        ),
-                        color = ColorCovenantGlow
-                    )
-                    Spacer(modifier = Modifier.height(Dimens.SpacingXs))
-                    Text(
-                        text = if (activeLang == "TR") {
-                            "Karakterinizin hizalanması ve seviyesine göre boyutsal yırtıklar açılır. Kaderini seçip gizli bosslarla savaşın."
-                        } else {
-                            "Based on align affinity and level, spatial tears are detected. Select your path and wage battle against secret trial overlords."
-                        },
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
-                    )
-                }
+                    item {
+                        Spacer(modifier = Modifier.height(Dimens.SpacingM))
+                        Text(
+                            text = LocalizationManager.getString(activeLang, "ui.quests_world_events"),
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = Dimens.LetterSpacingNormal,
+                                fontFamily = FontFamily.Serif
+                            ),
+                            color = ColorCovenantGlow
+                        )
+                        Spacer(modifier = Modifier.height(Dimens.SpacingXs))
+                        Text(
+                            text = LocalizationManager.getString(activeLang, "ui.outer_haven_desc"),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                        )
+                    }
 
                 // Show all Narrative Events from NarrativeEventProcessor
                 NarrativeEventProcessor.events.forEach { event ->
@@ -834,17 +820,16 @@ fun QuestsTab(
                                             shape = RoundedCornerShape(Dimens.SpacingXs)
                                         ) {
                                             Text(
-                                                text = if (isCompleted) "✓ " + (if (activeLang == "TR") "TAMAMLANDI" else "COMPLETED")
-                                                       else if (canUnlock) "🌟 " + (if (activeLang == "TR") "KEŞFEDİLDİ" else "DISCOVERED")
-                                                       else "🔒 " + (if (activeLang == "TR") "KİLİTLİ SEYİR" else "VEILED PATH"),
+                                                text = if (isCompleted) "✓ " + LocalizationManager.getString(activeLang, "ui.label_completed")
+                                                       else if (canUnlock) "🌟 " + LocalizationManager.getString(activeLang, "ui.node_status_active")
+                                                       else "🔒 " + LocalizationManager.getString(activeLang, "ui.node_status_locked"),
                                                 modifier = Modifier.padding(horizontal = Dimens.SpacingS, vertical = Dimens.BorderThick),
                                                 style = MaterialTheme.typography.labelSmall.copy(fontSize = Dimens.TextXxs, fontWeight = FontWeight.Bold),
                                                 color = if (isCompleted) Color.Green else if (canUnlock) ColorSanctumPrimary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
                                             )
                                         }
-                                        Spacer(modifier = Modifier.width(Dimens.SpacingS))
                                         Text(
-                                            text = if (canUnlock || isCompleted) (if (activeLang == "TR") event.titleTr else event.titleEn) else "???",
+                                            text = if (canUnlock || isCompleted) event.getTitle(activeLang) else "???",
                                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                                             color = MaterialTheme.colorScheme.onSurface
                                         )
@@ -853,8 +838,8 @@ fun QuestsTab(
 
                                 Spacer(modifier = Modifier.height(Dimens.SpacingS))
                                 Text(
-                                    text = if (canUnlock || isCompleted) (if (activeLang == "TR") event.descriptionTr else event.descriptionEn) 
-                                           else (if (activeLang == "TR") "Kozmos bu boyutsal halkayı mühürlemiş durumda. Şartları tamamlayıp boyutlararası gerilimi tetikleyin." else "The cosmos has sealed this rift. Unlock the spatial pressure threshold to evoke details."),
+                                    text = if (canUnlock || isCompleted) event.getDescription(activeLang) 
+                                           else LocalizationManager.getString(activeLang, "ui.quests_mystery_locked"),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                                 )
@@ -862,24 +847,12 @@ fun QuestsTab(
                                 Spacer(modifier = Modifier.height(Dimens.SpacingM))
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text(
-                                        text = if (activeLang == "TR") "Giriş Şartları: " else "Unfolding Conditions: ",
+                                        text = LocalizationManager.getString(activeLang, "ui.quests_unfolding_conditions"),
                                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                                     )
-                                    val reqTr = when (event.id) {
-                                        "event_gatekeeper_pact" -> "Seviye >= 3, Kutsal Hizalanma >= 15"
-                                        "event_shadow_broker" -> "Seviye >= 5, Kaotik Hizalanma <= -15"
-                                        "event_whispering_well" -> "Seviye >= 2, Saf Tarafsızlık (Denge)"
-                                        else -> "Gizemli İvme"
-                                    }
-                                    val reqEn = when (event.id) {
-                                        "event_gatekeeper_pact" -> "Level >= 3, Sanctum Alignment >= 15"
-                                        "event_shadow_broker" -> "Level >= 5, Covenant Alignment <= -15"
-                                        "event_whispering_well" -> "Level >= 2, Pure Neutrality (Balance)"
-                                        else -> "Mystic Drift"
-                                    }
                                     Text(
-                                        text = if (activeLang == "TR") reqTr else reqEn,
+                                        text = event.getPreconditionDesc(activeLang),
                                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold, fontStyle = FontStyle.Italic),
                                         color = if (canUnlock) ColorSanctumPrimary else ColorDanger
                                     )
@@ -896,7 +869,7 @@ fun QuestsTab(
                                         Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(Dimens.SpacingL))
                                         Spacer(modifier = Modifier.width(Dimens.SpacingS))
                                         Text(
-                                            text = if (activeLang == "TR") "BOYUTSAL ETKİLEŞİMİ BAŞLAT 🔮" else "TRIGGER TEMPORAL RIFT 🔮",
+                                            text = LocalizationManager.getString(activeLang, "ui.btn_initiate").uppercase(),
                                             style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold)
                                         )
                                     }
@@ -910,7 +883,7 @@ fun QuestsTab(
                 item {
                     Spacer(modifier = Modifier.height(Dimens.SpacingM))
                     Text(
-                        text = if (activeLang == "TR") "🐉 KADİM İMTİHAN DEREBEYLERİ" else "🐉 ANCIENT TRIAL OVERLORDS",
+                        text = LocalizationManager.getString(activeLang, "ui.quests_boss_encounters"),
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
                             letterSpacing = Dimens.LetterSpacingNormal,
@@ -920,11 +893,7 @@ fun QuestsTab(
                     )
                     Spacer(modifier = Modifier.height(Dimens.SpacingXs))
                     Text(
-                        text = if (activeLang == "TR") {
-                            "Son derece tehlikeli imtihan arenalarında gizemli ejderhalara meydan okuyun. Büyük risk, muazzam rütbe ganimetleri."
-                        } else {
-                            "Challenge esoteric celestial dragons in extreme risk arenas. Mighty drop rates, sovereign currencies and items."
-                        },
+                        text = LocalizationManager.getString(activeLang, "ui.scout_desc"),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
                     )
@@ -965,9 +934,9 @@ fun QuestsTab(
                                             shape = RoundedCornerShape(Dimens.SpacingXs)
                                         ) {
                                             Text(
-                                                text = if (isSlain) "✓ " + (if (activeLang == "TR") "YIKILDI" else "VANQUISHED")
-                                                       else if (canChallenge) "🔥 " + (if (activeLang == "TR") "MEYDAN OKUMA HAZIR" else "CHALLENGE ACTIVE")
-                                                       else "🔒 " + (if (activeLang == "TR") "KAPALI MİHRAK" else "SEALED TRIANGLE"),
+                                                text = if (isSlain) "✓ " + LocalizationManager.getString(activeLang, "ui.label_completed")
+                                                       else if (canChallenge) "🔥 " + LocalizationManager.getString(activeLang, "ui.label_active")
+                                                       else "🔒 " + LocalizationManager.getString(activeLang, "ui.node_status_locked"),
                                                 modifier = Modifier.padding(horizontal = Dimens.SpacingS, vertical = Dimens.BorderThick),
                                                 style = MaterialTheme.typography.labelSmall.copy(fontSize = Dimens.TextXxs, fontWeight = FontWeight.Bold),
                                                 color = if (isSlain) Color.Green else if (canChallenge) ColorDanger else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
@@ -975,7 +944,7 @@ fun QuestsTab(
                                         }
                                         Spacer(modifier = Modifier.width(Dimens.SpacingS))
                                         Text(
-                                            text = if (canChallenge || isSlain) (if (activeLang == "TR") boss.nameTr else boss.nameEn) else "???",
+                                            text = if (canChallenge || isSlain) boss.getName(activeLang) else "???",
                                             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                                             color = MaterialTheme.colorScheme.onSurface
                                         )
@@ -984,8 +953,8 @@ fun QuestsTab(
 
                                 Spacer(modifier = Modifier.height(Dimens.SpacingS))
                                 Text(
-                                    text = if (canChallenge || isSlain) (if (activeLang == "TR") boss.descriptionTr else boss.descriptionEn) 
-                                           else (if (activeLang == "TR") "Bu efsanevi varlığın aurası henüz gizli. Gerekli kılıç aşamalarını ve ruh düzeylerini tamamlayın." else "The dynamic presence of this overlord remains veiled. Perfect your stats and alignments to unravel limits."),
+                                    text = if (canChallenge || isSlain) boss.getDescription(activeLang) 
+                                           else LocalizationManager.getString(activeLang, "ui.quests_mystery_locked"),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                                 )
@@ -993,24 +962,12 @@ fun QuestsTab(
                                 Spacer(modifier = Modifier.height(Dimens.SpacingM))
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text(
-                                        text = if (activeLang == "TR") "Aura Şartları: " else "Vortex Requirements: ",
+                                        text = LocalizationManager.getString(activeLang, "ui.quests_vortex_requirements"),
                                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                                     )
-                                    val reqTr = when (boss.id) {
-                                        "boss_solstice_dragon" -> "Seviye >= 4, Kutsal Fütüvvet >= 30"
-                                        "boss_void_reaper" -> "Seviye >= 4, Kaotik Kaos <= -30"
-                                        "boss_equilibrium_arbiter" -> "Ruh Kırılmaları >= 1, Saf Tarafsızlık (Denge)"
-                                        else -> "Yükseliş Zinciri"
-                                    }
-                                    val reqEn = when (boss.id) {
-                                        "boss_solstice_dragon" -> "Level >= 4, Sanctum Alignment >= 30"
-                                        "boss_void_reaper" -> "Level >= 4, Covenant Alignment <= -30"
-                                        "boss_equilibrium_arbiter" -> "Spirit Fractures >= 1, Pure Neutrality (Balance)"
-                                        else -> "Ascended Thread"
-                                    }
                                     Text(
-                                        text = if (activeLang == "TR") reqTr else reqEn,
+                                        text = boss.getUnlockRequirement(activeLang),
                                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold, fontStyle = FontStyle.Italic),
                                         color = if (canChallenge) ColorSanctumPrimary else ColorDanger
                                     )
@@ -1024,7 +981,7 @@ fun QuestsTab(
                                         .fillMaxWidth()
                                 ) {
                                     Text(
-                                        text = if (activeLang == "TR") "KİLİTLİ ZAFER GANİMETLERİ:" else "VEILED TRIUMPH REWARDS:",
+                                        text = LocalizationManager.getString(activeLang, "ui.quests_veiled_triumph"),
                                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, fontSize = Dimens.TextXxs),
                                         color = MaterialTheme.colorScheme.primary
                                     )
@@ -1047,7 +1004,7 @@ fun QuestsTab(
                                         Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(Dimens.SpacingL))
                                         Spacer(modifier = Modifier.width(Dimens.SpacingS))
                                         Text(
-                                            text = if (activeLang == "TR") "MEYDAN OKUMAYI BAŞLAT ⚔️" else "ENGAGE ELDRITCH BATTLE ⚔️",
+                                            text = LocalizationManager.getString(activeLang, "ui.btn_initiate").uppercase(),
                                             style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold)
                                         )
                                     }
