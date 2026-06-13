@@ -27,19 +27,12 @@ class FloorViewModel(
     private val _currentFloorNodes = MutableStateFlow<List<AdventureNode>>(emptyList())
     val currentFloorNodes: StateFlow<List<AdventureNode>> = _currentFloorNodes.asStateFlow()
 
-    private val _scoutedNodeIndices = MutableStateFlow<Set<Int>>(emptySet())
-    val scoutedNodeIndices: StateFlow<Set<Int>> = _scoutedNodeIndices.asStateFlow()
-
     fun updateScenario(scenario: FloorScenario?) {
         _currentScenario.value = scenario
     }
 
     fun updateNodes(nodes: List<AdventureNode>) {
         _currentFloorNodes.value = nodes
-    }
-
-    fun clearScoutedNodes() {
-        _scoutedNodeIndices.value = emptySet()
     }
 
     fun ascendToNextFloor() {
@@ -49,7 +42,7 @@ class FloorViewModel(
             val hasPass = profile.itemsEncoded.split(",").any { it.trim() == "Seasonal Sovereign Pass" }
 
             if (!hasPass && profile.currentWill < 2) {
-                onMessage(ActionMessage("msg_climb_will_cost"))
+                onMessage(ActionMessage("ui.msg_climb_will_cost"))
                 return@launch
             }
 
@@ -62,7 +55,7 @@ class FloorViewModel(
                     lastUpdated = System.currentTimeMillis()
                 )
                 repository.savePlayerProfile(updated)
-                onMessage(ActionMessage("msg_ascend_victory"))
+                onMessage(ActionMessage("ui.msg_ascend_victory"))
                 return@launch
             }
 
@@ -88,7 +81,7 @@ class FloorViewModel(
             
             onClearCombat()
             
-            onMessage(ActionMessage("msg_ascend_success", listOf(nextFloor)))
+            onMessage(ActionMessage("ui.msg_ascend_success", listOf(nextFloor)))
         }
     }
 
@@ -127,7 +120,7 @@ class FloorViewModel(
             val resolvedWillChange = if (hasPass && effects.willChange < 0) 0 else effects.willChange
 
             if (!hasPass && resolvedWillChange < 0 && profile.currentWill < -resolvedWillChange) {
-                onMessage(ActionMessage("msg_climb_will_cost"))
+                onMessage(ActionMessage("ui.msg_climb_will_cost"))
                 return@launch
             }
 
@@ -228,9 +221,9 @@ class FloorViewModel(
                     val nodes = _currentFloorNodes.value
                     if (profileWithQuest.currentNodeIndex + 1 < nodes.size) {
                         targetNodeIndex = profileWithQuest.currentNodeIndex + 1
-                        completedState = false
+                        completedState = false // AUTO-PROGRESS to next node
                     } else {
-                        completedState = true
+                        completedState = true // End of floor
                     }
                 }
 
@@ -268,87 +261,14 @@ class FloorViewModel(
             if (depth !in nodes.indices) return@launch
             val targetNode = nodes[depth]
             
-            if (targetNode.willCost > profile.currentWill) {
-                onMessage(ActionMessage("msg_scout_no_will"))
-                return@launch
-            }
-            
-            val willSpent = targetNode.willCost
-            val profileWithQuest = if (willSpent > 0) updateDailyQuestProgress(profile, 2, willSpent) else profile
-
-            val updated = profileWithQuest.copy(
+            val updated = profile.copy(
                 currentNodeIndex = depth,
                 currentNodeColumn = column,
                 currentNodeCompleted = false,
-                currentWill = (profileWithQuest.currentWill - targetNode.willCost).coerceAtLeast(0),
                 lastUpdated = System.currentTimeMillis()
             )
             repository.savePlayerProfile(updated)
             onClearCombat()
-        }
-    }
-
-    fun performScouting() {
-        viewModelScope.launch {
-            val profile = repository.getPlayerProfileDirect() ?: return@launch
-            val scoutCost = 1
-            if (profile.currentWill < scoutCost) {
-                onMessage(ActionMessage("msg_scout_no_will"))
-                return@launch
-            }
-
-            val unScouted = mutableListOf<Int>()
-            _currentFloorNodes.value.forEachIndexed { idx, node ->
-                if (!_scoutedNodeIndices.value.contains(idx) && idx > profile.currentNodeIndex) {
-                    unScouted.add(idx)
-                }
-            }
-
-            if (unScouted.isEmpty()) {
-                onMessage(ActionMessage("msg_all_sectors_scouted"))
-                return@launch
-            }
-
-            val revealIndex = unScouted.random()
-            _scoutedNodeIndices.value = _scoutedNodeIndices.value + revealIndex
-
-            val profileWithQuest = updateDailyQuestProgress(profile, 2, scoutCost)
-            val updated = profileWithQuest.copy(
-                currentWill = (profileWithQuest.currentWill - scoutCost).coerceAtLeast(0),
-                lastUpdated = System.currentTimeMillis()
-            )
-            repository.savePlayerProfile(updated)
-
-            val revealedNode = _currentFloorNodes.value[revealIndex]
-            val typeDesc = when (revealedNode.type) {
-                NodeType.COMBAT -> "Combat Skirmish"
-                NodeType.BOSS -> "Apex Floor Guardian"
-                NodeType.CHEST -> "Treasure Chest Cache"
-                NodeType.SHRINE -> "Aetherial Shrine"
-                NodeType.MERCHANT -> "Wandering Dealer"
-                NodeType.CAMP -> "Safety Camp Haven"
-                NodeType.EVENT -> "Mystic Event Portal"
-                NodeType.SECRET -> "Veiled Anomaly"
-                else -> "Narrative Ruins"
-            }
-            val typeDescTr = when (revealedNode.type) {
-                NodeType.COMBAT -> "Düşman Pususu"
-                NodeType.BOSS -> "Kat Muhafızı Canavar"
-                NodeType.CHEST -> "Hazine Sandığı"
-                NodeType.SHRINE -> "Mistik Sunak"
-                NodeType.MERCHANT -> "Gezgin Satıcı"
-                NodeType.CAMP -> "Güvenli Dinlenme Kampı"
-                NodeType.EVENT -> "Gizemli Etkinlik Geçidi"
-                NodeType.SECRET -> "Örtülü Anomali"
-                else -> "Tarihi Kalıntılar"
-            }
-
-            onMessage(
-                ActionMessage(
-                    "msg_scout_success",
-                    listOf(revealIndex, "ui.node_type_${revealedNode.type.name.lowercase()}")
-                )
-            )
         }
     }
 
@@ -357,7 +277,7 @@ class FloorViewModel(
             val profile = repository.getPlayerProfileDirect() ?: return@launch
             val cost = 20
             if (profile.aether < cost) {
-                onMessage(ActionMessage("msg_scout_no_aether"))
+                onMessage(ActionMessage("ui.msg_scout_no_aether"))
                 return@launch
             }
 
@@ -372,9 +292,9 @@ class FloorViewModel(
                 val foundGold = 45 + (1..15).random()
                 val innerUpdated = updated.copy(gold = updated.gold + foundGold)
                 repository.savePlayerProfile(innerUpdated)
-                onMessage(ActionMessage("msg_scout_success_gold", listOf(foundGold)))
+                onMessage(ActionMessage("ui.msg_scout_success_gold", listOf(foundGold)))
             } else {
-                onMessage(ActionMessage("msg_scout_failed_mist"))
+                onMessage(ActionMessage("ui.msg_scout_failed_mist"))
             }
         }
     }
@@ -383,7 +303,7 @@ class FloorViewModel(
         viewModelScope.launch {
             val profile = repository.getPlayerProfileDirect() ?: return@launch
             if (profile.gold < cost) {
-                onMessage(ActionMessage("msg_rest_no_gold"))
+                onMessage(ActionMessage("ui.msg_rest_no_gold"))
                 return@launch
             }
             val healAmount = profile.maxHp / 2
@@ -394,7 +314,7 @@ class FloorViewModel(
                 lastUpdated = System.currentTimeMillis()
             )
             repository.savePlayerProfile(updated)
-            onMessage(ActionMessage("msg_rest_success", listOf(healAmount, 5)))
+            onMessage(ActionMessage("ui.msg_rest_success", listOf(healAmount, 5)))
         }
     }
 
@@ -404,7 +324,7 @@ class FloorViewModel(
             if (type == "BUY_AETHER") {
                 val cost = 30
                 if (profile.gold < cost) {
-                    onMessage(ActionMessage("msg_trade_no_gold"))
+                    onMessage(ActionMessage("ui.msg_trade_no_gold"))
                     return@launch
                 }
                 val updated = profile.copy(
@@ -413,7 +333,7 @@ class FloorViewModel(
                     lastUpdated = System.currentTimeMillis()
                 )
                 repository.savePlayerProfile(updated)
-                onMessage(ActionMessage("msg_trade_success_aether"))
+                onMessage(ActionMessage("ui.msg_trade_success_aether"))
             }
         }
     }

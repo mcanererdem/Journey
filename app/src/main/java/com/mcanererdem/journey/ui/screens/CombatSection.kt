@@ -179,10 +179,10 @@ fun CombatSection(
                     combatLog.takeLast(5).forEach { log ->
                         val logText = log.getFormattedText(activeLang)
                         val (logIcon, logColor) = when {
-                            log.key == "combat_log_initiated" || log.key == "combat_log_secret_boss_initiated" -> Pair("✦", ColorCovenantGlow)
-                            log.key.startsWith("combat_log_player_") || log.key == "combat_log_crit" -> Pair("›", ColorSanctumPrimary)
-                            log.key.startsWith("combat_log_enemy_") || log.key.startsWith("combat_log_boss_") -> Pair("†", ColorDanger)
-                            log.key == "combat_log_victory" || log.key == "combat_log_loot" || log.key == "combat_log_title" || log.key == "combat_log_level_up" -> Pair("★", ColorStatGold)
+                            log.key == "ui.combat_log_initiated" || log.key == "ui.combat_log_secret_boss_initiated" -> Pair("✦", ColorCovenantGlow)
+                            log.key.startsWith("ui.combat_log_player_") || log.key == "ui.combat_log_crit" -> Pair("›", ColorSanctumPrimary)
+                            log.key.startsWith("ui.combat_log_enemy_") || log.key.startsWith("ui.combat_log_boss_") -> Pair("†", ColorDanger)
+                            log.key == "ui.combat_log_victory" || log.key == "ui.combat_log_loot" || log.key == "ui.combat_log_title" || log.key == "ui.combat_log_level_up" -> Pair("★", ColorStatGold)
                             else -> Pair("•", ColorOnSurface)
                         }
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {

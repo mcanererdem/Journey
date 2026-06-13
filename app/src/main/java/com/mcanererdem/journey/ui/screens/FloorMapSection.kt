@@ -121,8 +121,6 @@ fun FloorProgressCartographyMap(
     nodes: List<AdventureNode>,
     activeLang: String,
     journal: List<JournalEntry>,
-    scoutedNodeIndices: Set<Int>,
-    onScoutClick: () -> Unit,
     onLockedClicked: (String) -> Unit,
     onNextNodeClick: (Int, Int) -> Unit
 ) {
@@ -139,18 +137,17 @@ fun FloorProgressCartographyMap(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = Dimens.SpacingS)
             .clickable { isExpanded = !isExpanded },
         shape = RoundedCornerShape(Dimens.SpacingM),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = BorderStroke(Dimens.BorderThin, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
     ) {
-        Column(modifier = Modifier.padding(Dimens.SpacingS)) {
+        Column(modifier = Modifier.padding(horizontal = Dimens.SpacingS, vertical = Dimens.SpacingXs)) {
             if (!isExpanded) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 4.dp, vertical = 4.dp),
+                        .padding(horizontal = 4.dp, vertical = 2.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
@@ -159,32 +156,32 @@ fun FloorProgressCartographyMap(
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Text(
-                            text = LocalizationManager.getString(activeLang, "ui.map_label"),
+                            text = "${selectedFloor}.${currentDepth + 1}",
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontFamily = FontFamily.Serif,
                                 fontWeight = FontWeight.Bold,
-                                letterSpacing = 1.sp
+                                letterSpacing = 0.5.sp
                             ),
                             color = MaterialTheme.colorScheme.primary
                         )
                         
-                        Spacer(modifier = Modifier.width(4.dp))
+                        Spacer(modifier = Modifier.width(2.dp))
                         
-                        val totalDepths = 20
+                        val totalDepths = nodes.size.coerceAtLeast(1)
                         val windowSize = 7
                         val halfWindow = windowSize / 2
                         val startDepth = (currentDepth - halfWindow).coerceIn(0, (totalDepths - windowSize).coerceAtLeast(0))
                         val endDepth = (startDepth + windowSize - 1).coerceAtMost(totalDepths - 1)
                         
                         for (d in startDepth..endDepth) {
-                            val nodeAtDepth = nodes.firstOrNull { it.depth == d }
+                            val nodeAtDepth = nodes.getOrNull(d)
                             if (nodeAtDepth != null) {
                                 val isCurrent = d == currentDepth
                                 val isCleared = d < currentDepth || (isCurrent && player.currentNodeCompleted)
                                 
-                                val (icon, color) = when {
+                                val icon = when {
                                     isCurrent -> {
-                                        val iconStr = when (nodeAtDepth.type) {
+                                        when (nodeAtDepth.type) {
                                             NodeType.COMBAT -> "⚔️"
                                             NodeType.BOSS -> "💀"
                                             NodeType.CHEST -> "🎁"
@@ -195,15 +192,10 @@ fun FloorProgressCartographyMap(
                                             NodeType.EVENT -> "🎲"
                                             NodeType.SECRET -> "🕵️"
                                         }
-                                        Pair(iconStr, ColorSanctumPrimary)
                                     }
-                                    isCleared -> Pair("✓", ColorHeal)
+                                    isCleared -> "✓"
                                     else -> {
-                                        if (d == totalDepths - 1) {
-                                            Pair("💀", ColorOnSurfaceSubtle)
-                                        } else {
-                                            Pair("⬡", ColorOnSurfaceSubtle)
-                                        }
+                                        if (d == totalDepths - 1) "💀" else "⬡"
                                     }
                                 }
                                 
@@ -262,20 +254,15 @@ fun FloorProgressCartographyMap(
                         fontSize = Dimens.TextXl,
                         modifier = Modifier.padding(end = Dimens.SpacingS)
                     )
-                    Text(
-                        text = "${selectedFloor}",
-                        style = MaterialTheme.typography.headlineSmall.copy(
-                            fontFamily = FontFamily.Serif,
-                            fontWeight = FontWeight.ExtraBold,
-                            fontSize = 24.sp
-                        ),
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(end = 4.dp)
-                    )
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = LocalizationManager.getString(activeLang, "ui.map_floor_label"),
-                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 8.sp, letterSpacing = 1.sp),
+                            text = "${selectedFloor}.${currentDepth + 1}",
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, letterSpacing = 1.sp),
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = LocalizationManager.getString(activeLang, "ui.map_label"),
+                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 8.sp, letterSpacing = 0.5.sp),
                             color = ColorOnSurfaceMuted
                         )
                     }
@@ -308,46 +295,41 @@ fun FloorProgressCartographyMap(
                             .padding(vertical = Dimens.SpacingS),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        for (d in 0..19) {
-                            val node = nodes.find { it.depth == d }
-                            if (node != null) {
-                                val nodeIdx = nodes.indexOf(node)
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.Center,
-                                    modifier = Modifier.width(44.dp)
-                                ) {
-                                    val isSelected = selectedNodeIdx == nodeIdx
-                                    val isCurrent = player.currentFloor == selectedFloor && nodeIdx == player.currentNodeIndex
-                                    val isCleared = player.currentFloor > selectedFloor || (player.currentFloor == selectedFloor && (node.depth < currentDepth || (nodeIdx == player.currentNodeIndex && player.currentNodeCompleted)))
-                                    val isAccessible = player.currentFloor == selectedFloor && (
-                                        (nodeIdx == player.currentNodeIndex) ||
-                                        (player.currentNodeCompleted && node.depth == currentDepth + 1)
-                                    )
-                                    val isScouted = scoutedNodeIndices.contains(nodeIdx)
-                                    val isTypeHidden = !isCurrent && !isCleared && !isAccessible && !isScouted
+                        nodes.forEachIndexed { nodeIdx, node ->
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center,
+                                modifier = Modifier.width(44.dp)
+                            ) {
+                                val isSelected = selectedNodeIdx == nodeIdx
+                                val isCurrent = player.currentFloor == selectedFloor && nodeIdx == player.currentNodeIndex
+                                val isCleared = player.currentFloor > selectedFloor || (player.currentFloor == selectedFloor && (node.depth < currentDepth || (nodeIdx == player.currentNodeIndex && player.currentNodeCompleted)))
+                                val isAccessible = player.currentFloor == selectedFloor && (
+                                    (nodeIdx == player.currentNodeIndex) ||
+                                    (player.currentNodeCompleted && node.depth == currentDepth + 1)
+                                )
 
-                                    NodeCircle(
-                                        node = node,
-                                        isCurrent = isCurrent,
-                                        isCleared = isCleared,
-                                        isAccessible = isAccessible,
-                                        isTypeHidden = isTypeHidden,
-                                        isSelected = isSelected,
-                                        onClick = {
-                                            selectedNodeIdx = nodeIdx
-                                            if (!isAccessible) {
-                                                onLockedClicked("ui.map_locked_sector_msg")
-                                            } else {
-                                                activeModalNode = node
-                                            }
+                                NodeCircle(
+                                    node = node,
+                                    isCurrent = isCurrent,
+                                    isCleared = isCleared,
+                                    isAccessible = isAccessible,
+                                    isTypeHidden = false, // ALWAYS SHOW TYPE since scouting is removed
+                                    isSelected = isSelected,
+                                    onClick = {
+                                        selectedNodeIdx = nodeIdx
+                                        if (isAccessible && !isCurrent) {
+                                            activeModalNode = node
+                                        } else if (!isAccessible && !isCurrent) {
+                                            onLockedClicked("ui.map_locked_sector_msg")
                                         }
-                                    )
-                                }
+                                        // clicking current node (isCurrent) just selects it in the inspection panel below, no modal.
+                                    }
+                                )
                             }
 
-                            if (d < 19) {
-                                val pathCleared = player.currentFloor > selectedFloor || (player.currentFloor == selectedFloor && d < currentDepth)
+                            if (nodeIdx < nodes.size - 1) {
+                                val pathCleared = player.currentFloor > selectedFloor || (player.currentFloor == selectedFloor && node.depth < currentDepth)
                                 val pathColor = if (pathCleared) ColorHeal else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.15f)
                                 val pathHeight = if (pathCleared) Dimens.BorderThick else Dimens.BorderThin
                                 
@@ -393,11 +375,7 @@ fun FloorProgressCartographyMap(
                             (player.currentFloor == selectedFloor && (inspectNode.depth < currentDepth || (player.currentNodeIndex == selectedNodeIdx && player.currentNodeCompleted)))
                     val inspectIsAccessible = selectedNodeIdx == 0 || inspectIsCurrent || (inspectNode.depth == currentDepth + 1 && player.currentNodeCompleted)
 
-                    val isSelectScouted = scoutedNodeIndices.contains(selectedNodeIdx)
-                    val isSelectTypeHidden = !inspectIsCurrent && !inspectIsCleared && !inspectIsAccessible && !isSelectScouted
-
                     val dangerLevel = when {
-                        isSelectTypeHidden -> LocalizationManager.getString(activeLang, "ui.node_threat_unknown")
                         inspectNode.type == NodeType.BOSS -> LocalizationManager.getString(activeLang, "ui.node_threat_boss")
                         inspectNode.type == NodeType.COMBAT -> LocalizationManager.getString(activeLang, "ui.node_threat_combat")
                         inspectNode.type == NodeType.NARRATIVE -> LocalizationManager.getString(activeLang, "ui.node_threat_narrative")
@@ -429,7 +407,7 @@ fun FloorProgressCartographyMap(
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
-                                        text = if (isSelectTypeHidden) "❓" else when (inspectNode.type) {
+                                        text = when (inspectNode.type) {
                                             NodeType.COMBAT -> "⚔️"
                                             NodeType.BOSS -> "💀"
                                             NodeType.CHEST -> "💎"
@@ -449,13 +427,13 @@ fun FloorProgressCartographyMap(
                                 Column(modifier = Modifier.weight(1f)) {
                                     val nodeName = LocalizationManager.getString(activeLang, inspectNode.titleKey)
                                     Text(
-                                        text = if (isSelectTypeHidden) LocalizationManager.getString(activeLang, "ui.node_hidden_sector") else nodeName,
+                                        text = nodeName,
                                         style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
                                         color = MaterialTheme.colorScheme.onSurface
                                     )
                                     val sectorText = LocalizationManager.getString(activeLang, "ui.label_sector")
                                     Text(
-                                        text = if (isSelectTypeHidden) LocalizationManager.getString(activeLang, "ui.node_unexplored") else "$nodeCategory • $sectorText ${selectedNodeIdx + 1}",
+                                        text = "$nodeCategory • $sectorText ${selectedNodeIdx + 1}",
                                         style = MaterialTheme.typography.labelSmall.copy(fontSize = Dimens.TextXxs),
                                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                                     )
@@ -497,14 +475,6 @@ fun FloorProgressCartographyMap(
                             }
 
                             Spacer(modifier = Modifier.height(Dimens.SpacingS))
-                            
-                            Text(
-                                text = LocalizationManager.getString(activeLang, inspectNode.descriptionKey),
-                                style = MaterialTheme.typography.bodySmall.copy(fontSize = Dimens.TextXs),
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                            )
-
-                            Spacer(modifier = Modifier.height(Dimens.SpacingS))
                             HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
                             Spacer(modifier = Modifier.height(Dimens.SpacingS))
 
@@ -519,7 +489,7 @@ fun FloorProgressCartographyMap(
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                             )
 
-                            if (!isSelectTypeHidden && inspectNode.enemy != null) {
+                            if (inspectNode.enemy != null) {
                                 val enemy = inspectNode.enemy!!
                                 val enemyNameKey = "enemy.${enemy.enemyId}.name"
                                 val enemyName = LocalizationManager.getString(activeLang, enemyNameKey)

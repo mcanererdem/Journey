@@ -32,7 +32,7 @@ fun LegacyUpgradeType.getName(lang: String): String = LocalizationManager.getStr
 fun LegacyUpgradeType.getDescription(lang: String): String = LocalizationManager.getString(lang, descriptionKey)
 fun JournalEntry.getActionTaken(lang: String): String {
     if (actionKey.isBlank()) {
-        return legacyText
+        return ""
     }
 
     val template = LocalizationManager.getString(lang, actionKey)

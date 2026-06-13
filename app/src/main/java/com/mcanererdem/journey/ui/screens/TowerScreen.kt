@@ -44,11 +44,9 @@ fun TowerClimbTab(
     combatLog: List<CombatLogEntry>,
     activeLang: String,
     journal: List<JournalEntry>,
-    scoutedNodeIndices: Set<Int>,
     playerStatuses: List<CombatStatus>,
     enemyStatuses: List<CombatStatus>,
     currentEnemyIntent: EnemyIntent,
-    onScoutClick: () -> Unit,
     onLockedClicked: (String) -> Unit,
     onChoiceSelected: (NodeChoice) -> Unit,
     onScenarioChoiceSelected: (GameOption) -> Unit,
@@ -70,25 +68,15 @@ fun TowerClimbTab(
         }
 
         item {
-            Text(
-                text = LocalizationManager.formatString(activeLang, "ui.label_checkpoint", player.savedFloorCheckpoint),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
-            )
-            Spacer(modifier = Modifier.height(Dimens.SpacingM))
-        }
-
-        item {
             FloorProgressCartographyMap(
                 player = player,
                 nodes = nodes,
                 activeLang = activeLang,
                 journal = journal,
-                scoutedNodeIndices = scoutedNodeIndices,
-                onScoutClick = onScoutClick,
                 onLockedClicked = onLockedClicked,
                 onNextNodeClick = onNextNodeClick
             )
+            Spacer(modifier = Modifier.height(Dimens.SpacingS))
         }
 
         if (player.currentFloor > 100) {
@@ -233,39 +221,15 @@ fun TowerClimbTab(
                                 }
                             }
                         } else {
+                            // Non-boss nodes auto-progress, so we don't show a "cleared" state here.
+                            // The ViewModel should have already moved the index.
+                            // If we are here, it's a brief transition state.
                             item {
-                                Card(
+                                Box(
                                     modifier = Modifier.fillMaxWidth().padding(Dimens.SpacingL),
-                                    shape = RoundedCornerShape(Dimens.SpacingM),
-                                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                                    border = BorderStroke(Dimens.BorderThin, ColorHeal.copy(alpha = 0.5f))
+                                    contentAlignment = Alignment.Center
                                 ) {
-                                    Column(
-                                        modifier = Modifier.padding(Dimens.SpacingL),
-                                        horizontalAlignment = Alignment.CenterHorizontally
-                                    ) {
-                                        Text(
-                                            text = LocalizationManager.getString(activeLang, "ui.sector_cleared_msg"),
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                                            textAlign = TextAlign.Center
-                                        )
-                                        
-                                        Spacer(modifier = Modifier.height(Dimens.SpacingM))
-                                        
-                                        Button(
-                                            onClick = { },
-                                            colors = ButtonDefaults.buttonColors(containerColor = ColorHeal.copy(alpha = 0.8f)),
-                                            modifier = Modifier.fillMaxWidth().height(Dimens.BadgeSize + 4.dp)
-                                        ) {
-                                            Icon(Icons.Default.LocationOn, contentDescription = null, modifier = Modifier.size(16.dp))
-                                            Spacer(modifier = Modifier.width(Dimens.SpacingS))
-                                            Text(
-                                                text = LocalizationManager.getString(activeLang, "ui.btn_proceed_via_map"),
-                                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
-                                            )
-                                        }
-                                    }
+                                    CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
                                 }
                             }
                         }
@@ -302,7 +266,18 @@ fun TowerClimbTab(
                         }
                         items(activeNode.choices) { choice ->
                             val hasFlag = choice.effects.requiredFlag.isEmpty() || player.storyFlagsEncoded.split(",").contains(choice.effects.requiredFlag)
-                            NodeChoiceButton(choice = choice, activeLang = activeLang, highlightColor = when { choice.effects.momentumShift > 0 -> ColorSanctumPrimary; choice.effects.momentumShift < 0 -> ColorCovenantGlow; else -> ColorNeutralPrimary }, testTagValue = "choice_btn_${choice.id}", enabled = hasFlag, onClick = { onChoiceSelected(choice) })
+                            NodeChoiceButton(
+                                choice = choice,
+                                activeLang = activeLang,
+                                highlightColor = when {
+                                    choice.effects.momentumShift > 0 -> ColorSanctumPrimary
+                                    choice.effects.momentumShift < 0 -> ColorCovenantGlow
+                                    else -> ColorNeutralPrimary
+                                },
+                                testTagValue = "choice_btn_${choice.id}",
+                                enabled = hasFlag,
+                                onClick = { onChoiceSelected(choice) }
+                            )
                             Spacer(modifier = Modifier.height(Dimens.SpacingS))
                         }
                     }

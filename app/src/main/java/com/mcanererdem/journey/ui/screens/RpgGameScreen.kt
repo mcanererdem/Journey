@@ -58,8 +58,6 @@ fun RpgGameScreen(
     val adCooldownSeconds by viewModel.adCooldownSeconds.collectAsStateWithLifecycle()
     val isPurchaseDialogShown by viewModel.isPurchaseDialogShown.collectAsStateWithLifecycle()
 
-    val scoutedNodeIndices by viewModel.scoutedNodeIndices.collectAsStateWithLifecycle()
-
     val actionMessage by viewModel.lastActionMessage.collectAsStateWithLifecycle()
 
     // Add Settings flows collection
@@ -73,8 +71,20 @@ fun RpgGameScreen(
     val p = player
     val currentSide = p?.side ?: "NEUTRAL"
 
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(actionMessage) {
+        if (actionMessage.key.isNotEmpty() && !showNotificationBanner) {
+            snackbarHostState.showSnackbar(
+                message = actionMessage.getFormattedText(activeLang).ifBlank { actionMessage.key },
+                duration = SnackbarDuration.Short
+            )
+        }
+    }
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
             val isPlayerInCombat = player?.let { p ->
                 currentFloorNodes.getOrNull(p.currentNodeIndex)?.let { node ->
@@ -134,7 +144,7 @@ fun RpgGameScreen(
                         )
                         Spacer(modifier = Modifier.width(Dimens.SpacingS))
                         Text(
-                            text = actionMessage.getFormattedText(activeLang),
+                            text = actionMessage.getFormattedText(activeLang).ifBlank { actionMessage.key },
                             style = MaterialTheme.typography.bodySmall.copy(
                                 fontWeight = FontWeight.Medium,
                                 fontFamily = FontFamily.Serif
@@ -171,11 +181,9 @@ fun RpgGameScreen(
                         combatLog = combatLog,
                         activeLang = activeLang,
                         journal = journal ?: emptyList(),
-                        scoutedNodeIndices = scoutedNodeIndices,
                         playerStatuses = playerStatuses,
                         enemyStatuses = enemyStatuses,
                         currentEnemyIntent = currentEnemyIntent,
-                        onScoutClick = { viewModel.performScouting() },
                         onLockedClicked = { key -> viewModel.showActionMessage(ActionMessage(key)) },
                         onChoiceSelected = { viewModel.selectNodeChoice(it) },
                         onScenarioChoiceSelected = { viewModel.handleRpgChoice(it) },
@@ -183,6 +191,13 @@ fun RpgGameScreen(
                         onAscendFloorClick = { viewModel.ascendToNextFloor() },
                         onCombatAction = { viewModel.executeCombatTurn(it) },
                         onResetClick = { viewModel.resetGame() }
+                    )
+                    NavigationTab.OUTER_WORLD -> OuterWorldTab(
+                        player = player,
+                        activeLang = activeLang,
+                        onHeal = { viewModel.healAndRest(it) },
+                        onScout = { viewModel.performAbyssScouting() },
+                        onTrade = { viewModel.tradeCurrency(it) }
                     )
                     NavigationTab.CHAR_SHEET -> CharacterSheetTab(
                         player = player,
@@ -198,6 +213,12 @@ fun RpgGameScreen(
                         player = player,
                         viewModel = viewModel,
                         activeLang = activeLang
+                    )
+                    NavigationTab.LEGACY -> LegacyTab(
+                        player = player,
+                        activeLang = activeLang,
+                        onUpgradePurchased = { viewModel.purchaseUpgrade(it) },
+                        onClaimQuestReward = { viewModel.claimDailyQuestReward(it) }
                     )
                     NavigationTab.JOURNAL -> JournalTab(
                         journal = journal,
@@ -883,20 +904,18 @@ fun HeaderStatsBlock(
             
             // Name and Details
             Column {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = player.playerName.uppercase(),
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            fontFamily = FontFamily.Serif,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 0.5.sp
-                        ),
-                        color = ColorOnBackground
-                    )
-                }
+                Text(
+                    text = player.playerName.uppercase(),
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontFamily = FontFamily.Serif,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 0.5.sp
+                    ),
+                    color = ColorOnBackground
+                )
                 
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    // Faction badge (e.g. LAWFUL CHOIR, COVENANT)
+                // Faction and Level info stacked
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     val factionText = when (player.side) {
                         "SANCTUM" -> LocalizationManager.getString(activeLang, "ui.header_faction_sanctum")
                         "COVENANT" -> LocalizationManager.getString(activeLang, "ui.header_faction_covenant")
@@ -921,14 +940,14 @@ fun HeaderStatsBlock(
                     
                     Text(
                         text = "Lv ${player.level} • ${player.chosenClass}",
-                        style = MaterialTheme.typography.labelSmall,
+                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
                         color = ColorOnSurfaceMuted
                     )
                 }
             }
         }
         
-        // Right: HP, Essence bars and Floor
+        // Right: Essence bar and Floor (HP number removed)
         Row(
             verticalAlignment = Alignment.Top,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -963,10 +982,11 @@ fun HeaderStatsBlock(
                                 .background(ColorDanger, RoundedCornerShape(3.dp))
                         )
                     }
+                    // Numerical text removed/hidden to maintain alignment with Will bar
                     Text(
-                        text = "${player.currentHp}",
-                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, fontSize = 10.sp),
-                        color = ColorOnSurface
+                        text = "",
+                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                        modifier = Modifier.width(0.dp)
                     )
                 }
                 
@@ -1205,8 +1225,10 @@ fun CustomBottomNavigationBar(
         } else {
             LocalizationManager.getString(activeLang, "ui.nav_tower_floor") to "🏰"
         },
+        NavigationTab.OUTER_WORLD to (LocalizationManager.getString(activeLang, "ui.nav_world") to "🌍"),
         NavigationTab.QUESTS to (LocalizationManager.getString(activeLang, "ui.nav_quest") to "📜"),
         NavigationTab.CHAR_SHEET to (LocalizationManager.getString(activeLang, "ui.nav_hero") to "👤"),
+        NavigationTab.LEGACY to (LocalizationManager.getString(activeLang, "ui.nav_legacy") to "💎"),
         NavigationTab.JOURNAL to (LocalizationManager.getString(activeLang, "ui.nav_journal") to "📖"),
         NavigationTab.SETTINGS to (LocalizationManager.getString(activeLang, "ui.nav_settings") to "⚙️")
     )
@@ -1229,8 +1251,10 @@ fun CustomBottomNavigationBar(
                 val isSelected = currentTab == tabId
                 val activeColor = when (tabId) {
                     NavigationTab.TOWER -> if (isPlayerInCombat) ColorDanger else ColorSanctumPrimary
+                    NavigationTab.OUTER_WORLD -> ColorHeal
                     NavigationTab.QUESTS -> ColorWarning
                     NavigationTab.CHAR_SHEET -> ColorCovenantGlow
+                    NavigationTab.LEGACY -> ColorStatGold
                     NavigationTab.JOURNAL -> ColorInfo
                     NavigationTab.SETTINGS -> ColorOnSurfaceMuted
                 }

@@ -7,8 +7,10 @@ import org.json.JSONArray
 
 enum class NavigationTab {
     TOWER,
+    OUTER_WORLD,
     CHAR_SHEET,
     QUESTS,
+    LEGACY,
     JOURNAL,
     SETTINGS
 }
@@ -93,10 +95,9 @@ data class PlayerProfile(
 data class JournalEntry(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val floor: Int,
-    val actionKey: String,
-    val actionArgsEncoded: String = "",
-    val legacyText: String = "",
-    val sideAlignmentShift: String, // SANCTUM / COVENANT / NEUTRAL
+    val actionKey: String,                           // NEW: Localization Key
+    val actionArgsEncoded: String = "",              // NEW: JSON array of arguments
+    val sideAlignmentShift: String,                  // SANCTUM / COVENANT / NEUTRAL
     val alignmentImpact: Int,
     val timestamp: Long = System.currentTimeMillis(),
     val nodeIndex: Int = -1

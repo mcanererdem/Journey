@@ -40,7 +40,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val _activeLanguage = MutableStateFlow("EN") // "TR" or "EN"
     val activeLanguage: StateFlow<String> = _activeLanguage.asStateFlow()
 
-    private val _lastActionMessage = MutableStateFlow(ActionMessage("msg_welcome"))
+    private val _lastActionMessage = MutableStateFlow(ActionMessage("ui.msg_welcome"))
     val lastActionMessage: StateFlow<ActionMessage> = _lastActionMessage.asStateFlow()
 
     private val _currentTab = MutableStateFlow(NavigationTab.TOWER)
@@ -63,7 +63,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     // Expose sub-ViewModel States
     val currentScenario: StateFlow<FloorScenario?>
     val currentFloorNodes: StateFlow<List<AdventureNode>>
-    val scoutedNodeIndices: StateFlow<Set<Int>>
 
     val activeEnemyHp: StateFlow<Int?>
     val combatLog: StateFlow<List<CombatLogEntry>>
@@ -159,7 +158,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         // Connect delegate states
         currentScenario = floorViewModel.currentScenario
         currentFloorNodes = floorViewModel.currentFloorNodes
-        scoutedNodeIndices = floorViewModel.scoutedNodeIndices
 
         activeEnemyHp = combatViewModel.activeEnemyHp
         combatLog = combatViewModel.combatLog
@@ -172,22 +170,56 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
         // Automatic orchestration logic
         viewModelScope.launch {
-            var lastLoadedFloor = -1
+            var lastFloor = -1
+            var lastNodeIndex = -1
+            var lastNodesList: List<FloorNode> = emptyList()
+
+            // Initial profile bootstrap
+            if (repository.getPlayerProfileDirect() == null) {
+                val initialProfile = PlayerProfile(
+                    playerName = "Lord Alistair",
+                    currentFloor = 1,
+                    currentHp = 100,
+                    maxHp = 100,
+                    gold = 150,
+                    side = "NEUTRAL",
+                    momentum = 50,
+                    rank = "EMISSARY",
+                    chosenClass = "Initiate",
+                    currentWill = 10,
+                    maxWill = 10,
+                    lastUpdated = System.currentTimeMillis()
+                )
+                repository.savePlayerProfile(initialProfile)
+            }
+
             repository.playerProfile.collect { profile ->
                 if (profile != null) {
-                    if (profile.currentFloor != lastLoadedFloor) {
-                        lastLoadedFloor = profile.currentFloor
-                        floorViewModel.clearScoutedNodes()
+                    // 1. Update floor nodes if floor changed
+                    if (profile.currentFloor != lastFloor) {
+                        lastFloor = profile.currentFloor
+                        val blueprint = FloorBlueprintSystem.getBlueprintForFloor(profile.currentFloor, profile)
+                        lastNodesList = blueprint.allNodes
+                        floorViewModel.updateNodes(lastNodesList)
+                        
+                        // We reset node index tracking on floor change
+                        lastNodeIndex = -1 
                     }
+
+                    // 2. Check combat if node index changed or if combat state needs sync
+                    if (profile.currentNodeIndex != lastNodeIndex) {
+                        lastNodeIndex = profile.currentNodeIndex
+                        if (lastNodesList.isNotEmpty()) {
+                            combatViewModel.checkAndInitCombat(profile, lastNodesList, activeLanguage.value)
+                        }
+                    }
+
+                    // 3. Periodic Title check (still can be done on change, but maybe less frequent?)
+                    // For now, keep it simple but avoid loops
                     val checkedProfile = profileViewModel.checkAndUnlockTitles(profile)
                     if (checkedProfile.titlesEncoded != profile.titlesEncoded) {
                         repository.savePlayerProfile(checkedProfile)
-                        return@collect
                     }
-
-                    val nodes = AdventureEngine.generateNodesForFloor(profile.currentFloor, profile)
-                    floorViewModel.updateNodes(nodes)
-                    combatViewModel.checkAndInitCombat(profile, nodes, activeLanguage.value)
                 }
             }
         }
@@ -227,7 +259,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         )
         repository.savePlayerProfile(updated)
 
-        showActionMessage(ActionMessage("msg_spirit_fracture", listOf(rollbackFloor)))
+        showActionMessage(ActionMessage("ui.msg_spirit_fracture", listOf(rollbackFloor)))
         _currentTab.value = NavigationTab.TOWER
         combatViewModel.clearCombat()
     }
@@ -243,6 +275,15 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     fun changeLanguage(lang: String) {
         _activeLanguage.value = lang
+        viewModelScope.launch {
+            repository.getPlayerProfileDirect()?.let { profile ->
+                val updated = profile.copy(
+                    chosenClass = profileViewModel.getPlayerClassString(profile.side, profile.momentum, lang),
+                    lastUpdated = System.currentTimeMillis()
+                )
+                repository.savePlayerProfile(updated)
+            }
+        }
     }
 
     fun selectTab(tab: NavigationTab) {
@@ -294,7 +335,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun performScouting() {
-        floorViewModel.performScouting()
+        // Removed as per request
     }
 
     fun performAbyssScouting() {
@@ -388,10 +429,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             
             combatViewModel.clearCombat()
             combatViewModel.clearCompletedEventsAndSlainBosses()
-            floorViewModel.clearScoutedNodes()
             _currentTab.value = NavigationTab.TOWER
             
-            showActionMessage(ActionMessage("msg_reset_success", listOf(earnedPoints)))
+            showActionMessage(ActionMessage("ui.msg_reset_success", listOf(earnedPoints)))
         }
     }
 
@@ -437,7 +477,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             )
             repository.savePlayerProfile(updated)
             
-            showActionMessage(ActionMessage("msg_ad_watched_success"))
+            showActionMessage(ActionMessage("ui.msg_ad_watched_success"))
             
             // Set cooldown
             _adCooldownSeconds.value = 60
@@ -478,9 +518,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 val success = FirebaseManager.syncProfileToCloud(profile)
                 _firebaseSyncState.value = if (success) "SUCCESS" else "FAILURE"
                 if (success) {
-                    showActionMessage(ActionMessage("msg_sync_success"))
+                    showActionMessage(ActionMessage("ui.msg_sync_success"))
                 } else {
-                    showActionMessage(ActionMessage("msg_sync_failed"))
+                    showActionMessage(ActionMessage("ui.msg_sync_failed"))
                 }
             } else {
                 _firebaseSyncState.value = "FAILURE"
@@ -495,10 +535,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             if (cloudProfile != null) {
                 repository.savePlayerProfile(cloudProfile)
                 _firebaseSyncState.value = "SUCCESS"
-                showActionMessage(ActionMessage("msg_restore_success"))
+                showActionMessage(ActionMessage("ui.msg_restore_success"))
             } else {
                 _firebaseSyncState.value = "FAILURE"
-                showActionMessage(ActionMessage("msg_restore_failed"))
+                showActionMessage(ActionMessage("ui.msg_restore_failed"))
             }
         }
     }

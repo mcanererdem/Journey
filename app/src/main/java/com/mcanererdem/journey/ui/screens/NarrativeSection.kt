@@ -144,7 +144,7 @@ fun NodeChoiceButton(
                         }
                         
                         if (choice.effects.goldChange != 0) {
-                            val goldText = LocalizationManager.formatString(activeLang, "ui.badge_gleam", choice.effects.goldChange)
+                            val goldText = LocalizationManager.formatString(activeLang, "ui.badge_gold", choice.effects.goldChange)
                             val goldColor = ColorStatGold
                             Box(
                                 modifier = Modifier

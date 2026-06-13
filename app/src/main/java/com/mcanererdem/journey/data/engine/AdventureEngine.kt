@@ -7,7 +7,7 @@ object AdventureEngine {
 
     fun generateNodesForFloor(floor: Int, player: PlayerProfile? = null): List<AdventureNode> {
         val blueprint = FloorBlueprintSystem.getBlueprintForFloor(floor, player)
-        return blueprint.nodes
+        return blueprint.allNodes
     }
 
     // New key-based generators for the refactored architecture

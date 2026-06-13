@@ -37,7 +37,7 @@ object FloorStateManager {
      */
     fun getFloorProgress(floor: Int, player: PlayerProfile): Pair<Int, Int> {
         val blueprint = FloorBlueprintSystem.getBlueprintForFloor(floor, player)
-        val totalNodes = blueprint.nodes.size
+        val totalNodes = blueprint.allNodes.size
         
         return when {
             player.currentFloor > floor -> Pair(totalNodes, totalNodes)
@@ -69,13 +69,13 @@ object FloorStateManager {
             FloorObjective(
                 id = "intro_scenario_floor_$floor",
                 textKey = "ui.objective_intro_format",
-                textArgs = listOf(blueprint.introScenario.titleKey),
+                textArgs = listOf(blueprint.intro.titleKey),
                 isCompleted = introScenarioCompleted
             )
         )
 
         // 2. Node objectives
-        blueprint.nodes.forEachIndexed { index, node ->
+        blueprint.allNodes.forEachIndexed { index, node ->
             val nodeCompleted = player.currentFloor > floor || 
                     (player.currentFloor == floor && (player.currentNodeIndex > index || (player.currentNodeIndex == index && player.currentNodeCompleted)))
             
@@ -124,7 +124,7 @@ object FloorStateManager {
     fun canAscendToNextFloor(player: PlayerProfile): Boolean {
         val currentFloor = player.currentFloor
         val blueprint = FloorBlueprintSystem.getBlueprintForFloor(currentFloor, player)
-        val lastNodeIndex = blueprint.nodes.size - 1
+        val lastNodeIndex = blueprint.allNodes.size - 1
         
         // Player must have completed the last node of their current floor
         return player.currentNodeIndex >= lastNodeIndex && player.currentNodeCompleted
@@ -178,7 +178,7 @@ object FloorStateManager {
 
             if (!canAscendToNextFloor(player)) {
                 val blueprint = FloorBlueprintSystem.getBlueprintForFloor(currentFloor, player)
-                val bossNode = blueprint.nodes.lastOrNull()
+                val bossNode = blueprint.allNodes.lastOrNull()
                 val bossNameKey = bossNode?.titleKey ?: "ui.label_boss"
                 return TransitionResult.Failure(
                     reasonKey = "ui.transition_fail_defeat_boss",

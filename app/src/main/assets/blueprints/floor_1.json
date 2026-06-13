@@ -1,60 +1,62 @@
 {
   "floor": 1,
-  "titleEn": "The Blighted Foothills",
-  "titleTr": "Musibetli Yamaçlar",
-  "descriptionEn": "The tower's base is choked by thick, pulsating roots and the stench of decay.",
-  "descriptionTr": "Kulenin temeli kalın, zonklayan kökler ve çürüme kokusuyla boğulmuş durumda.",
-  "introScenario": {
-    "titleEn": "The Gateway of Ascent",
-    "titleTr": "Yükselişin Kapısı",
-    "descriptionEn": "You stand before the massive iron seal of Floor 1. The air is thick with spores.",
-    "descriptionTr": "1. Katın devasa demir mührünün önündesin. Hava sporlarla dolu.",
-    "optionA": {
-      "textEn": "Consecrate your blade (+Aether, +Sanctum)",
-      "textTr": "Kılıcını kutsal ışığa ada (+Aether, +Işık)",
-      "alignmentShift": 10,
-      "aetherChange": 30,
-      "journalEn": "Consecrated your blade at the entrance, swearing fealty to the Sanctum.",
-      "journalTr": "Girişte kılıcını kutsayıp Sanctum'a bağlılık yemini ettin."
-    },
-    "optionB": {
-      "textEn": "Absorb the blight (+Aether, +Covenant)",
-      "textTr": "Musibeti ruhuna em (+Aether, +Karanlık)",
-      "alignmentShift": -10,
-      "aetherChange": 30,
-      "journalEn": "Absorbed the surrounding decay to empower your inner void.",
-      "journalTr": "İradeni güçlendirmek için etraftaki çürümeyi ruhuna emdin."
-    },
-    "optionC": {
-      "textEn": "Scavenge the fallen (+Gold)",
-      "textTr": "Düşenleri yağmala (+Altın)",
-      "goldChange": 60,
-      "journalEn": "Scavenged the remains of those who failed to enter.",
-      "journalTr": "Girişte başarısız olanların kalıntılarını yağmaladın."
-    }
+  "region": "blighted_foothills",
+  "type": "NORMAL",
+  "titleKey": "floor.1.title",
+  "descriptionKey": "floor.1.description",
+  "minSecondsOnFloor": 60,
+  "intro": {
+    "id": "floor_1_intro",
+    "type": "NARRATIVE",
+    "path": "SHARED",
+    "titleKey": "floor.1.intro.title",
+    "descriptionKey": "floor.1.intro.description",
+    "choices": [
+      {
+        "id": "choice_a",
+        "labelKey": "floor.1.intro.choice_a.text",
+        "journalKey": "floor.1.intro.choice_a.journal",
+        "effects": { "momentumShift": 10, "aetherChange": 30 },
+        "weight": "MINOR"
+      },
+      {
+        "id": "choice_b",
+        "labelKey": "floor.1.intro.choice_b.text",
+        "journalKey": "floor.1.intro.choice_b.journal",
+        "effects": { "momentumShift": -10, "aetherChange": 30 },
+        "weight": "MINOR"
+      },
+      {
+        "id": "choice_c",
+        "labelKey": "floor.1.intro.choice_c.text",
+        "journalKey": "floor.1.intro.choice_c.journal",
+        "effects": { "goldChange": 60 },
+        "weight": "TRIVIAL"
+      }
+    ]
   },
-  "nodes": [
+  "shared": [
     {
       "index": 0,
       "type": "NARRATIVE",
-      "titleEn": "The Whispering Roots",
-      "titleTr": "Fısıldayan Kökler",
-      "descriptionEn": "Eerie runes glow on a cracked pillar. A quiet voice promises power.",
-      "descriptionTr": "Çatlamış bir sütunda tekinsiz rünler parlıyor. Sessiz bir ses güç vaat ediyor.",
-      "optionA": {
-        "textEn": "Focus mind (+10 EXP)",
-        "textTr": "Zihnini odakla (+10 EXP)",
-        "expChange": 10,
-        "journalEn": "Studied the ancient runes to gain insight.",
-        "journalTr": "Kadim rünleri inceleyerek bilgi edindin."
-      },
-      "optionB": {
-        "textEn": "Look for supplies (+20 Gold)",
-        "textTr": "Erzak ara (+20 Altın)",
-        "goldChange": 20,
-        "journalEn": "Found some discarded coins among the roots.",
-        "journalTr": "Köklerin arasında atılmış birkaç altın buldun."
-      }
+      "titleKey": "floor.1.nodes.0.title",
+      "descriptionKey": "floor.1.nodes.0.description",
+      "choices": [
+        {
+          "id": "choice_a",
+          "labelKey": "floor.1.nodes.0.choice_a.text",
+          "journalKey": "floor.1.nodes.0.choice_a.journal",
+          "effects": { "expChange": 10 },
+          "weight": "TRIVIAL"
+        },
+        {
+          "id": "choice_b",
+          "labelKey": "floor.1.nodes.0.choice_b.text",
+          "journalKey": "floor.1.nodes.0.choice_b.journal",
+          "effects": { "goldChange": 20 },
+          "weight": "TRIVIAL"
+        }
+      ]
     },
     {
       "index": 1,
@@ -64,274 +66,315 @@
     {
       "index": 2,
       "type": "CHEST",
-      "titleEn": "Old Supply Crate",
-      "titleTr": "Eski Erzak Kasası",
-      "descriptionEn": "A wooden crate left behind by a previous expedition.",
-      "descriptionTr": "Önceki bir seferden kalma tahta bir kasa.",
-      "optionA": {
-        "textEn": "Open carefully (+25 Gold)",
-        "textTr": "Dikkatlice aç (+25 Altın)",
-        "goldChange": 25,
-        "journalEn": "Found a small stash of gold in a crate.",
-        "journalTr": "Bir kasada küçük bir miktar altın buldun."
-      },
-      "optionB": {
-        "textEn": "Smash it open (+40 Gold, -5 HP)",
-        "textTr": "Parçalayarak aç (+40 Altın, -5 Can)",
-        "hpChange": -5,
-        "goldChange": 40,
-        "journalEn": "Smashed the crate, finding more gold but hurting your hands.",
-        "journalTr": "Kasayı parçaladın, daha fazla altın buldun ama elini yaraladın."
-      }
+      "titleKey": "floor.1.nodes.2.title",
+      "descriptionKey": "floor.1.nodes.2.description",
+      "choices": [
+        {
+          "id": "choice_a",
+          "labelKey": "floor.1.nodes.2.choice_a.text",
+          "journalKey": "floor.1.nodes.2.choice_a.journal",
+          "effects": { "willChange": -1, "rewardItemId": "adventurers_ring" },
+          "weight": "MINOR"
+        },
+        {
+          "id": "choice_b",
+          "labelKey": "floor.1.nodes.2.choice_b.text",
+          "journalKey": "floor.1.nodes.2.choice_b.journal",
+          "effects": { "goldChange": -15, "rewardItemId": "scout_dagger" },
+          "weight": "MINOR"
+        }
+      ]
     },
     {
       "index": 3,
-      "type": "COMBAT",
-      "enemyId": "blighted_wolf"
+      "type": "SHRINE",
+      "titleKey": "floor.1.nodes.3.title",
+      "descriptionKey": "floor.1.nodes.3.description",
+      "choices": [
+        {
+          "id": "choice_a",
+          "labelKey": "floor.1.nodes.3.choice_a.text",
+          "journalKey": "floor.1.nodes.3.choice_a.journal",
+          "effects": { "hpChange": 25 },
+          "weight": "MINOR"
+        },
+        {
+          "id": "choice_b",
+          "labelKey": "floor.1.nodes.3.choice_b.text",
+          "journalKey": "floor.1.nodes.3.choice_b.journal",
+          "effects": { "hpChange": -10, "aetherChange": 15 },
+          "weight": "MINOR"
+        }
+      ]
     },
     {
       "index": 4,
-      "type": "SHRINE",
-      "titleEn": "Aether Well",
-      "titleTr": "Aether Kuyusu",
-      "descriptionEn": "A stone basin filled with glowing blue liquid.",
-      "descriptionTr": "Parlayan mavi bir sıvı ile dolu taş bir havza.",
-      "optionA": {
-        "textEn": "Drink deep (+20 HP)",
-        "textTr": "Kana kana iç (+20 Can)",
-        "hpChange": 20,
-        "journalEn": "The Aether liquid restored your vitality.",
-        "journalTr": "Aether sıvısı yaşam gücünü yeniledi."
-      },
-      "optionB": {
-        "textEn": "Channel energy (+30 Aether, -2 Will)",
-        "textTr": "Enerjiyi kanalize et (+30 Aether, -2 İrade)",
-        "willChange": -2,
-        "aetherChange": 30,
-        "journalEn": "Sacrificed willpower to absorb pure Aether.",
-        "journalTr": "Saf Aether emmek için iradeni feda ettin."
-      }
+      "type": "COMBAT",
+      "enemyId": "blighted_acid_crawler"
     },
     {
       "index": 5,
       "type": "NARRATIVE",
-      "titleEn": "Resting Place",
-      "titleTr": "Dinlenme Yeri",
-      "descriptionEn": "A small alcove that seems relatively safe from the spores.",
-      "descriptionTr": "Sporlardan nispeten güvenli görünen küçük bir girinti.",
-      "optionA": {
-        "textEn": "Meditate (+15 EXP)",
-        "textTr": "Meditasyon yap (+15 EXP)",
-        "expChange": 15,
-        "journalEn": "Rested your mind and gained focus.",
-        "journalTr": "Zihnini dinlendirip odak kazandın."
-      },
-      "optionB": {
-        "textEn": "Pray (+5 Sanctum)",
-        "textTr": "Dua et (+5 Işık)",
-        "alignmentShift": 5,
-        "journalEn": "Offered a prayer to the Light.",
-        "journalTr": "Işığa bir dua sundun."
-      }
+      "titleKey": "floor.1.nodes.5.title",
+      "descriptionKey": "floor.1.nodes.5.description",
+      "choices": [
+        {
+          "id": "choice_a",
+          "labelKey": "floor.1.nodes.5.choice_a.text",
+          "journalKey": "floor.1.nodes.5.choice_a.journal",
+          "effects": { "momentumShift": 10, "expChange": 20 },
+          "weight": "MODERATE"
+        },
+        {
+          "id": "choice_b",
+          "labelKey": "floor.1.nodes.5.choice_b.text",
+          "journalKey": "floor.1.nodes.5.choice_b.journal",
+          "effects": { "aetherChange": 15, "momentumShift": -10 },
+          "weight": "MODERATE"
+        }
+      ]
     },
     {
       "index": 6,
-      "type": "COMBAT",
-      "enemyId": "fungal_horror"
+      "type": "MERCHANT",
+      "titleKey": "floor.1.nodes.6.title",
+      "descriptionKey": "floor.1.nodes.6.description",
+      "choices": [
+        {
+          "id": "choice_a",
+          "labelKey": "floor.1.nodes.6.choice_a.text",
+          "journalKey": "floor.1.nodes.6.choice_a.journal",
+          "effects": { "goldChange": -35, "rewardItemId": "scout_boots" },
+          "weight": "MINOR"
+        },
+        {
+          "id": "choice_b",
+          "labelKey": "floor.1.nodes.6.choice_b.text",
+          "journalKey": "floor.1.nodes.6.choice_b.journal",
+          "effects": { "goldChange": 15 },
+          "weight": "MINOR"
+        },
+        {
+          "id": "choice_c",
+          "labelKey": "floor.1.nodes.6.choice_c.text",
+          "journalKey": "floor.1.nodes.6.choice_c.journal",
+          "effects": { },
+          "weight": "TRIVIAL"
+        }
+      ]
     },
     {
       "index": 7,
-      "type": "MERCHANT",
-      "titleEn": "Shady Dealer",
-      "titleTr": "Tefeci Satıcı",
-      "descriptionEn": "A hooded figure offers goods for a price.",
-      "descriptionTr": "Kapüşonlu bir figür bir bedel karşılığında mal sunuyor.",
-      "optionA": {
-        "textEn": "Buy Elixir (-30 Gold, +40 HP)",
-        "textTr": "İksir Al (-30 Altın, +40 Can)",
-        "goldChange": -30,
-        "hpChange": 40,
-        "journalEn": "Bought a potent healing elixir.",
-        "journalTr": "Güçlü bir iyileştirme iksiri satın aldın."
-      },
-      "optionB": {
-        "textEn": "Sell scraps (+15 Gold)",
-        "textTr": "Hurda sat (+15 Altın)",
-        "goldChange": 15,
-        "journalEn": "Sold some junk for a few coins.",
-        "journalTr": "Birkaç altın karşılığında biraz çöp sattın."
-      }
+      "type": "COMBAT",
+      "enemyId": "spore_host"
     },
     {
       "index": 8,
-      "type": "COMBAT",
-      "enemyId": "skeleton_warrior"
+      "type": "CHEST",
+      "titleKey": "floor.1.nodes.8.title",
+      "descriptionKey": "floor.1.nodes.8.description",
+      "choices": [
+        {
+          "id": "choice_a",
+          "labelKey": "floor.1.nodes.8.choice_a.text",
+          "journalKey": "floor.1.nodes.8.choice_a.journal",
+          "effects": { "goldChange": 20, "hpChange": -5 },
+          "weight": "MINOR"
+        },
+        {
+          "id": "choice_b",
+          "labelKey": "floor.1.nodes.8.choice_b.text",
+          "journalKey": "floor.1.nodes.8.choice_b.journal",
+          "effects": { "expChange": 10 },
+          "weight": "TRIVIAL"
+        }
+      ]
     },
     {
       "index": 9,
-      "type": "CHEST",
-      "titleEn": "Locked Strongbox",
-      "titleTr": "Kilitli Kasa",
-      "descriptionEn": "A heavy iron box that requires force or skill to open.",
-      "descriptionTr": "Açmak için kuvvet veya beceri gerektiren ağır bir demir kutu.",
-      "optionA": {
-        "textEn": "Pick the lock (+30 Gold)",
-        "textTr": "Kilidi aç (+30 Altın)",
-        "goldChange": 30,
-        "journalEn": "Skillfully opened the strongbox.",
-        "journalTr": "Kasayı ustalıkla açtın."
-      },
-      "optionB": {
-        "textEn": "Force open (-10 HP, +50 Gold)",
-        "textTr": "Zorla aç (-10 Can, +50 Altın)",
-        "hpChange": -10,
-        "goldChange": 50,
-        "journalEn": "Broke the box open, but took a hit from a trap.",
-        "journalTr": "Kutuyu zorla açtın ama bir tuzaktan hasar aldın."
-      }
+      "type": "SHRINE",
+      "titleKey": "floor.1.nodes.9.title",
+      "descriptionKey": "floor.1.nodes.9.description",
+      "choices": [
+        {
+          "id": "choice_a",
+          "labelKey": "floor.1.nodes.9.choice_a.text",
+          "journalKey": "floor.1.nodes.9.choice_a.journal",
+          "effects": { "hpChange": 40, "momentumShift": -5 },
+          "weight": "MINOR"
+        },
+        {
+          "id": "choice_b",
+          "labelKey": "floor.1.nodes.9.choice_b.text",
+          "journalKey": "floor.1.nodes.9.choice_b.journal",
+          "effects": { "goldChange": -20, "willChange": 15 },
+          "weight": "MODERATE"
+        }
+      ]
     },
     {
       "index": 10,
       "type": "NARRATIVE",
-      "titleEn": "The Choice",
-      "titleTr": "Seçim",
-      "descriptionEn": "You find a dying soldier. He begs for a quick end.",
-      "descriptionTr": "Ölmekte olan bir asker buldun. Hızlı bir son için yalvarıyor.",
-      "optionA": {
-        "textEn": "Grant Mercy (+10 Sanctum, +20 EXP)",
-        "textTr": "Merhamet Göster (+10 Işık, +20 EXP)",
-        "alignmentShift": 10,
-        "expChange": 20,
-        "journalEn": "Granted the soldier a peaceful end.",
-        "journalTr": "Askere huzurlu bir son bağışladın."
-      },
-      "optionB": {
-        "textEn": "Loot him (+40 Gold, -10 Covenant)",
-        "textTr": "Yağmala (+40 Altın, -10 Karanlık)",
-        "alignmentShift": -10,
-        "goldChange": 40,
-        "journalEn": "Coldly took what he had left.",
-        "journalTr": "Soğukkanlılıkla elinde kalanları aldın."
-      }
+      "titleKey": "floor.1.nodes.10.title",
+      "descriptionKey": "floor.1.nodes.10.description",
+      "choices": [
+        {
+          "id": "choice_a",
+          "labelKey": "floor.1.nodes.10.choice_a.text",
+          "journalKey": "floor.1.nodes.10.choice_a.journal",
+          "effects": { "momentumShift": 15, "expChange": 20, "rewardItemId": "old_scout_journal" },
+          "weight": "MODERATE"
+        },
+        {
+          "id": "choice_b",
+          "labelKey": "floor.1.nodes.10.choice_b.text",
+          "journalKey": "floor.1.nodes.10.choice_b.journal",
+          "effects": { "goldChange": 40, "momentumShift": -15 },
+          "weight": "MODERATE"
+        }
+      ]
     },
     {
       "index": 11,
       "type": "COMBAT",
-      "enemyId": "skeleton_archer"
+      "enemyId": "rat_swarm"
     },
     {
       "index": 12,
-      "type": "SHRINE",
-      "titleEn": "Pillar of Light",
-      "titleTr": "Işık Sütunu",
-      "descriptionEn": "A blinding beam of light descends from above.",
-      "descriptionTr": "Yukarıdan aşağıya kör edici bir ışık huzmesi iniyor.",
-      "optionA": {
-        "textEn": "Bask in light (+15 HP, +1 Will)",
-        "textTr": "Işıkta yıkan (+15 Can, +1 İrade)",
-        "hpChange": 15,
-        "willChange": 1,
-        "journalEn": "The light purified your body and mind.",
-        "journalTr": "Işık bedeninizi ve zihninizi arındırdı."
-      },
-      "optionB": {
-        "textEn": "Steal the spark (+25 Gold, -5 HP)",
-        "textTr": "Kıvılcımı çal (+25 Altın, -5 Can)",
-        "goldChange": 25,
-        "hpChange": -5,
-        "journalEn": "Took the glowing essence for yourself.",
-        "journalTr": "Parlayan özü kendin için aldın."
-      }
+      "type": "CHEST",
+      "titleKey": "floor.1.nodes.12.title",
+      "descriptionKey": "floor.1.nodes.12.description",
+      "choices": [
+        {
+          "id": "choice_a",
+          "labelKey": "floor.1.nodes.12.choice_a.text",
+          "journalKey": "floor.1.nodes.12.choice_a.journal",
+          "effects": { "hpChange": -5, "rewardItemId": "iron_guard_ring" },
+          "weight": "MINOR"
+        },
+        {
+          "id": "choice_b",
+          "labelKey": "floor.1.nodes.12.choice_b.text",
+          "journalKey": "floor.1.nodes.12.choice_b.journal",
+          "effects": { "aetherChange": -10, "goldChange": 30 },
+          "weight": "MINOR"
+        }
+      ]
     },
     {
       "index": 13,
-      "type": "COMBAT",
-      "enemyId": "skeleton_captain"
+      "type": "SHRINE",
+      "titleKey": "floor.1.nodes.13.title",
+      "descriptionKey": "floor.1.nodes.13.description",
+      "choices": [
+        {
+          "id": "choice_a",
+          "labelKey": "floor.1.nodes.13.choice_a.text",
+          "journalKey": "floor.1.nodes.13.choice_a.journal",
+          "effects": { "hpChange": 30, "momentumShift": 5 },
+          "weight": "MINOR"
+        },
+        {
+          "id": "choice_b",
+          "labelKey": "floor.1.nodes.13.choice_b.text",
+          "journalKey": "floor.1.nodes.13.choice_b.journal",
+          "effects": { "aetherChange": 25, "hpChange": -15 },
+          "weight": "MINOR"
+        }
+      ]
     },
     {
       "index": 14,
-      "type": "MERCHANT",
-      "titleEn": "Traveling Alchemist",
-      "titleTr": "Gezgin Simyacı",
-      "descriptionEn": "She offers strange mixtures and components.",
-      "descriptionTr": "Garip karışımlar ve bileşenler sunuyor.",
-      "optionA": {
-        "textEn": "Buy Draught (-20 Gold, +30 HP)",
-        "textTr": "İksir Al (-20 Altın, +30 Can)",
-        "goldChange": -20,
-        "hpChange": 30,
-        "journalEn": "Purchased a healing draft.",
-        "journalTr": "İyileştirici bir iksir satın aldın."
-      },
-      "optionB": {
-        "textEn": "Buy Aether Dust (-40 Gold, +20 Aether)",
-        "textTr": "Aether Tozu Al (-40 Altın, +20 Aether)",
-        "goldChange": -40,
-        "aetherChange": 20,
-        "journalEn": "Bought some concentrated Aether dust.",
-        "journalTr": "Biraz konsantre Aether tozu satın aldın."
-      }
+      "type": "COMBAT",
+      "enemyId": "blight_abomination"
     },
     {
       "index": 15,
       "type": "NARRATIVE",
-      "titleEn": "Hidden Tunnel",
-      "titleTr": "Gizli Tünel",
-      "descriptionEn": "A narrow crack in the wall leads to a hidden chamber.",
-      "descriptionTr": "Duvardaki dar bir çatlak gizli bir odaya çıkıyor.",
-      "optionA": {
-        "textEn": "Explore (+10 HP, +10 EXP)",
-        "textTr": "Keşfet (+10 Can, +10 EXP)",
-        "hpChange": 10,
-        "expChange": 10,
-        "journalEn": "Found a safe place to catch your breath.",
-        "journalTr": "Nefes alacak güvenli bir yer buldun."
-      },
-      "optionB": {
-        "textEn": "Search for loot (+25 Gold)",
-        "textTr": "Ganimet ara (+25 Altın)",
-        "goldChange": 25,
-        "journalEn": "Found some hidden coins.",
-        "journalTr": "Bazı gizli altınlar buldun."
-      }
+      "titleKey": "floor.1.nodes.15.title",
+      "descriptionKey": "floor.1.nodes.15.description",
+      "choices": [
+        {
+          "id": "choice_a",
+          "labelKey": "floor.1.nodes.15.choice_a.text",
+          "journalKey": "floor.1.nodes.15.choice_a.journal",
+          "effects": { "aetherChange": 30, "hpChange": -10 },
+          "weight": "MODERATE"
+        },
+        {
+          "id": "choice_b",
+          "labelKey": "floor.1.nodes.15.choice_b.text",
+          "journalKey": "floor.1.nodes.15.choice_b.journal",
+          "effects": { "expChange": 15 },
+          "weight": "TRIVIAL"
+        }
+      ]
     },
     {
       "index": 16,
-      "type": "COMBAT",
-      "enemyId": "skeleton_champion"
+      "type": "MERCHANT",
+      "titleKey": "floor.1.nodes.16.title",
+      "descriptionKey": "floor.1.nodes.16.description",
+      "choices": [
+        {
+          "id": "choice_a",
+          "labelKey": "floor.1.nodes.16.choice_a.text",
+          "journalKey": "floor.1.nodes.16.choice_a.journal",
+          "effects": { "goldChange": -40, "rewardItemId": "deep_cavern_herb_juice" },
+          "weight": "MINOR"
+        },
+        {
+          "id": "choice_b",
+          "labelKey": "floor.1.nodes.16.choice_b.text",
+          "journalKey": "floor.1.nodes.16.choice_b.journal",
+          "effects": { "goldChange": 15 },
+          "weight": "MINOR"
+        },
+        {
+          "id": "choice_c",
+          "labelKey": "floor.1.nodes.16.choice_c.text",
+          "journalKey": "floor.1.nodes.16.choice_c.journal",
+          "effects": { },
+          "weight": "TRIVIAL"
+        }
+      ]
     },
     {
       "index": 17,
-      "type": "CHEST",
-      "titleEn": "Embellished Casket",
-      "titleTr": "Süslü Tabut",
-      "descriptionEn": "A decorated box, likely holding valuable possessions.",
-      "descriptionTr": "Değerli eşyalar barındırması muhtemel süslü bir kutu.",
-      "optionA": {
-        "textEn": "Open (+35 Gold)",
-        "textTr": "Aç (+35 Altın)",
-        "goldChange": 35,
-        "journalEn": "Opened the casket and took the gold.",
-        "journalTr": "Tabutu açtın ve altınları aldın."
-      },
-      "optionB": {
-        "textEn": "Pry open (-8 HP, +60 Gold)",
-        "textTr": "Zorla aç (-8 Can, +60 Altın)",
-        "hpChange": -8,
-        "goldChange": 60,
-        "journalEn": "Took everything, despite the trap.",
-        "journalTr": "Tuzağa rağmen her şeyi aldın."
-      }
+      "type": "COMBAT",
+      "enemyId": "tunnel_hound"
     },
     {
       "index": 18,
-      "type": "COMBAT",
-      "enemyId": "skeleton_warrior"
+      "type": "SHRINE",
+      "titleKey": "floor.1.nodes.18.title",
+      "descriptionKey": "floor.1.nodes.18.description",
+      "choices": [
+        {
+          "id": "choice_a",
+          "labelKey": "floor.1.nodes.18.choice_a.text",
+          "journalKey": "floor.1.nodes.18.choice_a.journal",
+          "effects": { "expChange": 50, "hpChange": -12 },
+          "weight": "MINOR"
+        },
+        {
+          "id": "choice_b",
+          "labelKey": "floor.1.nodes.18.choice_b.text",
+          "journalKey": "floor.1.nodes.18.choice_b.journal",
+          "effects": { "willChange": 10, "momentumShift": -5 },
+          "weight": "MINOR"
+        }
+      ]
     },
     {
       "index": 19,
       "type": "BOSS",
       "enemyId": "rat_king"
     }
-  ]
+  ],
+  "boss": {
+    "enemyId": "rat_king",
+    "isBoss": true,
+    "form": "NEUTRAL"
+  }
 }

@@ -303,29 +303,30 @@ class ProfileViewModel(
         val isLightBand = momentum >= 65
         val isDarkBand = momentum <= 35
         
-        return when (side) {
+        val key = when (side) {
             "SANCTUM" -> {
                 when {
-                    isLightBand -> if (lang == "TR") "Kutsal Siper (Aydınlık Kademe 3)" else "Holy Aegis (Light Tier 3)"
-                    isDarkBand -> if (lang == "TR") "Işık Muhafızı (Aydınlık Kademe 1)" else "Light Warden (Light Tier 1)"
-                    else -> if (lang == "TR") "Semavi Yazıcı (Aydınlık Kademe 2)" else "Codifier (Light Tier 2)"
+                    isLightBand -> "ui.class_sanctum_3"
+                    isDarkBand -> "ui.class_sanctum_1"
+                    else -> "ui.class_sanctum_2"
                 }
             }
             "COVENANT" -> {
                 when {
-                    isDarkBand -> if (lang == "TR") "Gölge Pençesi (Karanlık Kademe 3)" else "Eclipse Shade (Dark Tier 3)"
-                    isLightBand -> if (lang == "TR") "Karanlık Habercisi (Karanlık Kademe 1)" else "Death Herald (Dark Tier 1)"
-                    else -> if (lang == "TR") "Vahşi El (Karanlık Kademe 2)" else "Wildhand (Dark Tier 2)"
+                    isDarkBand -> "ui.class_covenant_3"
+                    isLightBand -> "ui.class_covenant_1"
+                    else -> "ui.class_covenant_2"
                 }
             }
             else -> { // NEUTRAL
                 when {
-                    isLightBand -> if (lang == "TR") "Kuduz Fırtına (Denge Kademe 2)" else "Tempest (Balance Tier 2)"
-                    isDarkBand -> if (lang == "TR") "Demir Taht (Denge Kademe 1)" else "Iron Throne (Balance Tier 1)"
-                    else -> if (lang == "TR") "Tarafsız Avare (Denge Kademe 0)" else "Outcast Wanderer (Balance Tier 0)"
+                    isLightBand -> "ui.class_neutral_2"
+                    isDarkBand -> "ui.class_neutral_1"
+                    else -> "ui.class_neutral_0"
                 }
             }
         }
+        return LocalizationManager.getString(lang, key)
     }
 
     private fun calculatePlayerClass(side: String, momentum: Int): String {

@@ -1,34 +1,274 @@
 ﻿{
   "floor": 3,
+  "region": "shadowed_crypts",
+  "type": "NORMAL",
   "titleKey": "floor_3_title",
   "descriptionKey": "floor_3_desc",
-  "introScenario": {
+  "minSecondsOnFloor": 60,
+  "intro": {
+    "id": "floor_3_intro",
+    "type": "NARRATIVE",
+    "path": "SHARED",
     "titleKey": "floor_3_intro_title",
     "descriptionKey": "floor_3_intro_desc",
-    "optionA": { "textKey": "floor_3_intro_optA_text", "alignmentShift": 10, "journalKey": "floor_3_intro_optA_journal", "aetherChange": 50 },
-    "optionB": { "textKey": "floor_3_intro_optB_text", "alignmentShift": -10, "journalKey": "floor_3_intro_optB_journal", "aetherChange": 50 },
-    "optionC": { "textKey": "floor_3_intro_optC_text", "goldChange": 100, "journalKey": "floor_3_intro_optC_journal" }
+    "choices": [
+      {
+        "id": "choice_a",
+        "labelKey": "floor_3_intro_optA_text",
+        "journalKey": "floor_3_intro_optA_journal",
+        "effects": { "momentumShift": 10, "aetherChange": 50 },
+        "weight": "MINOR"
+      },
+      {
+        "id": "choice_b",
+        "labelKey": "floor_3_intro_optB_text",
+        "journalKey": "floor_3_intro_optB_journal",
+        "effects": { "momentumShift": -10, "aetherChange": 50 },
+        "weight": "MINOR"
+      },
+      {
+        "id": "choice_c",
+        "labelKey": "floor_3_intro_optC_text",
+        "journalKey": "floor_3_intro_optC_journal",
+        "effects": { "goldChange": 100 },
+        "weight": "MINOR"
+      }
+    ]
   },
-  "nodes": [
-    { "index": 0, "type": "NARRATIVE", "titleKey": "f3_n0_t", "descriptionKey": "f3_n0_d", "optionA": { "textKey": "f3_n0_oa", "hpChange": -15, "willChange": 2 }, "optionB": { "textKey": "f3_n0_ob", "willChange": -1, "expChange": 30 }, "willCost": 0 },
-    { "index": 1, "type": "COMBAT", "enemyId": "fungal_horror", "willCost": 1 },
-    { "index": 2, "type": "CHEST", "titleKey": "f3_n2_t", "descriptionKey": "f3_n2_d", "optionA": { "textKey": "f3_n2_oa", "goldChange": 45 }, "optionB": { "textKey": "f3_n2_ob", "aetherChange": 30, "hpChange": -10 }, "willCost": 1 },
-    { "index": 3, "type": "COMBAT", "enemyId": "skeleton_archer", "willCost": 1 },
-    { "index": 4, "type": "SHRINE", "titleKey": "f3_n4_t", "descriptionKey": "f3_n4_d", "optionA": { "textKey": "f3_n4_oa", "hpChange": 40 }, "optionB": { "textKey": "f3_n4_ob", "alignmentShift": -10, "aetherChange": 40 }, "willCost": 1 },
-    { "index": 5, "type": "COMBAT", "enemyId": "blighted_wolf", "willCost": 1 },
-    { "index": 6, "type": "NARRATIVE", "titleKey": "f3_n6_t", "descriptionKey": "f3_n6_d", "optionA": { "textKey": "f3_n6_oa", "expChange": 30 }, "optionB": { "textKey": "f3_n6_ob", "goldChange": 40 }, "willCost": 0 },
-    { "index": 7, "type": "MERCHANT", "titleKey": "f3_n7_t", "descriptionKey": "f3_n7_d", "optionA": { "textKey": "f3_n7_oa", "goldChange": -50, "rewardItem": "Acid_Vial" }, "optionB": { "textKey": "f3_n7_ob", "goldChange": 30 }, "willCost": 1 },
-    { "index": 8, "type": "COMBAT", "enemyId": "fungal_horror", "willCost": 1 },
-    { "index": 9, "type": "CHEST", "titleKey": "f3_n9_t", "descriptionKey": "f3_n9_d", "optionA": { "textKey": "f3_n9_oa", "hpChange": -5, "goldChange": 50 }, "optionB": { "textKey": "f3_n9_ob", "expChange": 40 }, "willCost": 1 },
-    { "index": 10, "type": "COMBAT", "enemyId": "skeleton_warrior", "willCost": 1 },
-    { "index": 11, "type": "SHRINE", "titleKey": "f3_n11_t", "descriptionKey": "f3_n11_d", "optionA": { "textKey": "f3_n11_oa", "hpChange": 50 }, "optionB": { "textKey": "f3_n11_ob", "willChange": 3 }, "willCost": 1 },
-    { "index": 12, "type": "COMBAT", "enemyId": "skeleton_archer", "willCost": 1 },
-    { "index": 13, "type": "NARRATIVE", "titleKey": "f3_n13_t", "descriptionKey": "f3_n13_d", "optionA": { "textKey": "f3_n13_oa", "alignmentShift": 20 }, "optionB": { "textKey": "f3_n13_ob", "alignmentShift": -20 }, "willCost": 0 },
-    { "index": 14, "type": "COMBAT", "enemyId": "skeleton_captain", "willCost": 2 },
-    { "index": 15, "type": "CHEST", "titleKey": "f3_n15_t", "descriptionKey": "f3_n15_d", "optionA": { "textKey": "f3_n15_oa", "goldChange": 60 }, "optionB": { "textKey": "f3_n15_ob", "hpChange": -15, "goldChange": 100 }, "willCost": 1 },
-    { "index": 16, "type": "COMBAT", "enemyId": "fungal_horror", "willCost": 1 },
-    { "index": 17, "type": "SHRINE", "titleKey": "f3_n17_t", "descriptionKey": "f3_n17_d", "optionA": { "textKey": "f3_n17_oa", "aetherChange": 50 }, "optionB": { "textKey": "f3_n17_ob", "expChange": 50 }, "willCost": 1 },
-    { "index": 18, "type": "COMBAT", "enemyId": "blighted_wolf", "willCost": 1 },
-    { "index": 19, "type": "BOSS", "titleKey": "f3_boss_t", "descriptionKey": "f3_boss_d", "enemyId": "rat_king", "willCost": 2 }
-  ]
+  "shared": [
+    {
+      "index": 0,
+      "type": "NARRATIVE",
+      "titleKey": "f3_n0_t",
+      "descriptionKey": "f3_n0_d",
+      "choices": [
+        {
+          "id": "choice_a",
+          "labelKey": "f3_n0_oa",
+          "journalKey": "f3_n0_oa_journal",
+          "effects": { "hpChange": -15, "willChange": 2 },
+          "weight": "MODERATE"
+        },
+        {
+          "id": "choice_b",
+          "labelKey": "f3_n0_ob",
+          "journalKey": "f3_n0_ob_journal",
+          "effects": { "willChange": -1, "expChange": 30 },
+          "weight": "MINOR"
+        }
+      ]
+    },
+    { "index": 1, "type": "COMBAT", "enemyId": "fungal_horror" },
+    {
+      "index": 2,
+      "type": "CHEST",
+      "titleKey": "f3_n2_t",
+      "descriptionKey": "f3_n2_d",
+      "choices": [
+        {
+          "id": "choice_a",
+          "labelKey": "f3_n2_oa",
+          "journalKey": "f3_n2_oa_journal",
+          "effects": { "goldChange": 45 },
+          "weight": "MINOR"
+        },
+        {
+          "id": "choice_b",
+          "labelKey": "f3_n2_ob",
+          "journalKey": "f3_n2_ob_journal",
+          "effects": { "aetherChange": 30, "hpChange": -10 },
+          "weight": "MINOR"
+        }
+      ]
+    },
+    { "index": 3, "type": "COMBAT", "enemyId": "skeleton_archer" },
+    {
+      "index": 4,
+      "type": "SHRINE",
+      "titleKey": "f3_n4_t",
+      "descriptionKey": "f3_n4_d",
+      "choices": [
+        {
+          "id": "choice_a",
+          "labelKey": "f3_n4_oa",
+          "journalKey": "f3_n4_oa_journal",
+          "effects": { "hpChange": 40 },
+          "weight": "MINOR"
+        },
+        {
+          "id": "choice_b",
+          "labelKey": "f3_n4_ob",
+          "journalKey": "f3_n4_ob_journal",
+          "effects": { "momentumShift": -10, "aetherChange": 40 },
+          "weight": "MINOR"
+        }
+      ]
+    },
+    { "index": 5, "type": "COMBAT", "enemyId": "blighted_wolf" },
+    {
+      "index": 6,
+      "type": "NARRATIVE",
+      "titleKey": "f3_n6_t",
+      "descriptionKey": "f3_n6_d",
+      "choices": [
+        {
+          "id": "choice_a",
+          "labelKey": "f3_n6_oa",
+          "journalKey": "f3_n6_oa_journal",
+          "effects": { "expChange": 30 },
+          "weight": "MINOR"
+        },
+        {
+          "id": "choice_b",
+          "labelKey": "f3_n6_ob",
+          "journalKey": "f3_n6_ob_journal",
+          "effects": { "goldChange": 40 },
+          "weight": "MINOR"
+        }
+      ]
+    },
+    {
+      "index": 7,
+      "type": "MERCHANT",
+      "titleKey": "f3_n7_t",
+      "descriptionKey": "f3_n7_d",
+      "choices": [
+        {
+          "id": "choice_a",
+          "labelKey": "f3_n7_oa",
+          "journalKey": "f3_n7_oa_journal",
+          "effects": { "goldChange": -50, "rewardItemId": "Acid_Vial" },
+          "weight": "MINOR"
+        },
+        {
+          "id": "choice_b",
+          "labelKey": "f3_n7_ob",
+          "journalKey": "f3_n7_ob_journal",
+          "effects": { "goldChange": 30 },
+          "weight": "MINOR"
+        }
+      ]
+    },
+    { "index": 8, "type": "COMBAT", "enemyId": "fungal_horror" },
+    {
+      "index": 9,
+      "type": "CHEST",
+      "titleKey": "f3_n9_t",
+      "descriptionKey": "f3_n9_d",
+      "choices": [
+        {
+          "id": "choice_a",
+          "labelKey": "f3_n9_oa",
+          "journalKey": "f3_n9_oa_journal",
+          "effects": { "hpChange": -5, "goldChange": 50 },
+          "weight": "MINOR"
+        },
+        {
+          "id": "choice_b",
+          "labelKey": "f3_n9_ob",
+          "journalKey": "f3_n9_ob_journal",
+          "effects": { "expChange": 40 },
+          "weight": "MINOR"
+        }
+      ]
+    },
+    { "index": 10, "type": "COMBAT", "enemyId": "skeleton_warrior" },
+    {
+      "index": 11,
+      "type": "SHRINE",
+      "titleKey": "f3_n11_t",
+      "descriptionKey": "f3_n11_d",
+      "choices": [
+        {
+          "id": "choice_a",
+          "labelKey": "f3_n11_oa",
+          "journalKey": "f3_n11_oa_journal",
+          "effects": { "hpChange": 50 },
+          "weight": "MINOR"
+        },
+        {
+          "id": "choice_b",
+          "labelKey": "f3_n11_ob",
+          "journalKey": "f3_n11_ob_journal",
+          "effects": { "willChange": 3 },
+          "weight": "MODERATE"
+        }
+      ]
+    },
+    { "index": 12, "type": "COMBAT", "enemyId": "skeleton_archer" },
+    {
+      "index": 13,
+      "type": "NARRATIVE",
+      "titleKey": "f3_n13_t",
+      "descriptionKey": "f3_n13_d",
+      "choices": [
+        {
+          "id": "choice_a",
+          "labelKey": "f3_n13_oa",
+          "journalKey": "f3_n13_oa_journal",
+          "effects": { "momentumShift": 20 },
+          "weight": "MODERATE"
+        },
+        {
+          "id": "choice_b",
+          "labelKey": "f3_n13_ob",
+          "journalKey": "f3_n13_ob_journal",
+          "effects": { "momentumShift": -20 },
+          "weight": "MODERATE"
+        }
+      ]
+    },
+    { "index": 14, "type": "COMBAT", "enemyId": "skeleton_captain" },
+    {
+      "index": 25,
+      "type": "CHEST",
+      "titleKey": "f3_n15_t",
+      "descriptionKey": "f3_n15_d",
+      "choices": [
+        {
+          "id": "choice_a",
+          "labelKey": "f3_n15_oa",
+          "journalKey": "f3_n15_oa_journal",
+          "effects": { "goldChange": 60 },
+          "weight": "MINOR"
+        },
+        {
+          "id": "choice_b",
+          "labelKey": "f3_n15_ob",
+          "journalKey": "f3_n15_ob_journal",
+          "effects": { "hpChange": -15, "goldChange": 100 },
+          "weight": "MINOR"
+        }
+      ]
+    },
+    { "index": 16, "type": "COMBAT", "enemyId": "fungal_horror" },
+    {
+      "index": 17,
+      "type": "SHRINE",
+      "titleKey": "f3_n17_t",
+      "descriptionKey": "f3_n17_d",
+      "choices": [
+        {
+          "id": "choice_a",
+          "labelKey": "f3_n17_oa",
+          "journalKey": "f3_n17_oa_journal",
+          "effects": { "aetherChange": 50 },
+          "weight": "MINOR"
+        },
+        {
+          "id": "choice_b",
+          "labelKey": "f3_n17_ob",
+          "journalKey": "f3_n17_ob_journal",
+          "effects": { "expChange": 50 },
+          "weight": "MINOR"
+        }
+      ]
+    },
+    { "index": 18, "type": "COMBAT", "enemyId": "blighted_wolf" },
+    { "index": 19, "type": "BOSS", "enemyId": "malakar" }
+  ],
+  "boss": {
+    "enemyId": "malakar",
+    "isBoss": true
+  }
 }

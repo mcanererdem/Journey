@@ -189,32 +189,19 @@ data class GameOption(
 
 data class FloorBlueprint(
     val floor: Int,
-    val region: String = "unknown",
-    val type: FloorType = FloorType.NORMAL,
+    val region: String,
+    val type: FloorType,
     val titleKey: String,
     val descriptionKey: String,
     val minSecondsOnFloor: Int = 0,
-    val introScenario: FloorScenario,
-    val nodes: List<FloorNode>,
-    val intro: FloorNode = introScenario.toAdventureNode(),
+    val intro: FloorNode,
     val pathLight: List<FloorNode> = emptyList(),
     val pathDark: List<FloorNode> = emptyList(),
-    val shared: List<FloorNode> = nodes,
+    val shared: List<FloorNode> = emptyList(),
     val chains: List<NodeChain> = emptyList(),
     val boss: EnemyRef? = null
-)
-
-private fun FloorScenario.toAdventureNode(): FloorNode = AdventureNode(
-    id = "floor_${floor}_intro",
-    type = NodeType.NARRATIVE,
-    titleKey = titleKey,
-    descriptionKey = descriptionKey,
-    choices = options.map { option ->
-        NodeChoice(
-            id = option.id,
-            labelKey = option.labelKey,
-            journalKey = option.journalKey,
-            effects = option.effects
-        )
-    }
-)
+) {
+    // Computed property for backward compatibility with systems expecting a single list
+    // Now including intro as the first node
+    val allNodes: List<FloorNode> get() = listOf(intro) + shared + pathLight + pathDark
+}

@@ -307,6 +307,7 @@
     "char_inventory_empty": "Sırt çantanız boş. Kule çarpışmalarından teçhizat kazanın.",
     "char_titles_empty": "Henüz kazanılmış bir unvanınız yok. Seçimleriniz kaderi yazar.",
     "nav_settings": "AYARLAR",
+    "label_floor_node_fmt": "Kat %d - Hücre %d",
     "sector_cleared_msg": "Sektör temizlendi. Haritadan bir sonraki hedefinizi seçin.",
     "loading_sector_data": "Sektör verileri yükleniyor...",
     "badge_light": "+Işık",
@@ -318,14 +319,15 @@
     "badge_covenant": "%d Covenant",
     "badge_gold": "%d Altın",
     "class_initiate": "Yansıma Adayı",
-    "class_acolyte": "Mühür Rahibi",
-    "class_renegade": "Boşluk Sürgünü",
-    "class_herald": "Ölüm Habercisi",
-    "class_wildhand": "Kaotik Gölge Ustası",
-    "class_tempest": "Özgürlük Savaşçısı",
-    "class_holy_aegis": "Kutsal Siper",
-    "class_codifier": "Kanon Büyücüsü",
-    "class_iron_throne": "Acımasız İnfazcı",
+    "class_sanctum_1": "Işık Muhafızı (Aydınlık Kademe 1)",
+    "class_sanctum_2": "Semavi Yazıcı (Aydınlık Kademe 2)",
+    "class_sanctum_3": "Kutsal Siper (Aydınlık Kademe 3)",
+    "class_covenant_1": "Karanlık Habercisi (Karanlık Kademe 1)",
+    "class_covenant_2": "Vahşi El (Karanlık Kademe 2)",
+    "class_covenant_3": "Gölge Pençesi (Karanlık Kademe 3)",
+    "class_neutral_0": "Tarafsız Avare (Denge Kademe 0)",
+    "class_neutral_1": "Demir Taht (Denge Kademe 1)",
+    "class_neutral_2": "Kuduz Fırtına (Denge Kademe 2)",
     "will_recharge_title": "İRADEYİ YENİLE",
     "will_recharge_desc": "Kule katlarını tırmanmak (-1/sektör, -2/kat transit) ve kararlar seçmek için irade gerekir. Sponsor videoları izleyerek bedava irade kazanın veya sınırsız irade için Sezonluk Geçiş satın alın!",
     "will_ad_title": "🎬 MİNİ REKLAM BÖLÜMÜ",
@@ -416,7 +418,12 @@
     "msg_rest_no_gold": "❌ Dinlenmek için yeterli Altınınız yok!",
     "msg_rest_success": "💖 Dinlendiniz. Canınız +%d, İradeniz +%d yenilendi.",
     "msg_trade_no_gold": "❌ Yetersiz Altın!",
-    "msg_trade_success_aether": "30 Altın karşılığında +10 Aether alındı."
+    "msg_trade_success_aether": "30 Altın karşılığında +10 Aether alındı.",
+    "enemy.blighted_acid_crawler.name": "Musibetli Asit Böceği",
+    "enemy.spore_host.name": "Yayılan Spor Taşıyıcısı",
+    "enemy.rat_swarm.name": "Mağara Sürüsü Kemirgenleri",
+    "enemy.blight_abomination.name": "Devasa Musibet Ucubesi",
+    "enemy.tunnel_hound.name": "Musibetli Azgın Avcı Tazısı"
   },
   "title": {
     "lightseeker": {
@@ -689,18 +696,141 @@
             "text": "Gölgeleri kucakla (+15 Aether, -10 Momentum)",
             "journal": "Karanlık duvara sırlar fısıldayarak boşluk ruhunu besledin."
           }
-        }
+        },
+        "6": {
+          "title": "Eski Erzakçı",
+          "description": "Metal parçalarıyla dolu hareketli bir ticaret arabası olan, kambur, goblin benzeri bir figür.",
+          "choice_a": {
+            "text": "İzci Botları Al (-35 Altın, +İzci Botları)",
+            "journal": "Eski erzakçıdan İzci Botları satın aldın."
+          },
+          "choice_b": {
+            "text": "Hurda metal parçaları sat (+15 Altın)",
+            "journal": "Gereksiz metal parçalarını altına çevirdin."
+          },
+          "choice_c": {
+            "text": "Ticareti reddet",
+            "journal": "Tüccarın yanından bir şey almadan geçtin."
+          }
+        },
+        "7": { "title": "Mantar Sporu", "description": "Ölü bir iskeleti ileri süren asalak bir mantar animasyonu." },
+        "8": {
+          "title": "Musibetli Erzak Sandığı",
+          "description": "Eski çam ve kükürt kokan kilitli ahşap bir sandık.",
+          "choice_a": {
+            "text": "Kilidi zorla aç (+20 Altın, -5 HP)",
+            "journal": "Sandığı zorlayarak açtın, biraz hasar aldın ama altın buldun."
+          },
+          "choice_b": {
+            "text": "Güvenlik için dokunmadan bırak (+10 EXP)",
+            "journal": "Şüpheli sandığı görmezden gelerek dikkatli davrandın."
+          }
+        },
+        "9": {
+          "title": "Unutulmuş Ay Sunağı",
+          "description": "Parlayan koyu mavi sularla dolu bir aytaşı havzası.",
+          "choice_a": {
+            "text": "Ay suyundan iç (+40 HP, -5 Momentum)",
+            "journal": "Ay suyunu içerek yaralarını sardın ama ruhun biraz karardı."
+          },
+          "choice_b": {
+            "text": "Altın kurban et (-20 Altın, +15 İrade)",
+            "journal": "Maddi varlığını feda ederek zihinsel odak kazandın."
+          }
+        },
+        "10": {
+          "title": "Eski İzcinin Sığınağı",
+          "description": "Taş köklerin altında gizli bir kamp. Can çekişen bir izci sana gizli bir günlük uzatıyor.",
+          "choice_a": {
+            "text": "Günlüğü kuleye ulaştırmaya söz ver (+15 Momentum, +20 EXP, +Eski İzci Günlüğü)",
+            "journal": "İzcinin son isteğini yerine getirmeye yemin ettin."
+          },
+          "choice_b": {
+            "text": "Kalan altınını al ve onu huzura bırak (+40 Altın, -15 Momentum)",
+            "journal": "İzcinin kesesini yağmalayarak pragmatik davrandın."
+          }
+        },
+        "11": { "title": "Veba Faresi Sürüsü", "description": "Düzinelerce kırmızı gözlü kemirgen agresif bir duvar oluşturuyor." },
+        "12": {
+          "title": "Gizli Mağara Kasası",
+          "description": "Sarkan yosun asmalarının altına gizlenmiş bir sandık.",
+          "choice_a": {
+            "text": "Asmaları dikkatlice kes (-5 HP, +Demir Muhafız Yüzüğü)",
+            "journal": "Dikenli asmaları keserek bir yüzük buldun."
+          },
+          "choice_b": {
+            "text": "Boşluk enerjisi takas et (-10 Aether, +30 Altın)",
+            "journal": "Gölge özünü altına çevirdin."
+          }
+        },
+        "13": {
+          "title": "Arındırıcı Teselli Kuyusu",
+          "description": "Yenileyici beyaz enerjiyle parlayan sessiz bir kuyu.",
+          "choice_a": {
+            "text": "Saf yıkama (+30 HP, +5 Momentum)",
+            "journal": "Kuyunun suyunda yıkanarak yozlaşmadan arındın."
+          },
+          "choice_b": {
+            "text": "Karanlık tortuları iç (+25 Aether, -15 HP)",
+            "journal": "Toksik tortuyu içerek gücünü artırdın ama bedenin hasar gördü."
+          }
+        },
+        "14": { "title": "GİZLİ PATRON: Musibet Ucubesi", "description": "Yan geçitten çıkan et ve çelik amalgama devasa bir yaratık! Aşırı tehlike!" },
+        "15": {
+          "title": "Musibet Mahzeni Simyacısı",
+          "description": "Mutasyonlar üzerine çalışan kaçak bir bilgin, gizli bir katalizör enjeksiyonu teklif ediyor.",
+          "choice_a": {
+            "text": "Deneysel katalizörü enjekte et (+15 Aether, +15 Aether, -10 HP)",
+            "journal": "Deneysel kimyasalı kabul ederek potansiyelini artırdın."
+          },
+          "choice_b": {
+            "text": "Kimyasal deneyleri reddet (+15 EXP)",
+            "journal": "Şüpheli enjeksiyonlardan kaçınarak güvenli yolu seçtin."
+          }
+        },
+        "16": {
+          "title": "Gezgin Otacı",
+          "description": "Yabani kökler ve şifa merhemleri satan bir otacı.",
+          "choice_a": {
+            "text": "Şifa İksiri Al (-40 Altın, +Derin Mağara Ot Suyu)",
+            "journal": "Otacıdan iyileştirici bitki suyu satın aldın."
+          },
+          "choice_b": {
+            "text": "Eski tohumları takas et (+15 Altın)",
+            "journal": "Değersiz tohumları altına çevirdin."
+          },
+          "choice_c": {
+            "text": "Huzurla ayrıl",
+            "journal": "Otacının yanından sessizce ayrıldın."
+          }
+        },
+        "17": { "title": "Kuduz Tünel Tazısı", "description": "Dengesiz bir musibet öfkesiyle parlayan uzun dişli bir canavar saldırıyor!" },
+        "18": {
+          "title": "Derin Toprak Totemi",
+          "description": "Kadim depremlerle yankılanan ağır bir taş monolit.",
+          "choice_a": {
+            "text": "Elinle totemi titreştir (+50 EXP, -12 HP)",
+            "journal": "Taştan kadim savunma teknikleri öğrendin ama sarsıntı canını yaktı."
+          },
+          "choice_b": {
+            "text": "İrade için bağlılık ada (+10 İrade, -5 Momentum)",
+            "journal": "Ruhunun bir kısmını feda ederek irade kazandın."
+          }
+        },
+        "19": { "title": "Fare Yuvası Tacı", "description": "Veba Kralı Golgoth, çöp ve paslı asaların üzerinde oturuyor. Yükselmek için onu yenmelisin!" }
       }
     }
   },
   "enemy": {
     "infested_rat": { "name": "Musibetli Fare İzci" },
-    "blighted_acid_crawler": { "name": "Musibetli Asit Böceği" },
-    "spore_host": { "name": "Yayılan Spor Taşıyıcısı" },
-    "rat_swarm": { "name": "Mağara Sürüsü Kemirgenleri" },
-    "blight_abomination": { "name": "Devasa Musibet Ucubesi" },
-    "tunnel_hound": { "name": "Musibetli Azgın Avcı Tazısı" },
-    "rat_king": { "name": "Veba Kralı Golgoth" }
+    "blighted_wolf": { "name": "Musibetli Kurt" },
+    "fungal_horror": { "name": "Mantar Dehşeti" },
+    "skeleton_warrior": { "name": "İskelet Savaşçı" },
+    "skeleton_archer": { "name": "İskelet Okçu" },
+    "skeleton_captain": { "name": "İskelet Kaptan" },
+    "skeleton_champion": { "name": "İskelet Şampiyon" },
+    "rat_king": { "name": "Veba Kralı Golgoth" },
+    "malakar": { "name": "Malakar, Gölge Simyacı" }
   },
   "item": {
     "adventurers_ring": { "name": "Maceracı Yüzüğü", "description": "İrade gücü sağlayan basit bir yüzük." },

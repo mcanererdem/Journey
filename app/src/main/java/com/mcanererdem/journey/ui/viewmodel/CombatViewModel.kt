@@ -66,17 +66,22 @@ class CombatViewModel(
         if (profile.currentNodeIndex in nodes.indices) {
             val activeNode = nodes[profile.currentNodeIndex]
             if ((activeNode.type == NodeType.COMBAT || activeNode.type == NodeType.BOSS) && !profile.currentNodeCompleted && _activeEnemyHp.value == null) {
-                val enemyHp = activeNode.enemy?.overrideHp ?: 50
+                val enemyRef = activeNode.enemy
+                val enemyId = enemyRef?.enemyId ?: return
+                
+                val stats = LocalizationManager.getEnemyStats(enemyId)
+                val enemyHp = enemyRef.overrideHp ?: stats?.optInt("hp") ?: 50
+                
                 _activeEnemyHp.value = enemyHp
                 _playerStatuses.value = emptyList()
                 _enemyStatuses.value = emptyList()
                 _currentEnemyIntent.value = EnemyIntent.random()
                 hasTriggeredPhase2 = false
                 
-                val enemyNameKey = activeNode.enemy?.enemyId?.let { "enemy.$it.name" } ?: "ui.label_unknown_enemy"
+                val enemyNameKey = stats?.optString("nameKey") ?: "enemy.$enemyId.name"
                 _combatLog.value = listOf(
                     CombatLogEntry(
-                        key = "combat_log_initiated",
+                        key = "ui.combat_log_initiated",
                         args = mapOf("enemy" to enemyNameKey)
                     )
                 )
@@ -103,18 +108,18 @@ class CombatViewModel(
  
             if (updatedPlayerStatuses.any { it.type == StatusType.POISONED }) {
                 playerHp = (playerHp - 5).coerceAtLeast(0)
-                logs.add(CombatLogEntry(key = "combat_log_player_poison"))
+                logs.add(CombatLogEntry(key = "ui.combat_log_player_poison"))
                 if (playerHp <= 0) {
                     val updated = profile.copy(currentHp = 0)
                     repository.savePlayerProfile(updated)
-                    onTriggerSpiritFracture(updated, profile.currentFloor, 1, 0, "Died from poison in combat")
+                    onMessage(ActionMessage("ui.msg_spirit_fracture", listOf(profile.savedFloorCheckpoint)))
                     return@launch
                 }
             }
  
             val playerStunned = updatedPlayerStatuses.any { it.type == StatusType.STUNNED }
             if (playerStunned) {
-                logs.add(CombatLogEntry(key = "combat_log_player_stunned"))
+                logs.add(CombatLogEntry(key = "ui.combat_log_player_stunned"))
                 decrementStatuses(updatedPlayerStatuses)
                 _playerStatuses.value = updatedPlayerStatuses.filter { it.durationTurns > 0 }
                 
@@ -143,14 +148,14 @@ class CombatViewModel(
  
                     logs.add(
                         CombatLogEntry(
-                            key = "combat_log_player_strike",
+                            key = "ui.combat_log_player_strike",
                             args = mapOf("damage" to damageDealt.toString())
                         )
                     )
                 }
                 "HEAVY_BLOW" -> {
                     if (profile.aether < 15) {
-                        logs.add(CombatLogEntry(key = "combat_log_insufficient_aether"))
+                        logs.add(CombatLogEntry(key = "ui.combat_log_insufficient_aether"))
                         _combatLog.value = logs
                         return@launch
                     }
@@ -191,19 +196,19 @@ class CombatViewModel(
  
                     logs.add(
                         CombatLogEntry(
-                            key = "combat_log_player_barrier",
+                            key = "ui.combat_log_player_barrier",
                             args = mapOf("heal" to healAmt.toString())
                         )
                     )
                 }
                 "ESCAPE" -> {
-                    onMessage(ActionMessage("msg_escaped_combat"))
+                    onMessage(ActionMessage("ui.msg_escaped_combat"))
                     return@launch
                 }
             }
  
             if (isCrit && action != "BARRIER") {
-                logs.add(CombatLogEntry(key = "combat_log_crit"))
+                logs.add(CombatLogEntry(key = "ui.combat_log_crit"))
             }
  
             if (currentEnemyHp <= 0) {
@@ -213,7 +218,7 @@ class CombatViewModel(
  
             if (activeNode.type == NodeType.BOSS && currentEnemyHp < (maxEnemyHp / 2) && !hasTriggeredPhase2) {
                 hasTriggeredPhase2 = true
-                logs.add(CombatLogEntry(key = "combat_log_boss_enraged"))
+                logs.add(CombatLogEntry(key = "ui.combat_log_boss_enraged"))
             }
  
             decrementStatuses(updatedPlayerStatuses)
@@ -238,7 +243,7 @@ class CombatViewModel(
         if (enemyStatuses.any { it.type == StatusType.POISONED }) {
             currentEnemyHp = (currentEnemyHp - 5).coerceAtLeast(0)
             _activeEnemyHp.value = currentEnemyHp
-            logs.add(CombatLogEntry(key = "combat_log_enemy_poison"))
+            logs.add(CombatLogEntry(key = "ui.combat_log_enemy_poison"))
             if (currentEnemyHp <= 0) {
                 handleVictory(profile, activeNode, playerHp, logs)
                 return
@@ -247,7 +252,7 @@ class CombatViewModel(
  
         val enemyStunned = enemyStatuses.any { it.type == StatusType.STUNNED }
         if (enemyStunned) {
-            logs.add(CombatLogEntry(key = "combat_log_enemy_stunned"))
+            logs.add(CombatLogEntry(key = "ui.combat_log_enemy_stunned"))
             decrementStatuses(enemyStatuses)
             _enemyStatuses.value = enemyStatuses.filter { it.durationTurns > 0 }
             _combatLog.value = _combatLog.value + logs
@@ -271,12 +276,12 @@ class CombatViewModel(
                 var dmg = enemyAtk + Random.nextInt(4)
                 if (playerShielded) {
                     dmg = (dmg * 0.5f).toInt()
-                    logs.add(CombatLogEntry(key = "combat_log_shield_reduced"))
+                    logs.add(CombatLogEntry(key = "ui.combat_log_shield_reduced"))
                 }
                 playerHp = (playerHp - dmg).coerceAtLeast(0)
                 logs.add(
                     CombatLogEntry(
-                        key = "combat_log_enemy_attack",
+                        key = "ui.combat_log_enemy_attack",
                         args = mapOf("damage" to dmg.toString())
                     )
                 )
@@ -288,7 +293,7 @@ class CombatViewModel(
                 } else {
                     enemyStatuses.add(CombatStatus(StatusType.SHIELDED, 2))
                 }
-                logs.add(CombatLogEntry(key = "combat_log_enemy_defend"))
+                logs.add(CombatLogEntry(key = "ui.combat_log_enemy_defend"))
             }
             EnemyIntent.DEBUFF -> {
                 val existingPoison = playerStatuses.find { it.type == StatusType.POISONED }
@@ -297,7 +302,7 @@ class CombatViewModel(
                 } else {
                     playerStatuses.add(CombatStatus(StatusType.POISONED, 3))
                 }
-                logs.add(CombatLogEntry(key = "combat_log_enemy_poison_debuff"))
+                logs.add(CombatLogEntry(key = "ui.combat_log_enemy_poison_debuff"))
             }
             EnemyIntent.BUFF -> {
                 val existingBless = enemyStatuses.find { it.type == StatusType.BLESSED }
@@ -306,7 +311,7 @@ class CombatViewModel(
                 } else {
                     enemyStatuses.add(CombatStatus(StatusType.BLESSED, 3))
                 }
-                logs.add(CombatLogEntry(key = "combat_log_enemy_buff"))
+                logs.add(CombatLogEntry(key = "ui.combat_log_enemy_buff"))
             }
         }
  
@@ -372,7 +377,11 @@ class CombatViewModel(
         val nodes = currentFloorNodes.value
         val nextNodeIndex = profile.currentNodeIndex + 1
         val hasNextNode = nextNodeIndex < nodes.size
-        val completedState = !hasNextNode
+        
+        // AUTO-PROGRESS: If not a boss and there's a next node, move immediately.
+        // If it's a boss, we set completedState = true so the UI shows the "Ascend" button.
+        val isBoss = activeNode.type == NodeType.BOSS
+        val completedState = isBoss || !hasNextNode
  
         val profileWithQuest = updateDailyQuestProgress(profile, 0, 1)
         val updatedProfile = profileWithQuest.copy(
@@ -384,7 +393,7 @@ class CombatViewModel(
             gold = profileWithQuest.gold + scaledGoldGained,
             itemsEncoded = newItemsEncoded,
             titlesEncoded = newTitlesEncoded,
-            currentNodeIndex = if (hasNextNode) nextNodeIndex else profile.currentNodeIndex,
+            currentNodeIndex = if (!completedState && hasNextNode) nextNodeIndex else profile.currentNodeIndex,
             currentNodeCompleted = completedState,
             lastUpdated = System.currentTimeMillis()
         )
@@ -393,26 +402,28 @@ class CombatViewModel(
  
         logs.add(
             CombatLogEntry(
-                key = "combat_log_victory",
+                key = "ui.combat_log_victory",
                 args = mapOf("exp" to expGained.toString(), "gold" to scaledGoldGained.toString())
             )
         )
         rewards.itemAwarded?.let { drop ->
-            logs.add(CombatLogEntry(key = "combat_log_loot", args = mapOf("item" to drop)))
+            logs.add(CombatLogEntry(key = "ui.combat_log_loot", args = mapOf("item" to drop)))
         }
         rewards.titleAwarded?.let { drop ->
-            logs.add(CombatLogEntry(key = "combat_log_title", args = mapOf("title" to drop)))
+            logs.add(CombatLogEntry(key = "ui.combat_log_title", args = mapOf("title" to drop)))
         }
         if (didLevelUp) {
-            logs.add(CombatLogEntry(key = "combat_log_level_up", args = mapOf("level" to totalLevel.toString())))
+            logs.add(CombatLogEntry(key = "ui.combat_log_level_up", args = mapOf("level" to totalLevel.toString())))
         }
  
-        val enemyNameKey = activeNode.enemy?.enemyId?.let { "enemy.$it.name" } ?: "ui.label_unknown_enemy"
+        val enemyId = activeNode.enemy?.enemyId ?: "unknown"
+        val stats = LocalizationManager.getEnemyStats(enemyId)
+        val enemyNameKey = stats?.optString("nameKey") ?: "enemy.$enemyId.name"
  
         val journalEntry = JournalEntry(
             floor = profile.currentFloor,
             actionKey = "ui.journal_combat_victory",
-            actionArgsEncoded = JournalEntry.encodeActionArgs(listOf(enemyNameKey, profile.currentFloor)),
+            actionArgsEncoded = JournalEntry.encodeActionArgs(listOf(enemyNameKey, profile.currentFloor.toString())),
             sideAlignmentShift = "NEUTRAL",
             alignmentImpact = 0,
             nodeIndex = profile.currentNodeIndex
@@ -420,7 +431,7 @@ class CombatViewModel(
         repository.insertJournalEntry(journalEntry)
  
         _combatLog.value = _combatLog.value + logs
-        onMessage(ActionMessage("msg_defeated_enemy", listOf(enemyNameKey)))
+        onMessage(ActionMessage("ui.msg_defeated_enemy", listOf(enemyNameKey)))
     }
 
     private fun decrementStatuses(statuses: MutableList<CombatStatus>) {

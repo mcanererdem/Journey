@@ -5,225 +5,173 @@ import kotlin.random.Random
 import java.util.UUID
 import org.json.JSONObject
 import org.json.JSONArray
-
+import android.util.Log
 
 object FloorBlueprintSystem {
 
+    private const val TAG = "FloorBlueprintSystem"
+
     fun getBlueprintForFloor(floor: Int, player: PlayerProfile? = null): FloorBlueprint {
-        val jsonBlueprint = loadBlueprintFromJson(floor)
-        if (jsonBlueprint != null) {
-            return jsonBlueprint
-        }
-        return generateProceduralBlueprint(floor, player)
-    }
-
-    private fun generateProceduralBlueprint(floor: Int, player: PlayerProfile?): FloorBlueprint {
-        val random = Random(floor.toLong() + (player?.playerName?.hashCode()?.toLong() ?: 0L))
-        val nodes = ArrayList<AdventureNode>()
-        
-        // Simplified procedural generation for the refactor
-        for (i in 0 until 10) {
-            val type = when (i) {
-                0 -> NodeType.NARRATIVE
-                9 -> NodeType.BOSS
-                else -> if (random.nextBoolean()) NodeType.COMBAT else NodeType.CHEST
-            }
-            nodes.add(generateProceduralNode(floor, i, type, random, i, 0))
-        }
-
-        return FloorBlueprint(
-            floor = floor,
-            titleKey = "floor.$floor.title",
-            descriptionKey = "floor.$floor.description",
-            introScenario = buildNormalScenario(floor, (floor / 10) % 10),
-            nodes = nodes
-        )
-    }
-
-    private fun generateProceduralNode(floor: Int, index: Int, type: NodeType, random: Random, depth: Int, column: Int): AdventureNode {
-        val id = "floor_${floor}_node_$index"
-        return when (type) {
-            NodeType.COMBAT -> {
-                AdventureNode(
-                    id = id,
-                    type = type,
-                    titleKey = "ui.label_skirmish",
-                    descriptionKey = "ui.desc_skirmish",
-                    depth = depth,
-                    column = column,
-                    enemy = EnemyRef("infested_rat") // Placeholder for now
-                )
-            }
-            NodeType.CHEST -> {
-                AdventureNode(
-                    id = id,
-                    type = type,
-                    titleKey = "ui.label_chest",
-                    descriptionKey = "ui.desc_chest",
-                    depth = depth,
-                    column = column,
-                    choices = listOf(
-                        NodeChoice(
-                            id = "${id}_a",
-                            labelKey = "ui.btn_open",
-                            journalKey = "ui.journal_chest_open",
-                            effects = ChoiceEffects(goldChange = 30)
-                        )
-                    )
-                )
-            }
-            else -> {
-                AdventureNode(
-                    id = id,
-                    type = NodeType.NARRATIVE,
-                    titleKey = "ui.label_ruins",
-                    descriptionKey = "ui.desc_ruins",
-                    depth = depth,
-                    column = column,
-                    choices = listOf(
-                        NodeChoice(
-                            id = "${id}_a",
-                            labelKey = "ui.btn_explore",
-                            journalKey = "ui.journal_explore",
-                            effects = ChoiceEffects(expChange = 20)
-                        )
-                    )
-                )
-            }
-        }
-    }
-
-    private fun buildNormalScenario(floor: Int, bracketIndex: Int): FloorScenario {
-        val themeId = when {
-            floor == 100 -> "floor_100"
-            floor % 25 == 0 -> "exarch_council"
-            floor % 10 == 0 -> "arbiter_threshold"
-            else -> "bracket_${bracketIndex + 1}"
-        }
-
-        return FloorScenario(
-            floor = floor,
-            titleKey = "scenarios.$themeId.title",
-            descriptionKey = "scenarios.$themeId.description",
-            options = listOf(
-                GameOption(
-                    id = "opt_a",
-                    labelKey = "scenarios.$themeId.optA_text",
-                    journalKey = "scenarios.$themeId.optA_journal",
-                    effects = ChoiceEffects(momentumShift = 5)
-                ),
-                GameOption(
-                    id = "opt_b",
-                    labelKey = "scenarios.$themeId.optB_text",
-                    journalKey = "scenarios.$themeId.optB_journal",
-                    effects = ChoiceEffects(momentumShift = -5)
-                ),
-                GameOption(
-                    id = "opt_c",
-                    labelKey = "scenarios.$themeId.optC_text",
-                    journalKey = "scenarios.$themeId.optC_journal",
-                    effects = ChoiceEffects(goldChange = 20)
-                )
-            )
-        )
+        return loadBlueprintFromJson(floor)
+            ?: generateProceduralBlueprint(floor, player)
     }
 
     private fun loadBlueprintFromJson(floorNum: Int): FloorBlueprint? {
-        try {
-            val floorObj = LocalizationManager.loadFloorBlueprint(floorNum) ?: return null
-            
-            val nodesArr = floorObj.optJSONArray("nodes") ?: return null
-            val nodesList = ArrayList<AdventureNode>()
-            for (j in 0 until nodesArr.length()) {
-                val nodeObj = nodesArr.getJSONObject(j)
-                val idx = nodeObj.optInt("index", 0)
-                val id = "floor_${floorNum}_node_$idx"
-                val typeStr = nodeObj.optString("type", "NARRATIVE")
-                val type = try { NodeType.valueOf(typeStr) } catch(e: Exception) { NodeType.NARRATIVE }
-
-                val enemyId = nodeObj.optString("enemyId", "")
-                
-                val nodeOptAObj = nodeObj.optJSONObject("optionA")
-                val nodeOptBObj = nodeObj.optJSONObject("optionB")
-                val nodeOptCObj = nodeObj.optJSONObject("optionC")
-
-                val choices = mutableListOf<NodeChoice>()
-                if (nodeOptAObj != null) choices.add(parseNodeChoice(nodeOptAObj, "floor.$floorNum.nodes.$idx.choice_a"))
-                if (nodeOptBObj != null) choices.add(parseNodeChoice(nodeOptBObj, "floor.$floorNum.nodes.$idx.choice_b"))
-                if (nodeOptCObj != null) choices.add(parseNodeChoice(nodeOptCObj, "floor.$floorNum.nodes.$idx.choice_c"))
-
-                nodesList.add(
-                    AdventureNode(
-                        id = id,
-                        type = type,
-                        titleKey = nodeObj.optString("titleKey", "floor.$floorNum.nodes.$idx.title"),
-                        descriptionKey = nodeObj.optString("descriptionKey", "floor.$floorNum.nodes.$idx.description"),
-                        depth = nodeObj.optInt("depth", idx),
-                        column = nodeObj.optInt("column", 0),
-                        enemy = if (enemyId.isNotEmpty()) EnemyRef(enemyId, type == NodeType.BOSS) else null,
-                        choices = choices,
-                        willCost = nodeObj.optInt("willCost", 0)
-                    )
-                )
-            }
-
-            val introObj = floorObj.optJSONObject("introScenario") ?: floorObj.optJSONObject("intro") ?: return null
-            
-            return FloorBlueprint(
-                floor = floorNum,
-                titleKey = floorObj.optString("titleKey", "floor.$floorNum.title"),
-                descriptionKey = floorObj.optString("descriptionKey", "floor.$floorNum.description"),
-                introScenario = FloorScenario(
-                    floor = floorNum,
-                    titleKey = introObj.optString("titleKey", "floor.$floorNum.intro.title"),
-                    descriptionKey = introObj.optString("descriptionKey", "floor.$floorNum.intro.description"),
-                    options = listOf(
-                        parseGameOption(introObj.optJSONObject("optionA") ?: JSONObject(), "floor.$floorNum.intro.choice_a"),
-                        parseGameOption(introObj.optJSONObject("optionB") ?: JSONObject(), "floor.$floorNum.intro.choice_b"),
-                        parseGameOption(introObj.optJSONObject("optionC") ?: JSONObject(), "floor.$floorNum.intro.choice_c")
-                    )
-                ),
-                nodes = nodesList
-            )
+        val json = LocalizationManager.loadFloorBlueprint(floorNum) ?: return null
+        return try {
+            parseFloorBlueprint(json, floorNum)
         } catch (e: Exception) {
-            android.util.Log.e("FloorBlueprintSystem", "Error parsing floor JSON blueprint $floorNum", e)
+            Log.e(TAG, "Parse error floor $floorNum", e)
+            null
         }
-        return null
     }
 
-    private fun parseGameOption(obj: JSONObject, defaultKey: String = ""): GameOption {
-        val labelKey = when {
-            obj.has("textKey") -> obj.getString("textKey")
-            obj.has("labelKey") -> obj.getString("labelKey")
-            else -> if (defaultKey.isNotEmpty()) "$defaultKey.text" else ""
-        }
-        val effectsObj = obj.optJSONObject("effects") ?: obj
-        return GameOption(
-            id = obj.optString("id", UUID.randomUUID().toString()),
-            labelKey = labelKey,
-            journalKey = obj.optString("journalKey", if (defaultKey.isNotEmpty()) "$defaultKey.journal" else ""),
-            effects = parseChoiceEffects(effectsObj)
+    private fun parseFloorBlueprint(json: JSONObject, floor: Int): FloorBlueprint {
+        val intro = parseNode(json.getJSONObject("intro"), floor)
+        val pathLight = parseNodeList(json.optJSONArray("path_light"), floor)
+        val pathDark  = parseNodeList(json.optJSONArray("path_dark"), floor)
+        val shared    = parseNodeList(json.optJSONArray("shared"), floor)
+        val chains    = parseChainList(json.optJSONArray("chains"), floor)
+        val boss      = json.optJSONObject("boss")?.let { parseEnemyRef(it) }
+
+        return FloorBlueprint(
+            floor = floor,
+            region = json.optString("region", "unknown"),
+            type = try { FloorType.valueOf(json.optString("type", "NORMAL")) } catch(e: Exception) { FloorType.NORMAL },
+            titleKey = json.optString("titleKey", "floor.$floor.title"),
+            descriptionKey = json.optString("descriptionKey", "floor.$floor.description"),
+            minSecondsOnFloor = json.optInt("minSecondsOnFloor", 0),
+            intro = intro,
+            pathLight = pathLight,
+            pathDark = pathDark,
+            shared = shared,
+            chains = chains,
+            boss = boss
         )
     }
 
-    private fun parseNodeChoice(obj: JSONObject, defaultKey: String = ""): NodeChoice {
-        val labelKey = when {
-            obj.has("textKey") -> obj.getString("textKey")
-            obj.has("labelKey") -> obj.getString("labelKey")
-            else -> if (defaultKey.isNotEmpty()) "$defaultKey.text" else ""
-        }
-        val journalKey = obj.optString("journalKey", if (defaultKey.isNotEmpty()) "$defaultKey.journal" else "")
-        val effectsObj = obj.optJSONObject("effects") ?: obj
+    private fun parseNode(obj: JSONObject, floor: Int): FloorNode {
+        val idx = obj.optInt("index", -1)
+        val typeStr = obj.optString("type", "NARRATIVE")
+        val type = try { NodeType.valueOf(typeStr) } catch(e: Exception) { NodeType.NARRATIVE }
         
-        return NodeChoice(
+        return AdventureNode(
             id = obj.optString("id", UUID.randomUUID().toString()),
-            labelKey = labelKey,
-            journalKey = journalKey,
-            effects = parseChoiceEffects(effectsObj),
-            weight = parseChoiceWeight(obj.optString("weight", "")),
-            isHidden = obj.optBoolean("isHidden", false),
-            isIrreversible = obj.optBoolean("isIrreversible", false),
-            nextChainNodeId = obj.optString("nextChainNodeId").ifBlank { null }
+            type = type,
+            titleKey = obj.optString("titleKey", if (idx != -1) "floor.$floor.nodes.$idx.title" else ""),
+            descriptionKey = obj.optString("descriptionKey", if (idx != -1) "floor.$floor.nodes.$idx.description" else ""),
+            depth = obj.optInt("depth", idx),
+            column = obj.optInt("column", 0),
+            enemy = obj.optJSONObject("enemy")?.let { parseEnemyRef(it) } 
+                   ?: obj.optString("enemyId").let { if (it.isNotEmpty()) EnemyRef(it, type == NodeType.BOSS) else null },
+            choices = parseChoiceList(obj.optJSONArray("choices")),
+            willCost = obj.optInt("willCost", 0),
+            path = try { NodePath.valueOf(obj.optString("path", "SHARED")) } catch(e: Exception) { NodePath.SHARED },
+            chainId = obj.optString("chainId").ifBlank { null },
+            chainNext = obj.optString("chainNext").ifBlank { null },
+            chainExit = obj.optBoolean("chainExit", false),
+            prereq = obj.optJSONObject("prereq")?.let { parseNodePrereq(it) },
+            merchantRef = obj.optJSONObject("merchantRef")?.let { parseMerchantRef(it) },
+            campRef = obj.optJSONObject("campRef")?.let { parseCampRef(it) },
+            secretCondition = obj.optJSONObject("secretCondition")?.let { parseSecretCondition(it) }
+        )
+    }
+
+    private fun parseNodeList(arr: JSONArray?, floor: Int): List<FloorNode> {
+        if (arr == null) return emptyList()
+        val list = mutableListOf<FloorNode>()
+        for (i in 0 until arr.length()) {
+            list.add(parseNode(arr.getJSONObject(i), floor))
+        }
+        return list
+    }
+
+    private fun parseChoiceList(arr: JSONArray?): List<NodeChoice> {
+        if (arr == null) return emptyList()
+        val list = mutableListOf<NodeChoice>()
+        for (i in 0 until arr.length()) {
+            val obj = arr.getJSONObject(i)
+            list.add(NodeChoice(
+                id = obj.optString("id", UUID.randomUUID().toString()),
+                labelKey = obj.optString("labelKey"),
+                journalKey = obj.optString("journalKey"),
+                effects = parseChoiceEffects(obj.getJSONObject("effects")),
+                prereq = obj.optJSONObject("prereq")?.let { parseChoicePrereq(it) },
+                isHidden = obj.optBoolean("isHidden", false),
+                isIrreversible = obj.optBoolean("isIrreversible", false),
+                weight = try { ChoiceWeight.valueOf(obj.optString("weight", "MINOR")) } catch(e: Exception) { ChoiceWeight.MINOR },
+                nextChainNodeId = obj.optString("nextChainNodeId").ifBlank { null }
+            ))
+        }
+        return list
+    }
+
+    private fun parseChainList(arr: JSONArray?, floor: Int): List<NodeChain> {
+        if (arr == null) return emptyList()
+        val list = mutableListOf<NodeChain>()
+        for (i in 0 until arr.length()) {
+            val obj = arr.getJSONObject(i)
+            list.add(NodeChain(
+                chainId = obj.getString("chainId"),
+                nodes = parseNodeList(obj.getJSONArray("nodes"), floor),
+                exitToPath = obj.optBoolean("exitToPath", true)
+            ))
+        }
+        return list
+    }
+
+    private fun parseEnemyRef(obj: JSONObject): EnemyRef {
+        return EnemyRef(
+            enemyId = obj.getString("enemyId"),
+            isBoss = obj.optBoolean("isBoss", false),
+            form = try { EnemyForm.valueOf(obj.optString("form", "NEUTRAL")) } catch(e: Exception) { EnemyForm.NEUTRAL },
+            scaleFactor = obj.optDouble("scaleFactor", 1.0).toFloat(),
+            overrideHp = if (obj.has("overrideHp")) obj.getInt("overrideHp") else null,
+            overrideAtk = if (obj.has("overrideAtk")) obj.getInt("overrideAtk") else null
+        )
+    }
+
+    private fun parseMerchantRef(obj: JSONObject): MerchantRef {
+        val stockArr = obj.optJSONArray("stock")
+        val stockList = mutableListOf<MerchantStockEntry>()
+        if (stockArr != null) {
+            for (i in 0 until stockArr.length()) {
+                val s = stockArr.getJSONObject(i)
+                stockList.add(MerchantStockEntry(
+                    itemId = s.getString("itemId"),
+                    baseCost = s.getInt("baseCost"),
+                    currency = s.optString("currency", "GOLD"),
+                    minMomentum = if (s.has("minMomentum")) s.getInt("minMomentum") else null,
+                    maxMomentum = if (s.has("maxMomentum")) s.getInt("maxMomentum") else null,
+                    requiredTitleId = s.optString("requiredTitleId"),
+                    requiredItemId = s.optString("requiredItemId"),
+                    discountPercent = s.optInt("discountPercent", 0),
+                    premiumPercent = s.optInt("premiumPercent", 0)
+                ))
+            }
+        }
+        return MerchantRef(obj.getString("merchantId"), stockList)
+    }
+
+    private fun parseCampRef(obj: JSONObject): CampRef {
+        return CampRef(
+            campId = obj.getString("campId"),
+            freeHealAmount = obj.optInt("freeHealAmount", 20),
+            paidHealAmount = obj.optInt("paidHealAmount", 40),
+            paidHealCost = obj.optInt("paidHealCost", 30),
+            willRestoreAmount = obj.optInt("willRestoreAmount", 2),
+            hasMiniMerchant = obj.optBoolean("hasMiniMerchant", false),
+            miniMerchantId = obj.optString("miniMerchantId")
+        )
+    }
+
+    private fun parseSecretCondition(obj: JSONObject): SecretCondition {
+        return SecretCondition(
+            type = SecretConditionType.valueOf(obj.getString("type")),
+            value = obj.optString("value"),
+            minValue = obj.optInt("minValue", 0),
+            successNodeId = obj.optString("successNodeId"),
+            failNodeId = obj.optString("failNodeId")
         )
     }
 
@@ -233,26 +181,97 @@ object FloorBlueprintSystem {
             goldChange = obj.optInt("goldChange", 0),
             aetherChange = obj.optInt("aetherChange", 0),
             expChange = obj.optInt("expChange", 0),
-            momentumShift = obj.optInt("momentumShift", obj.optInt("alignmentShift", 0)),
+            momentumShift = obj.optInt("momentumShift", 0),
             willChange = obj.optInt("willChange", 0),
-            rewardItemId = obj.optString("rewardItemId", obj.optString("rewardItem", "")),
-            rewardTitleId = obj.optString("rewardTitleId", obj.optString("rewardTitle", "")),
-            requiredFlag = obj.optString("requiredFlag", obj.optString("requiredStoryFlag", "")),
-            setsFlag = obj.optString("setsFlag", obj.optString("addStoryFlag", "")),
-            removesFlag = obj.optString("removesFlag", ""),
+            rewardItemId = obj.optString("rewardItemId"),
+            rewardTitleId = obj.optString("rewardTitleId"),
+            requiredFlag = obj.optString("requiredFlag"),
+            setsFlag = obj.optString("setsFlag"),
+            removesFlag = obj.optString("removesFlag"),
             consequenceRing = obj.optInt("consequenceRing", 0),
-            consequenceKey = obj.optString("consequenceKey", ""),
-            triggerChainId = obj.optString("triggerChainId", ""),
+            consequenceKey = obj.optString("consequenceKey"),
+            triggerChainId = obj.optString("triggerChainId"),
             skipToBoss = obj.optBoolean("skipToBoss", false),
             skipToNextFloor = obj.optBoolean("skipToNextFloor", false)
         )
     }
 
-    private fun parseChoiceWeight(value: String): ChoiceWeight {
-        return try {
-            if (value.isBlank()) ChoiceWeight.MINOR else ChoiceWeight.valueOf(value.uppercase())
-        } catch (_: IllegalArgumentException) {
-            ChoiceWeight.MINOR
+    private fun parseNodePrereq(obj: JSONObject): NodePrereq {
+        return NodePrereq(
+            requiredPath = obj.optString("requiredPath").let { if (it.isNotEmpty()) NodePath.valueOf(it) else null },
+            minMomentum = if (obj.has("minMomentum")) obj.getInt("minMomentum") else null,
+            maxMomentum = if (obj.has("maxMomentum")) obj.getInt("maxMomentum") else null,
+            minLevel = if (obj.has("minLevel")) obj.getInt("minLevel") else null,
+            requiredTitleId = obj.optString("requiredTitleId"),
+            requiredItemId = obj.optString("requiredItemId"),
+            requiredFlag = obj.optString("requiredFlag"),
+            excludesFlag = obj.optString("excludesFlag")
+        )
+    }
+
+    private fun parseChoicePrereq(obj: JSONObject): ChoicePrereq {
+        return ChoicePrereq(
+            minMomentum = if (obj.has("minMomentum")) obj.getInt("minMomentum") else null,
+            maxMomentum = if (obj.has("maxMomentum")) obj.getInt("maxMomentum") else null,
+            minLevel = if (obj.has("minLevel")) obj.getInt("minLevel") else null,
+            minHp = if (obj.has("minHp")) obj.getInt("minHp") else null,
+            requiredTitleId = obj.optString("requiredTitleId"),
+            requiredItemId = obj.optString("requiredItemId"),
+            requiredFlag = obj.optString("requiredFlag"),
+            excludesFlag = obj.optString("excludesFlag")
+        )
+    }
+
+    private fun generateProceduralBlueprint(floor: Int, player: PlayerProfile?): FloorBlueprint {
+        val random = Random(floor.toLong() + (player?.playerName?.hashCode()?.toLong() ?: 0L))
+        val shared = ArrayList<FloorNode>()
+        
+        for (i in 0 until 10) {
+            val type = when (i) {
+                0 -> NodeType.NARRATIVE
+                9 -> NodeType.BOSS
+                else -> if (random.nextBoolean()) NodeType.COMBAT else NodeType.CHEST
+            }
+            shared.add(generateProceduralNode(floor, i, type, random, i, 0))
         }
+
+        return FloorBlueprint(
+            floor = floor,
+            region = "procedural_depths",
+            type = FloorType.NORMAL,
+            titleKey = "floor.$floor.title",
+            descriptionKey = "floor.$floor.description",
+            intro = generateProceduralNode(floor, -1, NodeType.NARRATIVE, random, -1, 0),
+            shared = shared,
+            boss = EnemyRef("infested_rat", isBoss = true)
+        )
+    }
+
+    private fun generateProceduralNode(floor: Int, index: Int, type: NodeType, random: Random, depth: Int, column: Int): FloorNode {
+        val id = "floor_${floor}_node_$index"
+        return AdventureNode(
+            id = id,
+            type = type,
+            titleKey = "ui.label_skirmish",
+            descriptionKey = "ui.desc_skirmish",
+            depth = depth,
+            column = column,
+            enemy = if (type == NodeType.COMBAT || type == NodeType.BOSS) EnemyRef("infested_rat") else null,
+            choices = if (type == NodeType.CHEST) listOf(
+                NodeChoice(
+                    id = "${id}_a",
+                    labelKey = "ui.btn_open",
+                    journalKey = "ui.journal_chest_open",
+                    effects = ChoiceEffects(goldChange = 30)
+                )
+            ) else if (type == NodeType.NARRATIVE) listOf(
+                NodeChoice(
+                    id = "${id}_a",
+                    labelKey = "ui.btn_explore",
+                    journalKey = "ui.journal_explore",
+                    effects = ChoiceEffects(expChange = 20)
+                )
+            ) else emptyList()
+        )
     }
 }
