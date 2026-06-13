@@ -360,7 +360,7 @@ class CombatViewModel(
         onMessage(
             ActionMessage(
                 "ui.msg_combat_victory_rewards", 
-                listOf(enemyNameKey, rewards.expGained, rewards.goldGained, rewards.itemAwarded ?: "")
+                listOf(enemyNameKey, rewards.expGained, rewards.goldGained, if (rewards.itemAwarded != null) "🎁 ${rewards.itemAwarded}" else "")
             )
         )
 
@@ -452,7 +452,7 @@ class CombatViewModel(
         onMessage(
             ActionMessage(
                 "ui.msg_combat_victory_rewards", 
-                listOf(enemyNameKey, rewards.expGained, rewards.goldGained, rewards.itemAwarded ?: "")
+                listOf(enemyNameKey, rewards.expGained, rewards.goldGained, if (rewards.itemAwarded != null) "🎁 ${rewards.itemAwarded}" else "")
             )
         )
         

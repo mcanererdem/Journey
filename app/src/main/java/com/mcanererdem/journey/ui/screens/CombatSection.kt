@@ -75,16 +75,16 @@ fun CombatSection(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(horizontalAlignment = Alignment.Start) {
-                    Box(modifier = Modifier.size(36.dp).border(Dimens.BorderThin, ColorHeal, CircleShape), contentAlignment = Alignment.Center) {
+                    Box(modifier = Modifier.size(36.dp).border(Dimens.BorderThin, ColorHeal, CircleShape).background(ColorHeal.copy(alpha = 0.1f), CircleShape), contentAlignment = Alignment.Center) {
                         Text(text = "👤", fontSize = 14.sp)
                     }
-                    Text(text = player.playerName.uppercase(), style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Black, fontSize = 8.sp), color = ColorOnBackground)
+                    Text(text = player.playerName.uppercase(), style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Black, fontSize = 8.sp), color = MaterialTheme.colorScheme.onBackground)
                 }
 
-                Text(text = "VS", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black, color = ColorOnSurfaceMuted.copy(alpha = 0.5f)))
+                Text(text = "VS", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)))
 
                 Column(horizontalAlignment = Alignment.End) {
-                    Box(modifier = Modifier.size(36.dp).border(Dimens.BorderThin, ColorDanger, CircleShape), contentAlignment = Alignment.Center) {
+                    Box(modifier = Modifier.size(36.dp).border(Dimens.BorderThin, ColorDanger, CircleShape).background(ColorDanger.copy(alpha = 0.1f), CircleShape), contentAlignment = Alignment.Center) {
                         Text(text = if (isBoss) "💀" else "⚔️", fontSize = 14.sp)
                     }
                     val enemyId = activeNode.enemy?.enemyId ?: "unknown"
@@ -118,20 +118,29 @@ fun CombatSection(
             // Scrollable Combat Log
             Surface(
                 modifier = Modifier.fillMaxWidth().weight(1f).padding(horizontal = Dimens.SpacingXs),
-                color = ColorSurface.copy(alpha = 0.2f),
-                border = BorderStroke(Dimens.BorderThin, ColorBorder.copy(alpha = 0.2f)),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                border = BorderStroke(Dimens.BorderThin, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)),
                 shape = RoundedCornerShape(Dimens.RadiusS)
             ) {
                 val logScrollState = rememberScrollState()
                 LaunchedEffect(combatLog.size) { logScrollState.animateScrollTo(logScrollState.maxValue) }
-                Column(modifier = Modifier.padding(Dimens.SpacingS).verticalScroll(logScrollState), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Column(modifier = Modifier.padding(Dimens.SpacingM).verticalScroll(logScrollState), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     if (combatLog.isEmpty()) {
-                        Text(text = "COMBAT INITIATED...", style = MaterialTheme.typography.bodySmall.copy(fontSize = 8.sp), color = ColorOnSurfaceMuted)
+                        Text(text = LocalizationManager.getString(activeLang, "ui.combat_initiated"), style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.sp), color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f))
                     } else {
                         combatLog.forEach { log ->
                             val cleanKey = log.key.removePrefix("ui.")
-                            val logColor = if (cleanKey.startsWith("combat_log_player")) ColorSanctumPrimary else if (cleanKey.startsWith("combat_log_enemy") || cleanKey.startsWith("combat_log_boss")) ColorDanger else ColorOnSurface
-                            Text(text = "› ${log.getFormattedText(activeLang)}", style = MaterialTheme.typography.bodySmall.copy(fontSize = 9.sp, fontFamily = FontFamily.Serif), color = logColor.copy(alpha = 0.9f))
+                            val logColor = when {
+                                cleanKey.startsWith("combat_log_player") -> ColorHeal
+                                cleanKey.startsWith("combat_log_enemy") || cleanKey.startsWith("combat_log_boss") -> ColorDanger
+                                cleanKey.contains("victory") || cleanKey.contains("reward") || cleanKey.contains("loot") -> ColorStatGold
+                                else -> MaterialTheme.colorScheme.onSurface
+                            }
+                            Text(
+                                text = "› ${log.getFormattedText(activeLang)}", 
+                                style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.sp, fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold),
+                                color = logColor
+                            )
                         }
                     }
                 }
@@ -144,8 +153,8 @@ fun CombatSection(
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
                 .padding(Dimens.SpacingXs)
-                .background(ColorSurface.copy(alpha = 0.8f), RoundedCornerShape(Dimens.RadiusM))
-                .border(Dimens.BorderThin, ColorBorder.copy(alpha = 0.1f), RoundedCornerShape(Dimens.RadiusM))
+                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.95f), RoundedCornerShape(Dimens.RadiusM))
+                .border(Dimens.BorderThin, MaterialTheme.colorScheme.outline.copy(alpha = 0.15f), RoundedCornerShape(Dimens.RadiusM))
                 .padding(Dimens.SpacingXxs),
             horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingXxs)
         ) {

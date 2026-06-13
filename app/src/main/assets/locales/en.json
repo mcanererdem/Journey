@@ -419,6 +419,8 @@
     "msg_rest_success": "💖 Rested and restored HP by +%d, Willpower by +%d.",
     "msg_trade_no_gold": "❌ Insufficient Gold!",
     "msg_trade_success_aether": "Traded 30 Gold for +10 Aether.",
+    "label_danger": "DANGER LEVEL",
+    "msg_combat_victory_rewards": "⚔️ %1$s Defeated! ✨+%2$d ✦ 🪙+%3$d %4$s",
     "enemy.blighted_acid_crawler.name": "Blighted Acid Crawler",
     "enemy.spore_host.name": "Spreading Spore Host",
     "enemy.rat_swarm.name": "Cavern Swarm Nibblers",

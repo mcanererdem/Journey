@@ -419,6 +419,8 @@
     "msg_rest_success": "💖 Dinlendiniz. Canınız +%d, İradeniz +%d yenilendi.",
     "msg_trade_no_gold": "❌ Yetersiz Altın!",
     "msg_trade_success_aether": "30 Altın karşılığında +10 Aether alındı.",
+    "label_danger": "TEHLİKE SEVİYESİ",
+    "msg_combat_victory_rewards": "⚔️ %1$s Yenildi! ✨+%2$d ✦ 🪙+%3$d %4$s",
     "enemy.blighted_acid_crawler.name": "Musibetli Asit Böceği",
     "enemy.spore_host.name": "Yayılan Spor Taşıyıcısı",
     "enemy.rat_swarm.name": "Mağara Sürüsü Kemirgenleri",

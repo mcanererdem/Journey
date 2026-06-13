@@ -36,17 +36,17 @@ private val SanctumDarkColorScheme = darkColorScheme(
 private val SanctumLightColorScheme = lightColorScheme(
     primary               = ColorSanctumPrimary,
     onPrimary             = Color.White,
-    primaryContainer      = Color(0xFFFFF9E3),
+    primaryContainer      = Color(0xFFF8F3E9),
     onPrimaryContainer    = Color(0xFF5A4010),
     secondary             = ColorSanctumSecondary,
-    background            = Color(0xFFFDFCF4),
+    background            = Color(0xFFFAF9F6),
     onBackground          = Color(0xFF1C1608),
     surface               = Color.White,
     onSurface             = Color(0xFF2C2518),
-    surfaceVariant        = Color(0xFFF2F0E4),
+    surfaceVariant        = Color(0xFFEBE8E0),
     onSurfaceVariant      = Color(0xFF5D4E67),
-    outline               = ColorSanctumBorder,
-    outlineVariant        = ColorBorderMuted,
+    outline               = Color(0xFFD6CFC7),
+    outlineVariant        = Color(0xFFE5E0DA),
     error                 = ColorDanger
 )
 
@@ -79,17 +79,17 @@ private val CovenantDarkColorScheme = darkColorScheme(
 private val CovenantLightColorScheme = lightColorScheme(
     primary               = ColorCovenantPrimary,
     onPrimary             = Color.White,
-    primaryContainer      = Color(0xFFF5E6FF),
+    primaryContainer      = Color(0xFFF2EAFA),
     onPrimaryContainer    = Color(0xFF3A1060),
     secondary             = ColorCovenantSecondary,
-    background            = Color(0xFFFAF7FF),
+    background            = Color(0xFFF9F7FC),
     onBackground          = Color(0xFF0E0818),
     surface               = Color.White,
     onSurface             = Color(0xFF1A1225),
-    surfaceVariant        = Color(0xFFEEE5F5),
+    surfaceVariant        = Color(0xFFE9E4F0),
     onSurfaceVariant      = Color(0xFF5D4E67),
-    outline               = ColorCovenantBorder,
-    outlineVariant        = ColorBorderMuted,
+    outline               = Color(0xFFCDC6D4),
+    outlineVariant        = Color(0xFFE1DCE8),
     error                 = ColorDanger
 )
 

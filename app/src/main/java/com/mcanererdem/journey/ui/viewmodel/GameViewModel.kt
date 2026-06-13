@@ -341,7 +341,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     fun showActionMessage(message: ActionMessage) {
         _lastActionMessage.value = message
-        _showNotificationBanner.value = true
+        // Only show if setting is enabled
+        val prefs = getApplication<Application>().getSharedPreferences("rpg_settings", Context.MODE_PRIVATE)
+        if (prefs.getBoolean("showNotificationBanner", true)) {
+            _showNotificationBanner.value = true
+        }
     }
 
     fun resetGame() {
