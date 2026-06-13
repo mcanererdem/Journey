@@ -1,35 +1,60 @@
 package com.mcanererdem.journey.ui.screens
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.snap
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.mcanererdem.journey.data.engine.LocalizationManager
-import com.mcanererdem.journey.data.model.PlayerProfile
 import com.mcanererdem.journey.data.model.LegacyUpgradeType
+import com.mcanererdem.journey.data.model.PlayerProfile
 import com.mcanererdem.journey.ui.theme.*
+
+@Composable
+fun StatRowSmall(label: String, value: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(text = label, style = MaterialTheme.typography.labelSmall, color = ColorOnSurfaceMuted)
+        Text(text = value, style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), color = ColorOnSurface)
+    }
+}
 
 @Composable
 fun LegacyTab(
     player: PlayerProfile?,
     activeLang: String,
+    animationsEnabled: Boolean,
     onUpgradePurchased: (String) -> Unit,
     onClaimQuestReward: (Int) -> Unit
 ) {
     if (player == null) return
 
     val currentUpgrades = LegacyUpgradeType.getUpgradesMap(player.upgradesEncoded)
+    var isExpanded by remember { mutableStateOf(false) }
 
     LazyColumn(
         modifier = Modifier
@@ -37,6 +62,67 @@ fun LegacyTab(
             .padding(Dimens.SpacingL),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // Character identity area with animation
+        item {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { isExpanded = !isExpanded }
+                    .padding(vertical = Dimens.SpacingXs),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                shape = RoundedCornerShape(Dimens.RadiusM),
+                border = BorderStroke(Dimens.BorderThin, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
+            ) {
+                Column(modifier = Modifier.padding(Dimens.SpacingM)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+                                .border(Dimens.BorderThin, MaterialTheme.colorScheme.primary, CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(text = "👤", fontSize = 18.sp)
+                        }
+                        Spacer(modifier = Modifier.width(Dimens.SpacingM))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = player.playerName.uppercase(),
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black)
+                            )
+                            Text(
+                                text = player.chosenClass,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                        Icon(
+                            if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(Dimens.IconS)
+                        )
+                    }
+
+                    AnimatedVisibility(
+                        visible = isExpanded,
+                        enter = if (animationsEnabled) expandVertically(animationSpec = tween(200)) + fadeIn(animationSpec = tween(200)) else fadeIn(snap()),
+                        exit = if (animationsEnabled) shrinkVertically(animationSpec = tween(150)) + fadeOut(animationSpec = tween(150)) else fadeOut(snap())
+                    ) {
+                        Column(modifier = Modifier.padding(top = Dimens.SpacingM)) {
+                            HorizontalDivider(color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+                            Spacer(modifier = Modifier.height(Dimens.SpacingS))
+                            StatRowSmall("LEVEL", player.level.toString())
+                            StatRowSmall("EXP", "${player.exp} / ${player.maxExp}")
+                            StatRowSmall("RANK", player.rank)
+                            StatRowSmall("MOMENTUM", player.momentum.toString())
+                        }
+                    }
+                }
+            }
+        }
+
         // Miras Puanı Header
         item {
             Card(
@@ -94,7 +180,7 @@ fun LegacyTab(
                 ) {
                     Text(
                         text = "📅",
-                        fontSize = Dimens.TextHero
+                        fontSize = 32.sp
                     )
                     Spacer(modifier = Modifier.width(Dimens.SpacingM))
                     Column(modifier = Modifier.weight(1f)) {

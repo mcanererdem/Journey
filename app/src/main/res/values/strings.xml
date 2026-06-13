@@ -33,4 +33,8 @@
     <string name="auth_register_button">Yeni Hesap Oluştur</string>
     <string name="auth_back_button">← Geri</string>
     <string name="auth_error_firebase_missing">Firebase bağlantısı için google-services.json gereklidir.</string>
+    <string name="ui.label_danger">Danger Level</string>
+    <string name="ui.msg_combat_victory">Victory! Gained %1$d EXP and %2$d Gold.</string>
+    <string name="ui.msg_combat_no_aether">Not enough Aether to perform this action!</string>
+    <string name="ui.msg_combat_victory_rewards">Defeated %1$s! +%2$d EXP ✦ +%3$d Gold 🪙 %4$s</string>
 </resources>

@@ -28,6 +28,7 @@
 * **Layout Stability:** Avoid UI jumping when content changes. Use `weight(1f)` for flexible areas and pin narrative/actions to predictable positions (e.g., above bottom navbar).
 * **Information Density:** Maintain high information density in game screens. Use tight spacing (`Dimens.SpacingXs`/`Dimens.SpacingS`) and avoid excessive empty areas.
 * **Thematic Consistency:** Use `ColorStatGold` for Will/Essence. Use `ColorSanctumPrimary` for Sanctum (Light) and `ColorCovenantGlow` for Covenant (Dark) elements.
+* **Logging Strategy:** Every significant state change in ViewModels and Repositories must be tracked with `Log.d` using a standard `TAG` per file. This includes combat turn results, profile saves, and data loading status.
 
 ---
 

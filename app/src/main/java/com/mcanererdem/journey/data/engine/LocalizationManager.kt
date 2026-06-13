@@ -63,13 +63,27 @@ object LocalizationManager {
         val root = if (lang.uppercase() == "TR") trJson else enJson
         if (root == null) return key
 
+        // First try flat key
+        if (root.has(key)) {
+            val res = root.optString(key, key)
+            stringCache[cacheKey] = res
+            return res
+        }
+
+        // Then try nested traversal (e.g., "enemy.spore_host.name")
         val result = try {
             val parts = key.split(".")
             var current: JSONObject = root
+            var found = true
             for (i in 0 until parts.size - 1) {
-                current = current.getJSONObject(parts[i])
+                if (current.has(parts[i])) {
+                    current = current.getJSONObject(parts[i])
+                } else {
+                    found = false
+                    break
+                }
             }
-            current.optString(parts.last(), key)
+            if (found) current.optString(parts.last(), key) else key
         } catch (e: Exception) {
             key
         }
@@ -92,44 +106,5 @@ object LocalizationManager {
      */
     fun getFloorString(lang: String, floor: Int, path: String): String {
         return getString(lang, "floor.$floor.$path")
-    }
-}
-
-/**
- * Extension for ActionMessage to support easy UI formatting
- */
-fun ActionMessage.getFormattedText(lang: String): String {
-    if (key.isBlank()) return ""
-    return try {
-        val template = LocalizationManager.getString(lang, key)
-        if (args.isEmpty()) template else String.format(template, *args.toTypedArray())
-    } catch (e: Exception) {
-        key
-    }
-}
-
-/**
- * Extension for CombatLogEntry to support easy UI formatting
- */
-fun CombatLogEntry.getFormattedText(lang: String): String {
-    if (key.isBlank()) return ""
-    return try {
-        val template = LocalizationManager.getString(lang, key)
-        if (args.isEmpty()) {
-            template
-        } else {
-            var result = template
-            args.forEach { (name, value) ->
-                val localizedValue = if (value.startsWith("ui.") || value.startsWith("enemy.") || value.startsWith("skill.")) {
-                    LocalizationManager.getString(lang, value)
-                } else {
-                    value
-                }
-                result = result.replace("{$name}", localizedValue)
-            }
-            result
-        }
-    } catch (e: Exception) {
-        key
     }
 }

@@ -1,20 +1,16 @@
 package com.mcanererdem.journey.ui.theme
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-
-// ══════════════════════════════════════════════════════════════════════════════
-// Journey Dark Fantasy — Tema Sistemi
-// Tüm temalar koyu (dark) tabanlıdır — dark fantasy atmosferi için.
-// Momentum değerine göre dinamik tema geçişi desteklenir.
-// ══════════════════════════════════════════════════════════════════════════════
+import androidx.compose.ui.graphics.Color
 
 /**
- * Sanctum Teması — Celestial Gold.
- * Işık, düzen ve kutsallık. Altın kenarlıklar, sıcak koyu arka plan.
+ * Sanctum Theme - Dark Mode (Celestial Gold)
  */
-private val SanctumColorScheme = darkColorScheme(
+private val SanctumDarkColorScheme = darkColorScheme(
     primary               = ColorSanctumPrimary,
     onPrimary             = ColorBackground,
     primaryContainer      = ColorSanctumSurface,
@@ -35,10 +31,29 @@ private val SanctumColorScheme = darkColorScheme(
 )
 
 /**
- * Covenant Teması — Void Purple.
- * Karanlık, kaos ve güç. Mor parıltılar, obsidyen arkaplan.
+ * Sanctum Theme - Light Mode (Ivory Gold)
  */
-private val CovenantColorScheme = darkColorScheme(
+private val SanctumLightColorScheme = lightColorScheme(
+    primary               = ColorSanctumPrimary,
+    onPrimary             = Color.White,
+    primaryContainer      = Color(0xFFFFF9E3),
+    onPrimaryContainer    = Color(0xFF5A4010),
+    secondary             = ColorSanctumSecondary,
+    background            = Color(0xFFFDFCF4),
+    onBackground          = Color(0xFF1C1608),
+    surface               = Color.White,
+    onSurface             = Color(0xFF2C2518),
+    surfaceVariant        = Color(0xFFF2F0E4),
+    onSurfaceVariant      = Color(0xFF5D4E67),
+    outline               = ColorSanctumBorder,
+    outlineVariant        = ColorBorderMuted,
+    error                 = ColorDanger
+)
+
+/**
+ * Covenant Theme - Dark Mode (Void Purple)
+ */
+private val CovenantDarkColorScheme = darkColorScheme(
     primary               = ColorCovenantPrimary,
     onPrimary             = ColorOnBackground,
     primaryContainer      = ColorCovenantSurface,
@@ -59,44 +74,56 @@ private val CovenantColorScheme = darkColorScheme(
 )
 
 /**
- * Nötr / Demir Teması — Iron Gray.
- * Bağımsız, pragmatik, savaşçı. Koyu demir ve bronz tonları.
+ * Covenant Theme - Light Mode (Lavender Void)
  */
-private val NeutralColorScheme = darkColorScheme(
-    primary               = ColorNeutralPrimary,
-    onPrimary             = ColorBackground,
-    primaryContainer      = ColorSurfaceVariant,
-    onPrimaryContainer    = ColorNeutralText,
-    secondary             = ColorNeutralSecondary,
-    onSecondary           = ColorBackground,
-    background            = ColorBackground,
-    onBackground          = ColorOnBackground,
-    surface               = ColorSurface,
-    onSurface             = ColorOnSurface,
-    surfaceVariant        = ColorSurfaceVariant,
-    onSurfaceVariant      = ColorOnSurfaceMuted,
-    outline               = ColorBorder,
+private val CovenantLightColorScheme = lightColorScheme(
+    primary               = ColorCovenantPrimary,
+    onPrimary             = Color.White,
+    primaryContainer      = Color(0xFFF5E6FF),
+    onPrimaryContainer    = Color(0xFF3A1060),
+    secondary             = ColorCovenantSecondary,
+    background            = Color(0xFFFAF7FF),
+    onBackground          = Color(0xFF0E0818),
+    surface               = Color.White,
+    onSurface             = Color(0xFF1A1225),
+    surfaceVariant        = Color(0xFFEEE5F5),
+    onSurfaceVariant      = Color(0xFF5D4E67),
+    outline               = ColorCovenantBorder,
     outlineVariant        = ColorBorderMuted,
-    error                 = ColorDanger,
-    onError               = ColorOnBackground,
-    scrim                 = ColorScrimDark
+    error                 = ColorDanger
 )
 
-/**
- * Ana Tema composable.
- *
- * @param side "SANCTUM", "COVENANT" veya "NEUTRAL" — renk şemasını belirler
- * @param content İçerik lambda
- */
 @Composable
 fun RpgTheme(
     side: String = "NEUTRAL",
+    uiMode: String = "DARK", // "LIGHT", "DARK", "SYSTEM"
     content: @Composable () -> Unit
 ) {
+    val isDark = when (uiMode) {
+        "LIGHT" -> false
+        "DARK" -> true
+        else -> isSystemInDarkTheme()
+    }
+
     val colorScheme = when (side) {
-        "SANCTUM"  -> SanctumColorScheme
-        "COVENANT" -> CovenantColorScheme
-        else       -> NeutralColorScheme
+        "SANCTUM" -> if (isDark) SanctumDarkColorScheme else SanctumLightColorScheme
+        "COVENANT" -> if (isDark) CovenantDarkColorScheme else CovenantLightColorScheme
+        else -> {
+             // Neutral Fallback
+             if (isDark) {
+                 darkColorScheme(
+                    primary = ColorNeutralPrimary,
+                    onPrimary = ColorBackground,
+                    background = ColorBackground,
+                    onBackground = ColorOnBackground,
+                    surface = ColorSurface,
+                    onSurface = ColorOnSurface,
+                    outline = ColorBorder
+                 )
+             } else {
+                 SanctumLightColorScheme // Reuse light gold for neutral light
+             }
+        }
     }
 
     MaterialTheme(
@@ -104,17 +131,4 @@ fun RpgTheme(
         typography  = JourneyTypography,
         content     = content
     )
-}
-
-/**
- * Geriye dönük uyumluluk için.
- * Testler ve eski referanslar bu composable'ı kullanabilir.
- */
-@Composable
-fun MyApplicationTheme(
-    darkTheme: Boolean = true,
-    dynamicColor: Boolean = false,
-    content: @Composable () -> Unit
-) {
-    RpgTheme(side = if (darkTheme) "NEUTRAL" else "SANCTUM", content = content)
 }

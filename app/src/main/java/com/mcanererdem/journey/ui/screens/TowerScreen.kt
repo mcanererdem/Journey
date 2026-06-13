@@ -1,28 +1,27 @@
 package com.mcanererdem.journey.ui.screens
 
-import com.mcanererdem.journey.data.model.CombatStatus
-import com.mcanererdem.journey.data.model.EnemyIntent
-import com.mcanererdem.journey.data.model.StatusType
-import com.mcanererdem.journey.data.model.PlayerProfile
-import com.mcanererdem.journey.data.model.AdventureNode
-import com.mcanererdem.journey.data.model.FloorScenario
-import com.mcanererdem.journey.data.model.JournalEntry
-import com.mcanererdem.journey.data.model.NodeChoice
-import com.mcanererdem.journey.data.model.GameOption
-import com.mcanererdem.journey.data.model.NodeType
-
+import com.mcanererdem.journey.data.model.*
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -30,10 +29,61 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mcanererdem.journey.data.engine.LocalizationManager
+import com.mcanererdem.journey.ui.components.NodeChoiceButton
 import com.mcanererdem.journey.ui.theme.*
 
-import com.mcanererdem.journey.data.model.CombatLogEntry
+@Composable
+fun TypewriterText(
+    text: String,
+    style: androidx.compose.ui.text.TextStyle,
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    var visibleText by remember(text) { mutableStateOf("") }
+    LaunchedEffect(text) {
+        visibleText = ""
+        text.forEach { char ->
+            visibleText += char
+            kotlinx.coroutines.delay(20) 
+        }
+    }
+    Text(text = visibleText, style = style, color = color, modifier = modifier)
+}
 
+@Composable
+fun ChoiceContainer(
+    title: String,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Box(modifier = Modifier.fillMaxWidth().padding(top = Dimens.SpacingS)) {
+        Surface(
+            modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
+            shape = RoundedCornerShape(Dimens.RadiusS),
+            border = BorderStroke(Dimens.BorderThick, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)),
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        ) {
+            Column(modifier = Modifier.padding(Dimens.SpacingS)) {
+                Spacer(modifier = Modifier.height(Dimens.SpacingS))
+                content()
+            }
+        }
+        
+        Surface(
+            modifier = Modifier.padding(start = Dimens.SpacingM),
+            color = MaterialTheme.colorScheme.background,
+            shape = RoundedCornerShape(Dimens.RadiusXs)
+        ) {
+            Text(
+                text = title.uppercase(),
+                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Black, letterSpacing = Dimens.LetterSpacingNormal, fontSize = 9.sp),
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(horizontal = Dimens.SpacingXs)
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TowerClimbTab(
     player: PlayerProfile?,
@@ -46,20 +96,29 @@ fun TowerClimbTab(
     playerStatuses: List<CombatStatus>,
     enemyStatuses: List<CombatStatus>,
     currentEnemyIntent: EnemyIntent,
+    actionMessage: ActionMessage,
+    showNotificationBanner: Boolean,
+    animationsEnabled: Boolean,
+    glowEffectsEnabled: Boolean,
+    onDismissNotification: () -> Unit,
     onLockedClicked: (String) -> Unit,
     onChoiceSelected: (NodeChoice) -> Unit,
     onScenarioChoiceSelected: (GameOption) -> Unit,
     onNextNodeClick: (Int, Int) -> Unit,
     onAscendFloorClick: () -> Unit,
     onCombatAction: (String) -> Unit,
-    onResetClick: () -> Unit
+    onResetClick: () -> Unit,
+    onInitCombat: (PlayerProfile, List<AdventureNode>, String) -> Unit
 ) {
     if (player == null) return
 
+    // CRITICAL: Robust reset logic
+    LaunchedEffect(player.currentNodeIndex, player.currentNodeCompleted) {
+        onInitCombat(player, nodes, activeLang)
+    }
+
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = Dimens.SpacingXs),
+        modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         FloorProgressCartographyMap(
@@ -67,236 +126,142 @@ fun TowerClimbTab(
             nodes = nodes,
             activeLang = activeLang,
             journal = journal,
+            animationsEnabled = animationsEnabled,
             onLockedClicked = onLockedClicked,
             onNextNodeClick = onNextNodeClick
         )
         
-        Spacer(modifier = Modifier.height(Dimens.SpacingXs))
-
-        // Main game content area (Narrative or Combat)
         Box(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth(),
+            modifier = Modifier.weight(1f).fillMaxWidth(),
             contentAlignment = Alignment.BottomCenter
         ) {
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
-                    .padding(bottom = Dimens.SpacingXs),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Bottom
+                modifier = Modifier.fillMaxSize()
             ) {
-                if (player.currentFloor > 100) {
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = Dimens.SpacingL),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                        shape = RoundedCornerShape(Dimens.SpacingL),
-                        border = BorderStroke(Dimens.BorderGlow, ColorSanctumPrimary)
-                    ) {
+                val activeNode = nodes.getOrNull(player.currentNodeIndex)
+                
+                // Content - Top Aligned
+                Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                    if (player.currentFloor > 100) {
+                        // Win state UI
+                    } else if (scenario != null && player.currentNodeIndex == 0 && !player.currentNodeCompleted && !journal.any { it.floor == player.currentFloor }) {
                         Column(
                             modifier = Modifier
-                                .padding(Dimens.SpacingXxl)
-                                .fillMaxWidth(),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = LocalizationManager.getString(activeLang, "ui.ascend_victory_title"),
-                                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
-                                color = ColorSanctumPrimary,
-                                textAlign = TextAlign.Center
-                            )
-                            Spacer(modifier = Modifier.height(Dimens.SpacingL))
-                            Text(
-                                text = LocalizationManager.getString(activeLang, "ui.ascend_victory_desc"),
-                                style = MaterialTheme.typography.bodyLarge,
-                                textAlign = TextAlign.Center
-                            )
-                            Spacer(modifier = Modifier.height(Dimens.SpacingXxl))
-                            Button(
-                                onClick = onResetClick,
-                                colors = ButtonDefaults.buttonColors(containerColor = ColorSanctumPrimary),
-                                modifier = Modifier.testTag("ascend_victory_reset")
-                            ) {
-                                Text(LocalizationManager.getString(activeLang, "ui.ascend_victory_reset"))
-                            }
-                        }
-                    }
-                } else {
-                    val hasProgressedFloor = journal.any { it.floor == player.currentFloor }
-                    if (scenario != null && player.currentNodeIndex == 0 && !player.currentNodeCompleted && !hasProgressedFloor) {
-                        Card(
-                            modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(bottom = Dimens.SpacingS),
-                            shape = RoundedCornerShape(Dimens.SpacingM),
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                            border = BorderStroke(Dimens.BorderThin, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
+                                .padding(Dimens.SpacingS)
+                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f), RoundedCornerShape(Dimens.RadiusM))
+                                .border(Dimens.BorderThin, MaterialTheme.colorScheme.outline.copy(alpha = 0.15f), RoundedCornerShape(Dimens.RadiusM))
+                                .padding(Dimens.SpacingM)
+                                .verticalScroll(rememberScrollState())
                         ) {
-                            Column(modifier = Modifier.padding(Dimens.SpacingM)) {
-                                Text(
-                                    text = LocalizationManager.getString(activeLang, scenario.titleKey),
-                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, fontFamily = FontFamily.Serif),
+                             Text(
+                                text = LocalizationManager.getString(activeLang, scenario.titleKey).uppercase(),
+                                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black, fontFamily = FontFamily.Serif, letterSpacing = 2.sp, fontSize = 20.sp),
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            HorizontalDivider(color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f), modifier = Modifier.padding(vertical = Dimens.SpacingS))
+                            TypewriterText(
+                                text = LocalizationManager.getString(activeLang, scenario.descriptionKey),
+                                style = MaterialTheme.typography.bodyLarge.copy(fontFamily = FontFamily.Serif, lineHeight = 26.sp),
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    } else if (activeNode != null) {
+                        if (activeNode.type == NodeType.COMBAT || activeNode.type == NodeType.BOSS) {
+                            CombatSection(
+                                player = player,
+                                activeNode = activeNode,
+                                activeEnemyHp = activeEnemyHp,
+                                combatLog = combatLog,
+                                activeLang = activeLang,
+                                onCombatAction = onCombatAction
+                            )
+                        } else if (!player.currentNodeCompleted) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(Dimens.SpacingS)
+                                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f), RoundedCornerShape(Dimens.RadiusM))
+                                    .border(Dimens.BorderThin, MaterialTheme.colorScheme.outline.copy(alpha = 0.15f), RoundedCornerShape(Dimens.RadiusM))
+                                    .padding(Dimens.SpacingM)
+                                    .verticalScroll(rememberScrollState())
+                            ) {
+                                 Text(
+                                    text = LocalizationManager.getString(activeLang, activeNode.titleKey).uppercase(),
+                                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black, fontFamily = FontFamily.Serif, letterSpacing = 2.sp, fontSize = 20.sp),
                                     color = MaterialTheme.colorScheme.primary
                                 )
-                                Spacer(modifier = Modifier.height(Dimens.SpacingXs))
-                                Text(
-                                    text = LocalizationManager.getString(activeLang, scenario.descriptionKey),
-                                    style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Serif),
+                                HorizontalDivider(color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f), modifier = Modifier.padding(vertical = Dimens.SpacingS))
+                                TypewriterText(
+                                    text = LocalizationManager.getString(activeLang, activeNode.descriptionKey),
+                                    style = MaterialTheme.typography.bodyLarge.copy(fontFamily = FontFamily.Serif, lineHeight = 26.sp),
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
                             }
-                        }
-
-                        scenario.options.forEach { option ->
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 2.dp)
-                                    .clickable { onScenarioChoiceSelected(option) },
-                                shape = RoundedCornerShape(Dimens.SpacingS),
-                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)),
-                                border = BorderStroke(Dimens.BorderThin, MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(Dimens.SpacingM),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = LocalizationManager.getString(activeLang, option.labelKey),
-                                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.weight(1f)
-                                    )
-                                    Icon(Icons.Default.KeyboardArrowRight, contentDescription = null, modifier = Modifier.size(16.dp))
-                                }
-                            }
-                        }
-                    } else {
-                        val activeNode = nodes.getOrNull(player.currentNodeIndex)
-                        if (activeNode != null) {
-                            if (player.currentNodeCompleted) {
-                                if (activeNode.type == NodeType.BOSS) {
-                                    Card(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(bottom = Dimens.SpacingM),
-                                        shape = RoundedCornerShape(Dimens.SpacingM),
-                                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                                        border = BorderStroke(Dimens.BorderNormal, ColorHeal)
-                                    ) {
-                                        Column(
-                                            modifier = Modifier
-                                                .padding(Dimens.SpacingM)
-                                                .fillMaxWidth(),
-                                            horizontalAlignment = Alignment.CenterHorizontally
-                                        ) {
-                                            Text(
-                                                text = LocalizationManager.getString(activeLang, "ui.floor_cleared"),
-                                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                                                color = ColorHeal
-                                            )
-                                            Spacer(modifier = Modifier.height(Dimens.SpacingXs))
-                                            Text(
-                                                text = LocalizationManager.getString(activeLang, "ui.floor_cleared_desc"),
-                                                style = MaterialTheme.typography.bodySmall,
-                                                textAlign = TextAlign.Center,
-                                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
-                                            )
-                                            Spacer(modifier = Modifier.height(Dimens.SpacingM))
-
-                                            Button(
-                                                onClick = onAscendFloorClick,
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .height(Dimens.AvatarSize)
-                                                    .testTag("btn_ascend_floor"),
-                                                colors = ButtonDefaults.buttonColors(containerColor = ColorHeal)
-                                            ) {
-                                                Text(
-                                                    text = LocalizationManager.getString(activeLang, "ui.btn_ascend_floor"),
-                                                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
-                                                )
-                                            }
-                                        }
-                                    }
-                                } else {
-                                    Box(
-                                        modifier = Modifier.fillMaxWidth().padding(Dimens.SpacingL),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
-                                    }
-                                }
-                            } else if (activeNode.type == NodeType.COMBAT || activeNode.type == NodeType.BOSS) {
-                                CombatSection(
-                                    player = player,
-                                    activeNode = activeNode,
-                                    activeEnemyHp = activeEnemyHp,
-                                    combatLog = combatLog,
-                                    activeLang = activeLang,
-                                    onCombatAction = onCombatAction
-                                )
-                            } else {
-                                Card(
-                                    modifier = Modifier.fillMaxWidth().padding(bottom = Dimens.SpacingS),
-                                    shape = RoundedCornerShape(Dimens.SpacingM),
-                                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                                    border = BorderStroke(Dimens.BorderThin, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
-                                ) {
-                                    Column(modifier = Modifier.padding(Dimens.SpacingM)) {
-                                        Text(
-                                            text = LocalizationManager.getString(activeLang, activeNode.titleKey),
-                                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, fontFamily = FontFamily.Serif),
-                                            color = MaterialTheme.colorScheme.primary
-                                        )
-                                        HorizontalDivider(color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f), modifier = Modifier.padding(vertical = Dimens.SpacingXs))
-                                        Text(
-                                            text = LocalizationManager.getString(activeLang, activeNode.descriptionKey),
-                                            style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 20.sp, fontFamily = FontFamily.Serif),
-                                            color = MaterialTheme.colorScheme.onSurface
-                                        )
-                                    }
-                                }
-                                
-                                Text(
-                                    text = LocalizationManager.getString(activeLang, "ui.declare_choice"),
-                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, letterSpacing = Dimens.LetterSpacingNormal),
-                                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
-                                    modifier = Modifier.padding(vertical = Dimens.SpacingXs)
-                                )
-                                
-                                activeNode.choices.forEach { choice ->
-                                    val hasFlag = choice.effects.requiredFlag.isEmpty() || player.storyFlagsEncoded.split(",").contains(choice.effects.requiredFlag)
-                                    NodeChoiceButton(
-                                        choice = choice,
-                                        activeLang = activeLang,
-                                        highlightColor = when {
-                                            choice.effects.momentumShift > 0 -> ColorSanctumPrimary
-                                            choice.effects.momentumShift < 0 -> ColorCovenantGlow
-                                            else -> ColorNeutralPrimary
-                                        },
-                                        testTagValue = "choice_btn_${choice.id}",
-                                        enabled = hasFlag,
-                                        onClick = { onChoiceSelected(choice) }
-                                    )
-                                    Spacer(modifier = Modifier.height(Dimens.SpacingXs))
-                                }
-                            }
                         } else {
-                            Box(
-                                modifier = Modifier.fillMaxWidth().padding(Dimens.SpacingL),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = LocalizationManager.getString(activeLang, "ui.loading_sector_data"),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                                )
+                            // Automatically handle transitions or show progress
+                             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.primary, strokeWidth = 2.dp)
+                                }
                             }
+                        }
+                    }
+                }
+
+                // Actions/Choices - Pinned to Bottom
+                Column(modifier = Modifier.fillMaxWidth().padding(horizontal = Dimens.SpacingXs, vertical = Dimens.SpacingXs)) {
+                    if (scenario != null && player.currentNodeIndex == 0 && !player.currentNodeCompleted) {
+                        ChoiceContainer(title = LocalizationManager.getString(activeLang, "ui.declare_choice")) {
+                            scenario.options.forEach { option ->
+                                Card(
+                                    modifier = Modifier.fillMaxWidth().padding(vertical = Dimens.SpacingXxs).clickable { onScenarioChoiceSelected(option) },
+                                    shape = RoundedCornerShape(Dimens.RadiusXs),
+                                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)),
+                                    border = BorderStroke(Dimens.BorderThin, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
+                                ) {
+                                    Row(modifier = Modifier.padding(Dimens.SpacingM), verticalAlignment = Alignment.CenterVertically) {
+                                        Text(
+                                            text = LocalizationManager.getString(activeLang, option.labelKey),
+                                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Black, fontSize = 13.sp, letterSpacing = 0.5.sp),
+                                            color = MaterialTheme.colorScheme.onBackground,
+                                            modifier = Modifier.weight(1f)
+                                        )
+                                        Icon(Icons.Default.KeyboardArrowRight, contentDescription = null, modifier = Modifier.size(Dimens.IconS), tint = MaterialTheme.colorScheme.primary)
+                                    }
+                                }
+                            }
+                        }
+                    } else if (activeNode != null && !player.currentNodeCompleted && activeNode.type != NodeType.COMBAT && activeNode.type != NodeType.BOSS) {
+                        ChoiceContainer(title = LocalizationManager.getString(activeLang, "ui.declare_choice")) {
+                            activeNode.choices.forEach { choice ->
+                                val isPositive = choice.effects.hpChange > 0 || choice.effects.goldChange > 0 || choice.effects.expChange > 0
+                                val isNegative = choice.effects.hpChange < 0 || choice.effects.momentumShift < 0
+                                val accent = when {
+                                    isNegative -> ColorDanger
+                                    isPositive -> ColorHeal
+                                    choice.effects.momentumShift > 0 -> ColorSanctumPrimary
+                                    else -> MaterialTheme.colorScheme.primary
+                                }
+
+                                NodeChoiceButton(
+                                    text = LocalizationManager.getString(activeLang, choice.labelKey),
+                                    onClick = { onChoiceSelected(choice) },
+                                    accentColor = accent,
+                                    enabled = choice.effects.requiredFlag.isEmpty() || player.storyFlagsEncoded.split(",").contains(choice.effects.requiredFlag),
+                                    glowEffectsEnabled = glowEffectsEnabled
+                                )
+                                Spacer(modifier = Modifier.height(Dimens.SpacingS))
+                            }
+                        }
+                    } else if (player.currentNodeCompleted && activeNode?.type == NodeType.BOSS) {
+                        Button(
+                            onClick = onAscendFloorClick,
+                            modifier = Modifier.fillMaxWidth().height(Dimens.AvatarSize),
+                            colors = ButtonDefaults.buttonColors(containerColor = ColorHeal),
+                            shape = RoundedCornerShape(Dimens.RadiusS)
+                        ) {
+                            Text(text = LocalizationManager.getString(activeLang, "ui.btn_ascend_floor").uppercase(), style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold))
                         }
                     }
                 }

@@ -65,7 +65,7 @@ data class PlayerProfile(
     val currentHp: Int = 100,
     val maxHp: Int = 100,
     val gold: Int = 120,
-    val aether: Int = 0, // Unified currency
+    val aether: Int = 100, // Unified currency
     val rank: String = "EMISSARY", // "EMISSARY", "ARBITER", "EXARCH", "SOVEREIGN"
     val chosenClass: String = "Initiate", // Determined by alignment and side
     val totalFractures: Int = 0, // Count of spirit fractures

@@ -45,6 +45,7 @@ class CombatViewModel(
     val completedEvents: StateFlow<Set<String>> = _completedEvents.asStateFlow()
 
     private var hasTriggeredPhase2 = false
+    private var lastCombatNodeIndex = -1
 
     fun clearCombat() {
         _activeEnemyHp.value = null
@@ -52,6 +53,7 @@ class CombatViewModel(
         _playerStatuses.value = emptyList()
         _enemyStatuses.value = emptyList()
         hasTriggeredPhase2 = false
+        lastCombatNodeIndex = -1
     }
 
     fun clearCompletedEventsAndSlainBosses() {
@@ -65,7 +67,13 @@ class CombatViewModel(
     fun checkAndInitCombat(profile: PlayerProfile, nodes: List<AdventureNode>, lang: String) {
         if (profile.currentNodeIndex in nodes.indices) {
             val activeNode = nodes[profile.currentNodeIndex]
-            if ((activeNode.type == NodeType.COMBAT || activeNode.type == NodeType.BOSS) && !profile.currentNodeCompleted && _activeEnemyHp.value == null) {
+            val isInCombatNode = activeNode.type == NodeType.COMBAT || activeNode.type == NodeType.BOSS
+            
+            // Force re-init if we changed to a different combat node, or if it's not initialized
+            val isNewCombatNode = profile.currentNodeIndex != lastCombatNodeIndex
+            val needsInit = isNewCombatNode || _activeEnemyHp.value == null
+            
+            if (isInCombatNode && !profile.currentNodeCompleted && needsInit) {
                 val enemyRef = activeNode.enemy
                 val enemyId = enemyRef?.enemyId ?: return
                 
@@ -75,202 +83,207 @@ class CombatViewModel(
                 _activeEnemyHp.value = enemyHp
                 _playerStatuses.value = emptyList()
                 _enemyStatuses.value = emptyList()
+                _combatLog.value = emptyList() 
                 _currentEnemyIntent.value = EnemyIntent.random()
                 hasTriggeredPhase2 = false
+                lastCombatNodeIndex = profile.currentNodeIndex
                 
                 val enemyNameKey = stats?.optString("nameKey") ?: "enemy.$enemyId.name"
-                _combatLog.value = listOf(
+                val initialLog = CombatLogEntry(
+                    key = "ui.combat_log_initiated",
+                    args = mapOf("enemy" to enemyNameKey)
+                )
+                _combatLog.value = listOf(initialLog)
+            } else if (!isInCombatNode || profile.currentNodeCompleted) {
+                if (_activeEnemyHp.value != null && !isNewCombatNode) {
+                     // only clear if we are NOT on a new combat node (to avoid flickering)
+                     // or if we just completed it
+                     if (profile.currentNodeCompleted) {
+                         clearCombat()
+                     }
+                }
+            }
+        }
+    }
+
+    suspend fun processCombatTurn(profile: PlayerProfile, action: String): PlayerProfile {
+        if (action == "NOT_ENOUGH_AETHER") {
+            _combatLog.value = _combatLog.value + CombatLogEntry(key = "ui.msg_combat_no_aether")
+            return profile
+        }
+        return executeCombatTurnSync(profile, action)
+    }
+
+    private suspend fun executeCombatTurnSync(initialProfile: PlayerProfile, action: String): PlayerProfile {
+        val nodes = currentFloorNodes.value
+        val nodeIndex = initialProfile.currentNodeIndex
+        if (nodeIndex !in nodes.indices) return initialProfile
+        val activeNode = nodes[nodeIndex]
+        
+        val maxEnemyHp = activeNode.enemy?.overrideHp ?: 50
+        var currentEnemyHp = _activeEnemyHp.value ?: maxEnemyHp
+
+        val logs = mutableListOf<CombatLogEntry>()
+
+        var playerHp = initialProfile.currentHp
+        var playerAether = initialProfile.aether
+        val updatedPlayerStatuses = _playerStatuses.value.map { it.copy() }.toMutableList()
+        val updatedEnemyStatuses = _enemyStatuses.value.map { it.copy() }.toMutableList()
+
+        if (updatedPlayerStatuses.any { it.type == StatusType.POISONED }) {
+            playerHp = (playerHp - 5).coerceAtLeast(0)
+            logs.add(CombatLogEntry(key = "ui.combat_log_player_poison"))
+            if (playerHp <= 0) {
+                onMessage(ActionMessage("ui.msg_spirit_fracture", listOf(initialProfile.savedFloorCheckpoint)))
+                return initialProfile.copy(currentHp = 0)
+            }
+        }
+
+        val playerStunned = updatedPlayerStatuses.any { it.type == StatusType.STUNNED }
+        if (playerStunned) {
+            logs.add(CombatLogEntry(key = "ui.combat_log_player_stunned"))
+            decrementStatuses(updatedPlayerStatuses)
+            _playerStatuses.value = updatedPlayerStatuses.filter { it.durationTurns > 0 }
+            
+            return executeEnemyTurnSync(initialProfile.copy(currentHp = playerHp), currentEnemyHp, activeNode, updatedPlayerStatuses, updatedEnemyStatuses, logs)
+        }
+
+        var damageDealt = 0
+        var isCrit = false
+        val critChance = (10 + initialProfile.currentWill * 4).coerceIn(10, 50)
+        val isBlessed = updatedPlayerStatuses.any { it.type == StatusType.BLESSED }
+
+        when (action) {
+            "LIGHT_STRIKE" -> {
+                val baseDmg = 10 + initialProfile.level * 2
+                val rawDmg = (baseDmg * 0.9).toInt() + Random.nextInt(5)
+                var finalDmg = rawDmg
+                if (isBlessed) finalDmg = (finalDmg * 1.25f).toInt()
+                
+                isCrit = Random.nextInt(100) < critChance
+                if (isCrit) finalDmg = (finalDmg * 1.5f).toInt()
+
+                damageDealt = finalDmg
+                currentEnemyHp = (currentEnemyHp - damageDealt).coerceAtLeast(0)
+                _activeEnemyHp.value = currentEnemyHp
+
+                logs.add(
                     CombatLogEntry(
-                        key = "ui.combat_log_initiated",
-                        args = mapOf("enemy" to enemyNameKey)
+                        key = "ui.combat_log_player_strike",
+                        args = mapOf("damage" to damageDealt.toString())
                     )
                 )
             }
+            "HEAVY_BLOW" -> {
+                if (playerAether < 15) {
+                    logs.add(CombatLogEntry(key = "ui.combat_log_insufficient_aether"))
+                    _combatLog.value = _combatLog.value + logs
+                    return initialProfile
+                }
+                val baseDmg = 25 + initialProfile.level * 3
+                val rawDmg = (baseDmg * 0.9).toInt() + Random.nextInt(10)
+                var finalDmg = rawDmg
+                if (isBlessed) finalDmg = (finalDmg * 1.25f).toInt()
+
+                isCrit = Random.nextInt(100) < critChance
+                if (isCrit) finalDmg = (finalDmg * 1.5f).toInt()
+
+                damageDealt = finalDmg
+                currentEnemyHp = (currentEnemyHp - damageDealt).coerceAtLeast(0)
+                _activeEnemyHp.value = currentEnemyHp
+
+                playerAether = (playerAether - 15).coerceAtLeast(0)
+
+                logs.add(
+                    CombatLogEntry(
+                        key = "ui.combat_log_player_heavy_blow",
+                        args = mapOf("damage" to damageDealt.toString())
+                    )
+                )
+            }
+            "BARRIER" -> {
+                val healAmt = 20
+                playerHp = (playerHp + healAmt).coerceAtMost(initialProfile.maxHp)
+                val existingShield = updatedPlayerStatuses.find { it.type == StatusType.SHIELDED }
+                if (existingShield != null) {
+                    existingShield.durationTurns = 2
+                } else {
+                    updatedPlayerStatuses.add(CombatStatus(StatusType.SHIELDED, 2))
+                }
+
+                logs.add(
+                    CombatLogEntry(
+                        key = "ui.combat_log_player_barrier",
+                        args = mapOf("heal" to healAmt.toString())
+                    )
+                )
+            }
+            "ESCAPE" -> {
+                onMessage(ActionMessage("ui.msg_escaped_combat"))
+                return initialProfile // Or handle escape properly
+            }
         }
+
+        if (isCrit && action != "BARRIER") {
+            logs.add(CombatLogEntry(key = "ui.combat_log_crit"))
+        }
+
+        if (currentEnemyHp <= 0) {
+            return handleVictorySync(initialProfile.copy(currentHp = playerHp, aether = playerAether), activeNode, playerHp, logs)
+        }
+
+        if (activeNode.type == NodeType.BOSS && currentEnemyHp < (maxEnemyHp / 2) && !hasTriggeredPhase2) {
+            hasTriggeredPhase2 = true
+            logs.add(CombatLogEntry(key = "ui.combat_log_boss_enraged"))
+        }
+
+        decrementStatuses(updatedPlayerStatuses)
+        _playerStatuses.value = updatedPlayerStatuses.filter { it.durationTurns > 0 }
+
+        return executeEnemyTurnSync(initialProfile.copy(currentHp = playerHp, aether = playerAether), currentEnemyHp, activeNode, updatedPlayerStatuses, updatedEnemyStatuses, logs)
     }
 
-    fun executeCombatTurn(action: String) {
-        viewModelScope.launch {
-            val profile = repository.getPlayerProfileDirect() ?: return@launch
-            val nodes = currentFloorNodes.value
-            val nodeIndex = profile.currentNodeIndex
-            if (nodeIndex !in nodes.indices) return@launch
-            val activeNode = nodes[nodeIndex]
-            
-            val maxEnemyHp = activeNode.enemy?.overrideHp ?: 50
-            var currentEnemyHp = _activeEnemyHp.value ?: maxEnemyHp
- 
-            val logs = mutableListOf<CombatLogEntry>()
- 
-            var playerHp = profile.currentHp
-            val updatedPlayerStatuses = _playerStatuses.value.map { it.copy() }.toMutableList()
-            val updatedEnemyStatuses = _enemyStatuses.value.map { it.copy() }.toMutableList()
- 
-            if (updatedPlayerStatuses.any { it.type == StatusType.POISONED }) {
-                playerHp = (playerHp - 5).coerceAtLeast(0)
-                logs.add(CombatLogEntry(key = "ui.combat_log_player_poison"))
-                if (playerHp <= 0) {
-                    val updated = profile.copy(currentHp = 0)
-                    repository.savePlayerProfile(updated)
-                    onMessage(ActionMessage("ui.msg_spirit_fracture", listOf(profile.savedFloorCheckpoint)))
-                    return@launch
-                }
-            }
- 
-            val playerStunned = updatedPlayerStatuses.any { it.type == StatusType.STUNNED }
-            if (playerStunned) {
-                logs.add(CombatLogEntry(key = "ui.combat_log_player_stunned"))
-                decrementStatuses(updatedPlayerStatuses)
-                _playerStatuses.value = updatedPlayerStatuses.filter { it.durationTurns > 0 }
-                
-                executeEnemyTurn(profile, playerHp, currentEnemyHp, activeNode, updatedPlayerStatuses, updatedEnemyStatuses, logs)
-                return@launch
-            }
- 
-            var damageDealt = 0
-            var isCrit = false
-            val critChance = (10 + profile.currentWill * 4).coerceIn(10, 50)
-            val isBlessed = updatedPlayerStatuses.any { it.type == StatusType.BLESSED }
- 
-            when (action) {
-                "LIGHT_STRIKE" -> {
-                    val baseDmg = 10 + profile.level * 2
-                    val rawDmg = (baseDmg * 0.9).toInt() + Random.nextInt(5)
-                    var finalDmg = rawDmg
-                    if (isBlessed) finalDmg = (finalDmg * 1.25f).toInt()
-                    
-                    isCrit = Random.nextInt(100) < critChance
-                    if (isCrit) finalDmg = (finalDmg * 1.5f).toInt()
- 
-                    damageDealt = finalDmg
-                    currentEnemyHp = (currentEnemyHp - damageDealt).coerceAtLeast(0)
-                    _activeEnemyHp.value = currentEnemyHp
- 
-                    logs.add(
-                        CombatLogEntry(
-                            key = "ui.combat_log_player_strike",
-                            args = mapOf("damage" to damageDealt.toString())
-                        )
-                    )
-                }
-                "HEAVY_BLOW" -> {
-                    if (profile.aether < 15) {
-                        logs.add(CombatLogEntry(key = "ui.combat_log_insufficient_aether"))
-                        _combatLog.value = logs
-                        return@launch
-                    }
-                    val baseDmg = 25 + profile.level * 3
-                    val rawDmg = (baseDmg * 0.9).toInt() + Random.nextInt(10)
-                    var finalDmg = rawDmg
-                    if (isBlessed) finalDmg = (finalDmg * 1.25f).toInt()
- 
-                    isCrit = Random.nextInt(100) < critChance
-                    if (isCrit) finalDmg = (finalDmg * 1.5f).toInt()
- 
-                    damageDealt = finalDmg
-                    currentEnemyHp = (currentEnemyHp - damageDealt).coerceAtLeast(0)
-                    _activeEnemyHp.value = currentEnemyHp
- 
-                    val newAether = (profile.aether - 15).coerceAtLeast(0)
-                    val updatedProfile = profile.copy(aether = newAether, lastUpdated = System.currentTimeMillis())
-                    repository.savePlayerProfile(updatedProfile)
- 
-                    logs.add(
-                        CombatLogEntry(
-                            key = "combat_log_player_heavy_blow",
-                            args = mapOf("damage" to damageDealt.toString())
-                        )
-                    )
-                }
-                "BARRIER" -> {
-                    val healAmt = 20
-                    playerHp = (playerHp + healAmt).coerceAtMost(profile.maxHp)
-                    val existingShield = updatedPlayerStatuses.find { it.type == StatusType.SHIELDED }
-                    if (existingShield != null) {
-                        existingShield.durationTurns = 2
-                    } else {
-                        updatedPlayerStatuses.add(CombatStatus(StatusType.SHIELDED, 2))
-                    }
-                    val updatedProfile = profile.copy(currentHp = playerHp, lastUpdated = System.currentTimeMillis())
-                    repository.savePlayerProfile(updatedProfile)
- 
-                    logs.add(
-                        CombatLogEntry(
-                            key = "ui.combat_log_player_barrier",
-                            args = mapOf("heal" to healAmt.toString())
-                        )
-                    )
-                }
-                "ESCAPE" -> {
-                    onMessage(ActionMessage("ui.msg_escaped_combat"))
-                    return@launch
-                }
-            }
- 
-            if (isCrit && action != "BARRIER") {
-                logs.add(CombatLogEntry(key = "ui.combat_log_crit"))
-            }
- 
-            if (currentEnemyHp <= 0) {
-                handleVictory(profile, activeNode, playerHp, logs)
-                return@launch
-            }
- 
-            if (activeNode.type == NodeType.BOSS && currentEnemyHp < (maxEnemyHp / 2) && !hasTriggeredPhase2) {
-                hasTriggeredPhase2 = true
-                logs.add(CombatLogEntry(key = "ui.combat_log_boss_enraged"))
-            }
- 
-            decrementStatuses(updatedPlayerStatuses)
-            _playerStatuses.value = updatedPlayerStatuses.filter { it.durationTurns > 0 }
- 
-            executeEnemyTurn(profile, playerHp, currentEnemyHp, activeNode, updatedPlayerStatuses, updatedEnemyStatuses, logs)
-        }
-    }
-
-    private suspend fun executeEnemyTurn(
+    private suspend fun executeEnemyTurnSync(
         profile: PlayerProfile,
-        initialPlayerHp: Int,
         enemyHp: Int,
         activeNode: AdventureNode,
         playerStatuses: MutableList<CombatStatus>,
         enemyStatuses: MutableList<CombatStatus>,
         logs: MutableList<CombatLogEntry>
-    ) {
-        var playerHp = initialPlayerHp
+    ): PlayerProfile {
+        var playerHp = profile.currentHp
         var currentEnemyHp = enemyHp
- 
+
         if (enemyStatuses.any { it.type == StatusType.POISONED }) {
             currentEnemyHp = (currentEnemyHp - 5).coerceAtLeast(0)
             _activeEnemyHp.value = currentEnemyHp
             logs.add(CombatLogEntry(key = "ui.combat_log_enemy_poison"))
             if (currentEnemyHp <= 0) {
-                handleVictory(profile, activeNode, playerHp, logs)
-                return
+                return handleVictorySync(profile.copy(currentHp = playerHp), activeNode, playerHp, logs)
             }
         }
- 
+
         val enemyStunned = enemyStatuses.any { it.type == StatusType.STUNNED }
         if (enemyStunned) {
             logs.add(CombatLogEntry(key = "ui.combat_log_enemy_stunned"))
             decrementStatuses(enemyStatuses)
             _enemyStatuses.value = enemyStatuses.filter { it.durationTurns > 0 }
             _combatLog.value = _combatLog.value + logs
-            return
+            return profile.copy(currentHp = playerHp)
         }
- 
+
         var enemyAtk = (8 + profile.currentFloor * 1.5).toInt()
         if (activeNode.type == NodeType.BOSS && hasTriggeredPhase2) {
             enemyAtk = (enemyAtk * 1.5f).toInt()
         }
- 
+
         val enemyBlessed = enemyStatuses.any { it.type == StatusType.BLESSED }
         if (enemyBlessed) {
             enemyAtk = (enemyAtk * 1.25f).toInt()
         }
- 
+
         val playerShielded = playerStatuses.any { it.type == StatusType.SHIELDED }
- 
+
         when (_currentEnemyIntent.value) {
             EnemyIntent.ATTACK -> {
                 var dmg = enemyAtk + Random.nextInt(4)
@@ -314,43 +327,55 @@ class CombatViewModel(
                 logs.add(CombatLogEntry(key = "ui.combat_log_enemy_buff"))
             }
         }
- 
+
         decrementStatuses(enemyStatuses)
         _enemyStatuses.value = enemyStatuses.filter { it.durationTurns > 0 }
- 
+
         _currentEnemyIntent.value = EnemyIntent.random()
- 
+
         if (playerHp <= 0) {
             onTriggerSpiritFracture(profile, profile.momentum, profile.gold, profile.aether, profile.side)
+            return profile.copy(currentHp = 0)
         } else {
             val updatedProfile = profile.copy(currentHp = playerHp, lastUpdated = System.currentTimeMillis())
-            repository.savePlayerProfile(updatedProfile)
             _combatLog.value = _combatLog.value + logs
+            return updatedProfile
         }
     }
- 
-    private suspend fun handleVictory(profile: PlayerProfile, activeNode: AdventureNode, playerHp: Int, logs: MutableList<CombatLogEntry>) {
+
+    private suspend fun handleVictorySync(profile: PlayerProfile, activeNode: AdventureNode, playerHp: Int, logs: MutableList<CombatLogEntry>): PlayerProfile {
         val rewards = RewardGenerator.generateRewards(
             player = profile.copy(currentHp = playerHp),
             isBoss = activeNode.type == NodeType.BOSS
         )
- 
-        _activeEnemyHp.value = null
+
+        _activeEnemyHp.value = 0 
         _playerStatuses.value = emptyList()
         _enemyStatuses.value = emptyList()
         
+        val enemyId = activeNode.enemy?.enemyId ?: "unknown"
+        val stats = LocalizationManager.getEnemyStats(enemyId)
+        val enemyNameKey = stats?.optString("nameKey") ?: "enemy.$enemyId.name"
+
+        onMessage(
+            ActionMessage(
+                "ui.msg_combat_victory_rewards", 
+                listOf(enemyNameKey, rewards.expGained, rewards.goldGained, rewards.itemAwarded ?: "")
+            )
+        )
+
         var currentItems = if (profile.itemsEncoded.isEmpty()) emptyList() else profile.itemsEncoded.split(",")
         rewards.itemAwarded?.let { drop ->
             currentItems = currentItems + drop
         }
         val newItemsEncoded = currentItems.joinToString(",")
- 
+
         var currentTitles = if (profile.titlesEncoded.isEmpty()) emptyList() else profile.titlesEncoded.split(",")
         rewards.titleAwarded?.let { drop ->
             currentTitles = currentTitles + drop
         }
         val newTitlesEncoded = currentTitles.joinToString(",")
- 
+
         val isElite = activeNode.column == 1
         val greedLvl = LegacyUpgradeType.getUpgradeLevel(profile.upgradesEncoded, LegacyUpgradeType.GREED)
         val greedMultiplier = 1.0f + (greedLvl * 0.20f)
@@ -358,7 +383,7 @@ class CombatViewModel(
         val goldGained = if (isElite) (rewards.goldGained * 1.5).toInt() else rewards.goldGained
         val scaledGoldGained = (goldGained * greedMultiplier).toInt()
         val expGained = if (isElite) (rewards.expGained * 1.5).toInt() else rewards.expGained
- 
+
         var totalExp = profile.exp + expGained
         var totalLevel = profile.level
         var totalMaxExp = profile.maxExp
@@ -373,16 +398,14 @@ class CombatViewModel(
             newHp = totalMaxHp
             didLevelUp = true
         }
- 
+
         val nodes = currentFloorNodes.value
         val nextNodeIndex = profile.currentNodeIndex + 1
         val hasNextNode = nextNodeIndex < nodes.size
         
-        // AUTO-PROGRESS: If not a boss and there's a next node, move immediately.
-        // If it's a boss, we set completedState = true so the UI shows the "Ascend" button.
         val isBoss = activeNode.type == NodeType.BOSS
         val completedState = isBoss || !hasNextNode
- 
+
         val profileWithQuest = updateDailyQuestProgress(profile, 0, 1)
         val updatedProfile = profileWithQuest.copy(
             currentHp = newHp,
@@ -398,8 +421,7 @@ class CombatViewModel(
             lastUpdated = System.currentTimeMillis()
         )
         val checkedProfile = checkAndUnlockTitles(updatedProfile)
-        repository.savePlayerProfile(checkedProfile)
- 
+
         logs.add(
             CombatLogEntry(
                 key = "ui.combat_log_victory",
@@ -415,11 +437,7 @@ class CombatViewModel(
         if (didLevelUp) {
             logs.add(CombatLogEntry(key = "ui.combat_log_level_up", args = mapOf("level" to totalLevel.toString())))
         }
- 
-        val enemyId = activeNode.enemy?.enemyId ?: "unknown"
-        val stats = LocalizationManager.getEnemyStats(enemyId)
-        val enemyNameKey = stats?.optString("nameKey") ?: "enemy.$enemyId.name"
- 
+
         val journalEntry = JournalEntry(
             floor = profile.currentFloor,
             actionKey = "ui.journal_combat_victory",
@@ -429,9 +447,21 @@ class CombatViewModel(
             nodeIndex = profile.currentNodeIndex
         )
         repository.insertJournalEntry(journalEntry)
- 
+
         _combatLog.value = _combatLog.value + logs
-        onMessage(ActionMessage("ui.msg_defeated_enemy", listOf(enemyNameKey)))
+        onMessage(
+            ActionMessage(
+                "ui.msg_combat_victory_rewards", 
+                listOf(enemyNameKey, rewards.expGained, rewards.goldGained, rewards.itemAwarded ?: "")
+            )
+        )
+        
+        viewModelScope.launch {
+            kotlinx.coroutines.delay(2000)
+            _activeEnemyHp.value = null
+        }
+        
+        return checkedProfile
     }
 
     private fun decrementStatuses(statuses: MutableList<CombatStatus>) {
@@ -468,19 +498,82 @@ class CombatViewModel(
         }
     }
 
+    fun moveToNode(profile: PlayerProfile, depth: Int, column: Int): PlayerProfile? {
+        val nodes = currentFloorNodes.value
+        val targetNode = nodes.find { it.depth == depth && it.column == column } ?: return null
+        val targetIndex = nodes.indexOf(targetNode)
+        
+        return profile.copy(
+            currentNodeIndex = targetIndex,
+            currentNodeCompleted = false,
+            lastUpdated = System.currentTimeMillis()
+        )
+    }
 
-
-
-
-    private fun getSkillNameForClass(chosenClass: String): Pair<String, String> {
-        return when {
-            chosenClass.contains("Holy Aegis") -> Pair("Sanctified Shieldbash", "Kutsal Siper Vuruşu")
-            chosenClass.contains("Death Herald") -> Pair("Decay Scythe Reave", "Çürük Tırpan Reaksiyonu")
-            chosenClass.contains("Codifier") -> Pair("Celestial Scribe Ray", "Semavi Yazıt Işını")
-            chosenClass.contains("Wildhand") -> Pair("Eclipse Shade Claw", "Kaotik Gölge Pençesi")
-            chosenClass.contains("Iron Throne") -> Pair("Ruthless Execution Blade", "İnsafsız İnfaz Baltası")
-            chosenClass.contains("Tempest") -> Pair("Raging Thunder Sunder", "Kuduz Fırtına Darbesi")
-            else -> Pair("Adrenaline Reflection Strike", "Adrenalin Yansıma Saldırısı")
+    fun applyNodeChoice(profile: PlayerProfile, choice: NodeChoice): Pair<PlayerProfile, JournalEntry?> {
+        val effects = choice.effects
+        
+        var currentItems = if (profile.itemsEncoded.isEmpty()) emptyList() else profile.itemsEncoded.split(",")
+        if (effects.rewardItemId.isNotEmpty()) {
+            currentItems = currentItems + effects.rewardItemId
         }
+        val newItemsEncoded = currentItems.joinToString(",")
+
+        val nodes = currentFloorNodes.value
+        val nextNodeIndex = profile.currentNodeIndex + 1
+        val hasNextNode = nextNodeIndex < nodes.size
+        
+        val isBoss = nodes.getOrNull(profile.currentNodeIndex)?.type == NodeType.BOSS
+        val completedState = isBoss || !hasNextNode
+
+        val updated = profile.copy(
+            currentHp = (profile.currentHp + effects.hpChange).coerceIn(0, profile.maxHp),
+            gold = (profile.gold + effects.goldChange).coerceAtLeast(0),
+            aether = (profile.aether + effects.aetherChange).coerceIn(0, 100),
+            exp = (profile.exp + effects.expChange),
+            momentum = (profile.momentum + effects.momentumShift).coerceIn(0, 100),
+            itemsEncoded = newItemsEncoded,
+            currentNodeIndex = if (!completedState && hasNextNode) nextNodeIndex else profile.currentNodeIndex,
+            currentNodeCompleted = completedState,
+            lastUpdated = System.currentTimeMillis()
+        )
+        
+        val journal = JournalEntry(
+            floor = profile.currentFloor,
+            actionKey = choice.journalKey,
+            sideAlignmentShift = if (effects.momentumShift > 0) "SANCTUM" else if (effects.momentumShift < 0) "COVENANT" else "NEUTRAL",
+            alignmentImpact = effects.momentumShift,
+            nodeIndex = profile.currentNodeIndex
+        )
+
+        return updated to journal
+    }
+
+    fun ascendFloor(profile: PlayerProfile): PlayerProfile {
+        return profile.copy(
+            currentFloor = profile.currentFloor + 1,
+            currentNodeIndex = 0,
+            currentNodeCompleted = false,
+            lastUpdated = System.currentTimeMillis()
+        )
+    }
+
+    fun processScenarioChoice(profile: PlayerProfile, option: GameOption): Pair<PlayerProfile, List<JournalEntry>> {
+        val effects = option.effects
+        val updated = profile.copy(
+            currentHp = (profile.currentHp + effects.hpChange).coerceIn(0, profile.maxHp),
+            gold = (profile.gold + effects.goldChange).coerceAtLeast(0),
+            aether = (profile.aether + effects.aetherChange).coerceIn(0, 100),
+            exp = (profile.exp + effects.expChange),
+            momentum = (profile.momentum + effects.momentumShift).coerceIn(0, 100),
+            lastUpdated = System.currentTimeMillis()
+        )
+        val journal = JournalEntry(
+            floor = profile.currentFloor,
+            actionKey = option.journalKey,
+            sideAlignmentShift = if (effects.momentumShift > 0) "SANCTUM" else if (effects.momentumShift < 0) "COVENANT" else "NEUTRAL",
+            alignmentImpact = effects.momentumShift
+        )
+        return updated to listOf(journal)
     }
 }
