@@ -121,8 +121,12 @@ fun CombatSection(
             }
             Spacer(modifier = Modifier.width(8.dp))
             Column(modifier = Modifier.weight(1f)) {
-                val enemyNameKey = activeNode.enemy?.enemyId?.let { "enemy.$it.name" } ?: "ui.label_unknown_enemy"
-                Text(text = LocalizationManager.getString(activeLang, enemyNameKey).uppercase(), style = MaterialTheme.typography.titleLarge.copy(fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold), color = ColorOnBackground)
+                val enemyId = activeNode.enemy?.enemyId ?: "unknown"
+                val stats = LocalizationManager.getEnemyStats(enemyId)
+                val enemyNameKey = stats?.optString("nameKey") ?: "enemy.$enemyId.name"
+                val enemyName = LocalizationManager.getString(activeLang, enemyNameKey)
+                
+                Text(text = enemyName.uppercase(), style = MaterialTheme.typography.titleLarge.copy(fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold), color = ColorOnBackground)
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     Box(modifier = Modifier.background(ColorDanger.copy(alpha = 0.15f), RoundedCornerShape(4.dp)).padding(horizontal = 4.dp, vertical = 1.dp)) {
                         Text(text = if (isBoss) LocalizationManager.getString(activeLang, "ui.label_boss") else LocalizationManager.getString(activeLang, "ui.node_threat_hostile"), style = MaterialTheme.typography.labelSmall.copy(fontSize = 8.sp, fontWeight = FontWeight.Bold, color = ColorDanger))

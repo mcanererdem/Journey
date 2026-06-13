@@ -142,21 +142,22 @@ fun FloorProgressCartographyMap(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = BorderStroke(Dimens.BorderThin, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
     ) {
-        Column(modifier = Modifier.padding(horizontal = Dimens.SpacingS, vertical = Dimens.SpacingXs)) {
+        Column(modifier = Modifier.padding(horizontal = Dimens.SpacingXs, vertical = Dimens.SpacingXxs)) {
             if (!isExpanded) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 4.dp, vertical = 2.dp),
+                        .padding(horizontal = Dimens.SpacingXs, vertical = 2.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingXs)
                     ) {
+                        val mapLabel = LocalizationManager.getString(activeLang, "ui.label_map_tab")
                         Text(
-                            text = "${selectedFloor}.${currentDepth + 1}",
+                            text = "$mapLabel ${selectedFloor}.${currentDepth + 1}",
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontFamily = FontFamily.Serif,
                                 fontWeight = FontWeight.Bold,
@@ -165,7 +166,7 @@ fun FloorProgressCartographyMap(
                             color = MaterialTheme.colorScheme.primary
                         )
                         
-                        Spacer(modifier = Modifier.width(2.dp))
+                        Spacer(modifier = Modifier.width(Dimens.SpacingXxs))
                         
                         val totalDepths = nodes.size.coerceAtLeast(1)
                         val windowSize = 7
@@ -246,28 +247,26 @@ fun FloorProgressCartographyMap(
                 }
             } else {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = Dimens.SpacingXs, vertical = Dimens.SpacingXxs),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    val mapLabel = LocalizationManager.getString(activeLang, "ui.label_map_tab")
                     Text(
                         text = "🧭",
-                        fontSize = Dimens.TextXl,
-                        modifier = Modifier.padding(end = Dimens.SpacingS)
+                        fontSize = Dimens.TextL,
+                        modifier = Modifier.padding(end = Dimens.SpacingXs)
                     )
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "${selectedFloor}.${currentDepth + 1}",
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, letterSpacing = 1.sp),
+                            text = "$mapLabel ${selectedFloor}.${currentDepth + 1}",
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, letterSpacing = 0.5.sp),
                             color = MaterialTheme.colorScheme.primary
-                        )
-                        Text(
-                            text = LocalizationManager.getString(activeLang, "ui.map_label"),
-                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 8.sp, letterSpacing = 0.5.sp),
-                            color = ColorOnSurfaceMuted
                         )
                     }
 
-                    IconButton(onClick = { isExpanded = false }) {
+                    IconButton(onClick = { isExpanded = false }, modifier = Modifier.size(Dimens.IconS)) {
                         Icon(
                             imageVector = Icons.Default.KeyboardArrowUp,
                             contentDescription = LocalizationManager.getString(activeLang, "ui.desc_collapse"),
@@ -277,22 +276,28 @@ fun FloorProgressCartographyMap(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(Dimens.SpacingM))
+                Spacer(modifier = Modifier.height(Dimens.SpacingXs))
 
                 val scrollState = rememberScrollState()
+                LaunchedEffect(isExpanded, player.currentNodeIndex) {
+                    if (isExpanded) {
+                        // Approximate width of node (44) + path (8) = 52. Scroll to center if possible.
+                        scrollState.animateScrollTo((player.currentNodeIndex * 52).coerceAtLeast(0))
+                    }
+                }
                 
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.12f), RoundedCornerShape(Dimens.SpacingS))
                         .border(Dimens.BorderThin, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.03f), RoundedCornerShape(Dimens.SpacingS))
-                        .padding(vertical = Dimens.SpacingS, horizontal = 4.dp)
+                        .padding(vertical = Dimens.SpacingXxs, horizontal = 4.dp)
                 ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .horizontalScroll(scrollState)
-                            .padding(vertical = Dimens.SpacingS),
+                            .padding(vertical = Dimens.SpacingXxs),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         nodes.forEachIndexed { nodeIdx, node ->
@@ -354,7 +359,7 @@ fun FloorProgressCartographyMap(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(Dimens.SpacingM))
+                Spacer(modifier = Modifier.height(Dimens.SpacingXs))
 
                 val inspectNode = nodes.getOrNull(selectedNodeIdx)
                 
@@ -395,14 +400,14 @@ fun FloorProgressCartographyMap(
                         border = BorderStroke(Dimens.BorderThin, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Column(modifier = Modifier.padding(Dimens.SpacingM)) {
+                        Column(modifier = Modifier.padding(Dimens.SpacingS)) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 Box(
                                     modifier = Modifier
-                                        .size(Dimens.SpacingXxxl)
+                                        .size(Dimens.IconM)
                                         .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), CircleShape),
                                     contentAlignment = Alignment.Center
                                 ) {
@@ -418,28 +423,28 @@ fun FloorProgressCartographyMap(
                                             NodeType.EVENT -> "🎲"
                                             NodeType.SECRET -> "🕵️"
                                         },
-                                        fontSize = Dimens.TextM
+                                        fontSize = Dimens.TextS
                                     )
                                 }
                                 
-                                Spacer(modifier = Modifier.width(Dimens.SpacingS))
+                                Spacer(modifier = Modifier.width(Dimens.SpacingXs))
                                 
                                 Column(modifier = Modifier.weight(1f)) {
                                     val nodeName = LocalizationManager.getString(activeLang, inspectNode.titleKey)
                                     Text(
                                         text = nodeName,
-                                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
+                                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold, fontSize = 10.sp),
                                         color = MaterialTheme.colorScheme.onSurface
                                     )
                                     val sectorText = LocalizationManager.getString(activeLang, "ui.label_sector")
                                     Text(
                                         text = "$nodeCategory • $sectorText ${selectedNodeIdx + 1}",
-                                        style = MaterialTheme.typography.labelSmall.copy(fontSize = Dimens.TextXxs),
+                                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
                                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                                     )
                                 }
 
-                                Spacer(modifier = Modifier.width(Dimens.SpacingS))
+                                Spacer(modifier = Modifier.width(Dimens.SpacingXs))
 
                                 val statusTagText = when {
                                     inspectIsCurrent -> LocalizationManager.getString(activeLang, "ui.node_status_active")
@@ -460,13 +465,13 @@ fun FloorProgressCartographyMap(
                                 Box(
                                     modifier = Modifier
                                         .background(statusBgColor, RoundedCornerShape(Dimens.SpacingXs))
-                                        .padding(horizontal = Dimens.SpacingXs, vertical = Dimens.BorderThick)
+                                        .padding(horizontal = Dimens.SpacingXs, vertical = 1.dp)
                                 ) {
                                     Text(
                                         text = statusTagText,
                                         style = MaterialTheme.typography.labelSmall.copy(
                                             fontWeight = FontWeight.Bold,
-                                            fontSize = Dimens.TextXxs,
+                                            fontSize = 9.sp,
                                             letterSpacing = 0.5.sp
                                         ),
                                         color = statusTextColor
@@ -474,31 +479,32 @@ fun FloorProgressCartographyMap(
                                 }
                             }
 
-                            Spacer(modifier = Modifier.height(Dimens.SpacingS))
+                            Spacer(modifier = Modifier.height(Dimens.SpacingXs))
                             HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
-                            Spacer(modifier = Modifier.height(Dimens.SpacingS))
+                            Spacer(modifier = Modifier.height(Dimens.SpacingXs))
 
                             Text(
                                 text = LocalizationManager.formatString(activeLang, "ui.node_threat_profile", dangerLevel),
-                                style = MaterialTheme.typography.labelSmall.copy(fontSize = Dimens.TextXxs, fontWeight = FontWeight.Bold),
+                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, fontWeight = FontWeight.Bold),
                                 color = if (inspectNode.type == NodeType.BOSS || inspectNode.type == NodeType.COMBAT) ColorDanger else MaterialTheme.colorScheme.primary
                             )
                             Text(
                                 text = LocalizationManager.formatString(activeLang, "ui.node_cost_profile", costText),
-                                style = MaterialTheme.typography.labelSmall.copy(fontSize = Dimens.TextXxs),
+                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                             )
 
                             if (inspectNode.enemy != null) {
                                 val enemy = inspectNode.enemy!!
-                                val enemyNameKey = "enemy.${enemy.enemyId}.name"
+                                val stats = LocalizationManager.getEnemyStats(enemy.enemyId)
+                                val enemyNameKey = stats?.optString("nameKey") ?: "enemy.${enemy.enemyId}.name"
                                 val enemyName = LocalizationManager.getString(activeLang, enemyNameKey)
-                                val eHp = enemy.overrideHp ?: 50
-                                val eAtk = enemy.overrideAtk ?: 10
+                                val eHp = enemy.overrideHp ?: stats?.optInt("hp") ?: 50
+                                val eAtk = enemy.overrideAtk ?: stats?.optInt("atk") ?: 10
 
                                 Text(
                                     text = LocalizationManager.formatString(activeLang, "ui.node_hostile_info", enemyName, eHp, eAtk),
-                                    style = MaterialTheme.typography.labelSmall.copy(fontSize = Dimens.TextXxs, fontStyle = FontStyle.Italic, fontWeight = FontWeight.SemiBold),
+                                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, fontStyle = FontStyle.Italic, fontWeight = FontWeight.SemiBold),
                                     color = if (inspectNode.type == NodeType.BOSS) ColorDanger else MaterialTheme.colorScheme.secondary
                                 )
                             }

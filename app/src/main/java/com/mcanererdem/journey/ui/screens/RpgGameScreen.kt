@@ -67,7 +67,6 @@ fun RpgGameScreen(
     val showTitlePrefix by viewModel.showTitlePrefix.collectAsStateWithLifecycle()
     val firebaseSyncState by viewModel.firebaseSyncState.collectAsStateWithLifecycle()
 
-    val context = LocalContext.current
     val p = player
     val currentSide = p?.side ?: "NEUTRAL"
 
@@ -75,8 +74,11 @@ fun RpgGameScreen(
 
     LaunchedEffect(actionMessage) {
         if (actionMessage.key.isNotEmpty() && !showNotificationBanner) {
+            val text = actionMessage.getFormattedText(activeLang).ifBlank { 
+                LocalizationManager.getString(activeLang, actionMessage.key)
+            }
             snackbarHostState.showSnackbar(
-                message = actionMessage.getFormattedText(activeLang).ifBlank { actionMessage.key },
+                message = text,
                 duration = SnackbarDuration.Short
             )
         }
@@ -144,7 +146,9 @@ fun RpgGameScreen(
                         )
                         Spacer(modifier = Modifier.width(Dimens.SpacingS))
                         Text(
-                            text = actionMessage.getFormattedText(activeLang).ifBlank { actionMessage.key },
+                            text = actionMessage.getFormattedText(activeLang).ifBlank { 
+                                LocalizationManager.getString(activeLang, actionMessage.key)
+                            },
                             style = MaterialTheme.typography.bodySmall.copy(
                                 fontWeight = FontWeight.Medium,
                                 fontFamily = FontFamily.Serif
@@ -870,11 +874,11 @@ fun HeaderStatsBlock(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { isHeaderExpanded = !isHeaderExpanded }
-            .padding(horizontal = 8.dp, vertical = 6.dp)
+            .padding(horizontal = 8.dp, vertical = 4.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.Top,
+            verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             // Left: Avatar + Character Name & Faction
@@ -882,81 +886,79 @@ fun HeaderStatsBlock(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.weight(1f)
             ) {
-            // Circle Avatar
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .border(1.5.dp, factionColor, CircleShape)
-                    .background(ColorSurface, CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = initial,
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontFamily = FontFamily.Serif,
-                        fontWeight = FontWeight.Bold
-                    ),
-                    color = factionColor
-                )
-            }
-            
-            Spacer(modifier = Modifier.width(8.dp))
-            
-            // Name and Details
-            Column {
-                Text(
-                    text = player.playerName.uppercase(),
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        fontFamily = FontFamily.Serif,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 0.5.sp
-                    ),
-                    color = ColorOnBackground
-                )
+                // Circle Avatar
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .border(1.5.dp, factionColor, CircleShape)
+                        .background(ColorSurface, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = initial,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontFamily = FontFamily.Serif,
+                            fontWeight = FontWeight.Bold
+                        ),
+                        color = factionColor
+                    )
+                }
                 
-                // Faction and Level info stacked
-                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Spacer(modifier = Modifier.width(8.dp))
+                
+                // Name and Details
+                Column {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text(
+                            text = player.playerName.uppercase(),
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                fontFamily = FontFamily.Serif,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 0.5.sp
+                            ),
+                            color = ColorOnBackground
+                        )
+                        
+                        Text(
+                            text = "Lv ${player.level}",
+                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, fontWeight = FontWeight.Bold),
+                            color = ColorOnSurfaceMuted
+                        )
+                    }
+                    
+                    // Faction and Class info stacked
                     val factionText = when (player.side) {
                         "SANCTUM" -> LocalizationManager.getString(activeLang, "ui.header_faction_sanctum")
                         "COVENANT" -> LocalizationManager.getString(activeLang, "ui.header_faction_covenant")
                         else -> LocalizationManager.getString(activeLang, "ui.header_faction_neutral")
                     }
-                    Box(
-                        modifier = Modifier
-                            .background(factionColor.copy(alpha = 0.15f), RoundedCornerShape(4.dp))
-                            .border(0.5.dp, factionColor, RoundedCornerShape(4.dp))
-                            .padding(horizontal = 4.dp, vertical = 1.dp)
-                    ) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text(
                             text = factionText,
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 8.sp,
-                                letterSpacing = 0.5.sp
-                            ),
-                            color = factionColor
+                                color = factionColor
+                            )
+                        )
+                        Text(
+                            text = "|",
+                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 8.sp),
+                            color = ColorOnSurfaceMuted
+                        )
+                        Text(
+                            text = player.chosenClass.substringBefore("(").trim(),
+                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 8.sp, fontStyle = FontStyle.Italic),
+                            color = ColorOnSurfaceMuted
                         )
                     }
-                    
-                    Text(
-                        text = "Lv ${player.level} • ${player.chosenClass}",
-                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
-                        color = ColorOnSurfaceMuted
-                    )
                 }
             }
-        }
-        
-        // Right: Essence bar and Floor (HP number removed)
-        Row(
-            verticalAlignment = Alignment.Top,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.padding(top = 2.dp)
-        ) {
-            // Bars Stack
+
+            // Right: Bars Stack
             Column(
                 horizontalAlignment = Alignment.End,
-                verticalArrangement = Arrangement.spacedBy(6.dp)
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 // HP Bar
                 Row(
@@ -967,12 +969,12 @@ fun HeaderStatsBlock(
                         imageVector = Icons.Default.Favorite,
                         contentDescription = "HP",
                         tint = ColorDanger,
-                        modifier = Modifier.size(12.dp)
+                        modifier = Modifier.size(10.dp)
                     )
                     Box(
                         modifier = Modifier
                             .width(80.dp)
-                            .height(6.dp)
+                            .height(5.dp)
                             .background(ColorBorderMuted, RoundedCornerShape(3.dp))
                     ) {
                         Box(
@@ -982,12 +984,6 @@ fun HeaderStatsBlock(
                                 .background(ColorDanger, RoundedCornerShape(3.dp))
                         )
                     }
-                    // Numerical text removed/hidden to maintain alignment with Will bar
-                    Text(
-                        text = "",
-                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-                        modifier = Modifier.width(0.dp)
-                    )
                 }
                 
                 // Will/Essence Bar
@@ -998,13 +994,13 @@ fun HeaderStatsBlock(
                     Icon(
                         imageVector = Icons.Default.Star,
                         contentDescription = "Essence",
-                        tint = ColorCovenantGlow,
-                        modifier = Modifier.size(12.dp)
+                        tint = ColorStatGold,
+                        modifier = Modifier.size(10.dp)
                     )
                     Box(
                         modifier = Modifier
                             .width(80.dp)
-                            .height(6.dp)
+                            .height(5.dp)
                             .background(ColorBorderMuted, RoundedCornerShape(3.dp))
                     ) {
                         val willpowerFraction = if (isSovereignPassActive) 1.0f else (player.currentWill.toFloat() / player.maxWill.toFloat()).coerceIn(0f, 1f)
@@ -1012,84 +1008,78 @@ fun HeaderStatsBlock(
                             modifier = Modifier
                                 .fillMaxHeight()
                                 .fillMaxWidth(fraction = willpowerFraction)
-                                .background(ColorCovenantGlow, RoundedCornerShape(3.dp))
+                                .background(ColorStatGold, RoundedCornerShape(3.dp))
                         )
                     }
-                    Text(
-                        text = if (isSovereignPassActive) "∞" else "${player.currentWill}",
-                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, fontSize = 10.sp),
-                        color = Color.Transparent
-                    )
                 }
             }
         }
     }
 
     if (isHeaderExpanded) {
-            Spacer(modifier = Modifier.height(8.dp))
-            HorizontalDivider(color = ColorBorderMuted.copy(alpha = 0.5f))
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column {
-                    Text(
-                        text = LocalizationManager.getString(activeLang, "ui.header_detailed_stats"),
-                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = LocalizationManager.getString(activeLang, "ui.label_hp_short") + "${player.currentHp} / ${player.maxHp}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = ColorOnSurface
-                    )
-                    Text(
-                        text = LocalizationManager.getString(activeLang, "ui.label_will_short") + "${player.currentWill} / ${player.maxWill}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = ColorOnSurface
-                    )
-                    Text(
-                        text = LocalizationManager.getString(activeLang, "ui.label_exp_short") + "${player.exp} / ${player.maxExp}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = ColorOnSurface
-                    )
-                }
-                
-                Column(horizontalAlignment = Alignment.End) {
-                    Text(
-                        text = LocalizationManager.getString(activeLang, "ui.header_economy"),
-                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                        color = ColorStatGold
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = LocalizationManager.getString(activeLang, "ui.label_gold") + ": ${player.gold} 🪙",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = ColorOnSurface
-                    )
-                    Text(
-                        text = LocalizationManager.getString(activeLang, "ui.label_gleam") + ": ${player.aether} ✨",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = ColorOnSurface
-                    )
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
-            ) {
+        Spacer(modifier = Modifier.height(8.dp))
+        HorizontalDivider(color = ColorBorderMuted.copy(alpha = 0.5f))
+        Spacer(modifier = Modifier.height(8.dp))
+        
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column {
                 Text(
-                    text = LocalizationManager.getString(activeLang, "ui.header_tap_to_collapse"),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = ColorOnSurfaceMuted,
-                    fontStyle = FontStyle.Italic
+                    text = LocalizationManager.getString(activeLang, "ui.header_detailed_stats"),
+                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = LocalizationManager.getString(activeLang, "ui.label_hp_short") + "${player.currentHp} / ${player.maxHp}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = ColorOnSurface
+                )
+                Text(
+                    text = LocalizationManager.getString(activeLang, "ui.label_will_short") + "${player.currentWill} / ${player.maxWill}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = ColorOnSurface
+                )
+                Text(
+                    text = LocalizationManager.getString(activeLang, "ui.label_exp_short") + "${player.exp} / ${player.maxExp}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = ColorOnSurface
                 )
             }
+            
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    text = LocalizationManager.getString(activeLang, "ui.header_economy"),
+                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                    color = ColorStatGold
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = LocalizationManager.getString(activeLang, "ui.label_gold") + ": ${player.gold} 🪙",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = ColorOnSurface
+                )
+                Text(
+                    text = LocalizationManager.getString(activeLang, "ui.label_gleam") + ": ${player.aether} ✨",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = ColorOnSurface
+                )
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(8.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+            horizontalArrangement = Arrangement.End
+        ) {
+            Text(
+                text = LocalizationManager.getString(activeLang, "ui.header_tap_to_collapse"),
+                style = MaterialTheme.typography.labelSmall,
+                color = ColorOnSurfaceMuted,
+                fontStyle = FontStyle.Italic
+            )
         }
     }
 }
